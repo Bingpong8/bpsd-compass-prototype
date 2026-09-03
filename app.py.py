@@ -3,27 +3,27 @@ import numpy as np
 import pandas as pd
 
 # ---------------------------------------------------------
-# 1. DATABASE & PHARMACODYNAMIC DATA (pK_i = -log10(K_i))
+# 1. DATABASE & PHARMACODYNAMIC DATA (pKi = -log10(K_i))
 # ---------------------------------------------------------
 DRUG_DATABASE = {
     "Brexpiprazole": {
-        "pK_i": {"5HT2A": 9.33, "D2": 9.52, "H1": 7.72, "alpha1": 8.42, "M1": 5.50},
+        "pKi": {"5HT2A": 9.33, "D2": 9.52, "H1": 7.72, "alpha1": 8.42, "M1": 5.50},
         "A_r": {"5HT2A": 1.0, "D2": 1.0}
     },
     "Olanzapine": {
-        "pK_i": {"5HT2A": 8.40, "D2": 7.96, "H1": 8.15, "alpha1": 7.72, "M1": 7.59},
+        "pKi": {"5HT2A": 8.40, "D2": 7.96, "H1": 8.15, "alpha1": 7.72, "M1": 7.59},
         "A_r": {"5HT2A": 1.0, "D2": 1.0}
     },
     "Risperidone": {
-        "pK_i": {"5HT2A": 9.30, "D2": 8.43, "H1": 7.70, "alpha1": 8.15, "M1": 5.00},
+        "pKi": {"5HT2A": 9.30, "D2": 8.43, "H1": 7.70, "alpha1": 8.15, "M1": 5.00},
         "A_r": {"5HT2A": 1.0, "D2": 1.0}
     },
     "Pimavanserin": {
-        "pK_i": {"5HT2A": 9.05, "D2": 5.00, "H1": 5.00, "alpha1": 5.00, "M1": 5.00},
+        "pKi": {"5HT2A": 9.05, "D2": 5.00, "H1": 5.00, "alpha1": 5.00, "M1": 5.00},
         "A_r": {"5HT2A": 1.0, "D2": 0.0}
     },
     "Haloperidol": {
-        "pK_i": {"5HT2A": 7.10, "D2": 8.70, "H1": 6.00, "alpha1": 7.20, "M1": 5.00},
+        "pKi": {"5HT2A": 7.10, "D2": 8.70, "H1": 6.00, "alpha1": 7.20, "M1": 5.00},
         "A_r": {"5HT2A": 1.0, "D2": -1.0}  # Full D2 antagonism opposes apathy goals
     }
 }
