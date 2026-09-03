@@ -32,8 +32,8 @@ DRUG_DATABASE = {
 # 2. CALCULATION ENGINE
 # ---------------------------------------------------------
 def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_score):
-    pk = drug_data["pK_i"]
-    ar = drug_data["A_r"]
+    pk = drug_data["pKi"]
+    ar = drug_data["Ar"]
     
     # 1. Therapeutic Utility Component: sum(w_r * pKi * A_r)
     u_thera = (weights["5HT2A"] * pk["5HT2A"] * ar["5HT2A"]) + \
@@ -43,7 +43,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
     u_risk = (lambda_risks["H1"] * pk["H1"]) + \
              (lambda_risks["alpha1"] * pk["alpha1"])
     
-    # 3. Discontinuous Anticholinergic Cognitive Burden Penalty (P_ACB)
+    # 3. Discontinuous Anticholinergic Cognitive Burden Penalty (PACB)
     # Scaled by MMSE: severe impairment (MMSE < 10) = 3.0, moderate = 2.0, mild = 1.0
     if mmse_score < 10:
         c_patient = 3.0
@@ -52,18 +52,18 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
     else:
         c_patient = 1.0
         
-    p_acb = c_patient * 1.0 if pk["M1"] >= 7.0 else 0.0
+    pacb = c_patient * 1.0 if pk["M1"] >= 7.0 else 0.0
     
     # Final Net Score Formula
-    m_j = u_thera - u_risk - p_acb
+    m_j = u_thera - u_risk - pacb
     
     return {
         "Drug": drug_name,
-        "Net Score (M_j)": round(m_j, 2),
+        "Net Score (Mj)": round(mj, 2),
         "Therapeutic Gain": round(u_thera, 2),
         "Risk Deductions": round(u_risk, 2),
-        "ACB Penalty (P_ACB)": round(p_acb, 2),
-        "M1 Potency (pK_i)": pk["M1"]
+        "ACB Penalty (PACB)": round(pacb, 2),
+        "M1 Potency (pKi)": pk["M1"]
     }
 
 # ---------------------------------------------------------
@@ -109,11 +109,11 @@ for drug_name, drug_data in DRUG_DATABASE.items():
     res = calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse)
     results.append(res)
 
-df_results = pd.DataFrame(results).sort_values(by="Net Score (M_j)", ascending=False)
+df_results = pd.DataFrame(results).sort_values(by="Net Score (Mj)", ascending=False)
 
 # Render Top Recommended Drug Card
 top_drug = df_results.iloc[0]
-st.success(f"**Top Recommended Option:** {top_drug['Drug']} (Net Score M_j = {top_drug['Net Score (M_j)']})")
+st.success(f"**Top Recommended Option:** {top_drug['Drug']} (Net Score Mj = {top_drug['Net Score (Mj)']})")
 
 # Render Interactive Results Table
 def color_score(val):
@@ -125,7 +125,7 @@ def color_score(val):
         return 'background-color: #f8d7da; color: #721c24;' # Red
 
 st.dataframe(
-    df_results.style.map(color_score, subset=['Net Score (M_j)']),
+    df_results.style.map(color_score, subset=['Net Score (Mj)']),
     use_container_width=True
 )
 
