@@ -59,7 +59,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
     
     return {
         "Drug": drug_name,
-        "Net Score (Mj)": round(mj, 2),
+        "Net Score (Mj)": round(m_j, 2),
         "Therapeutic Gain": round(u_thera, 2),
         "Risk Deductions": round(u_risk, 2),
         "ACB Penalty (PACB)": round(pacb, 2),
