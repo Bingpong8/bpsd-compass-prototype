@@ -83,8 +83,8 @@ with col1:
     
     # Target Symptom Weights (w_r) via Sliders
     st.write("**Target Symptom Severity (Normalized ωr)**")
-    w_5ht2a = st.slider("Psychotic Agitation Severity (5-HT2A)", 0.0, 1.0, 0.9, 0.1)
-    w_d2 = st.slider("Apathy / Executive Dysfunction Severity (D2)", 0.0, 1.0, 0.8, 0.1)
+    ω_5ht2a = st.slider("Psychotic Agitation Severity (5-HT2A)", 0.0, 1.0, 0.9, 0.1)
+    ω_d2 = st.slider("Apathy / Executive Dysfunction Severity (D2)", 0.0, 1.0, 0.8, 0.1)
     
     weights = {"5HT2A": ω_5ht2a, "D2": ω_d2}
 
