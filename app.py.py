@@ -2,6 +2,24 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
+st.set_page_config(page_title="The Death of Peace of Mind", layout="wide")
+
+ascii_header = r"""
+			THE DEATH OF PEACE OF MIND:
+			      _---~~(~~-_.
+			    _{        )   )
+			  ,   ) -~~- ( ,-' )_
+			 (   `-,\_..`., )-- '_,)
+			( `\_)  (  -\~( -\_`,  }
+			(_-  _  ~_-~~~~`,  ,' )
+			  `~ -^(    __;-,((()))
+			        ~~~~ {_ -_(())
+			               `\  }
+			                 { }
+"""
+
+# Render as monospaced code block
+st.code(ascii_header, language=None)
 # ---------------------------------------------------------
 # 1. PHARMACODYNAMIC DATABASE (pKi = -log10(K_i))
 # ---------------------------------------------------------
