@@ -20,7 +20,7 @@ ascii_header = r"""
 								               `\  }
 								                 { }
 																	 
-							Dolor et Astra, Nihil est Veritas
+							   Dolor et Astra, Nihil est Veritas
 """
 
 st.code(ascii_header, language=None)
