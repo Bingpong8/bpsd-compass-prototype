@@ -40,7 +40,7 @@ DRUG_DATABASE = {
     },
     "Sertraline": {
         "pKi": {"5HT2A": 5.00, "D2": 6.60, "H1": 5.00, "alpha1": 5.00, "M1": 5.00},
-        "Ar": {"5HT2A": 0.0, "D2": 0.5}  # Low D2 activity
+        "Ar": {"5HT2A": 0.0, "D2": 0.5}
     },
     "Fluoxetine": {
         "pKi": {"5HT2A": 6.70, "D2": 5.00, "H1": 5.00, "alpha1": 5.00, "M1": 5.00},
@@ -55,16 +55,19 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
     pk = drug_data["pKi"]
     ar = drug_data["Ar"]
     
-    # 1. Therapeutic Utility Component: sum(w_r * pKi * A_r)
+    # 1. Target Utility Component: sum(w_r * pKi * A_r)
     u_thera = (weights["5HT2A"] * pk["5HT2A"] * ar["5HT2A"]) + \
               (weights["D2"] * pk["D2"] * ar["D2"])
     
-    # 2. Risk Component: sum(lambda_r * pKi)
+    # 2. Off-Target Risk Component: sum(lambda_r * pKi)
+    # Includes D2 Full Antagonism risk if drug acts as inverse agonist/full antagonist
+    d2_risk = (lambda_risks["D2_full"] * pk["D2"]) if ar["D2"] < 0 else 0.0
+    
     u_risk = (lambda_risks["H1"] * pk["H1"]) + \
-             (lambda_risks["alpha1"] * pk["alpha1"])
+             (lambda_risks["alpha1"] * pk["alpha1"]) + \
+             d2_risk
     
     # 3. Discontinuous Anticholinergic Cognitive Burden Penalty (PACB)
-    # Scaled by MMSE: severe impairment (MMSE < 10) = 3.0, moderate = 2.0, mild = 1.0
     if mmse_score < 10:
         c_patient = 3.0
     elif mmse_score <= 20:
@@ -72,9 +75,9 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
     else:
         c_patient = 1.0
         
-    pacb = c_patient * 1.0 if pk["M1"] >= 7.0 else 0.0
+    pacb = c_patient * 2.0 if pk["M1"] >= 7.0 else 0.0
     
-    # Final Net Score Formula
+    # Final Net Score Formula: M_j = U_thera - U_risk - P_ACB
     m_j = u_thera - u_risk - pacb
     
     return {
@@ -96,42 +99,54 @@ st.caption("Parameter-driven clinical matching algorithm based on Neurotransmitt
 
 st.markdown("---")
 
+# Quick Clinical Presets (Enhances User-Friendliness)
+st.sidebar.header("📋 Clinical Quick Presets")
+preset = st.sidebar.selectbox(
+    "Load Preset Patient Profile",
+    ["Custom Inputs", "Severe Psychotic Agitation + High Fall Risk", "Severe Apathy + Parkinsonism Risk"]
+)
+
+# Preset Logic
+if preset == "Severe Psychotic Agitation + High Fall Risk":
+    init_w_5ht2a, init_w_d2 = 0.9, 0.2
+    init_l_h1, init_l_a1, init_l_d2 = 0.9, 0.7, 0.0
+    init_mmse = 12
+elif preset == "Severe Apathy + Parkinsonism Risk":
+    init_w_5ht2a, init_w_d2 = 0.2, 0.9
+    init_l_h1, init_l_a1, init_l_d2 = 0.3, 0.2, 1.0
+    init_mmse = 18
+else:
+    init_w_5ht2a, init_w_d2 = 0.9, 0.8
+    init_l_h1, init_l_a1, init_l_d2 = 0.8, 0.7, 0.0
+    init_mmse = 15
+
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader("Patient Baseline & Symptom Severity")
-    
-    # Target Symptom Weights (w_r) via Sliders
-    st.write("**Target Symptom Severity (Normalized ωr)**")
-    ω_5ht2a = st.slider("Psychotic Agitation Severity (5-HT2A)", 0.0, 1.0, 0.9, 0.1)
-    ω_d2 = st.slider("Apathy / Executive Dysfunction Severity (D2)", 0.0, 1.0, 0.8, 0.1)
+    st.subheader("Target Symptom Severity (Normalized ωr)")
+    ω_5ht2a = st.slider("Psychotic Agitation Severity (5-HT2A)", 0.0, 1.0, init_w_5ht2a, 0.1)
+    ω_d2 = st.slider("Apathy / Executive Dysfunction Severity (D2)", 0.0, 1.0, init_w_d2, 0.1)
     
     weights = {"5HT2A": ω_5ht2a, "D2": ω_d2}
 
 with col2:
-    st.subheader("Patient Vulnerabilities & Risk Profiles")
+    st.subheader("Patient Risk Profile & Vulnerabilities (λr)")
+    l_h1 = st.slider("Fall / Sedation Vulnerability (λH1)", 0.0, 1.0, init_l_h1, 0.1)
+    l_alpha1 = st.slider("Orthostatic Hypotension Risk (λα1)", 0.0, 1.0, init_l_a1, 0.1)
+    l_d2_full = st.slider("Parkinsonism / EPS Vulnerability (λD2)", 0.0, 1.0, init_l_d2, 0.1)
     
-    # Risk Penalty Weights (lambda_r) via Sliders
-    st.write("**Patient Clinical Risk Weights (λr)**")
-    l_h1 = st.slider("Fall / Sedation Vulnerability (λH1)", 0.0, 1.0, 0.8, 0.1)
-    l_alpha1 = st.slider("Orthostatic Hypotension Risk (λα1)", 0.0, 1.0, 0.7, 0.1)
+    mmse = st.number_input("Baseline MMSE Score (Cognitive Assessment)", min_value=0, max_value=30, value=init_mmse)
     
-    mmse = st.number_input("Baseline TMSE Score (Cognitive Assessment)", min_value=0, max_value=30, value=15)
-    
-    lambda_risks = {"H1": l_h1, "alpha1": l_alpha1}
+    lambda_risks = {"H1": l_h1, "alpha1": l_alpha1, "D2_full": l_d2_full}
 
 st.markdown("---")
 st.subheader("Calculated Drug Match Dashboard")
 
 # Calculate results for all candidate drugs
-results = []
-for drug_name, drug_data in DRUG_DATABASE.items():
-    res = calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse)
-    results.append(res)
+results = [calculate_match_score(d, data, weights, lambda_risks, mmse) for d, data in DRUG_DATABASE.items()]
+df_results = pd.DataFrame(results).sort_values(by="Net Score (Mj)", ascending=False).reset_index(drop=True)
 
-df_results = pd.DataFrame(results).sort_values(by="Net Score (Mj)", ascending=False)
-
-# Prominently Highlight Top Recommended Drug
+# Highlight Top Recommended Option
 top_drug = df_results.iloc[0]
 
 st.markdown(
@@ -145,27 +160,36 @@ st.markdown(
             Net Match Score (Mj): <strong>{top_drug['Net Score (Mj)']}</strong> 
             &nbsp;|&nbsp; Therapeutic Gain: <strong>+{top_drug['Therapeutic Gain']}</strong> 
             &nbsp;|&nbsp; Risk Penalty: <strong>-{top_drug['Risk Deductions']}</strong>
+            &nbsp;|&nbsp; ACB Penalty: <strong>-{top_drug['ACB Penalty (PACB)']}</strong>
         </p>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Apply bold dynamic formatting to the 'Drug' column in the data table
-df_results['Drug'] = df_results['Drug'].apply(lambda x: f"💊 {x}")
-
-# Render Interactive Results Table with score highlighting
-def color_score(val):
+# Apply Styling Matrix to Net Score
+def apply_traffic_lights(val):
     if val > 1.0:
-        return 'background-color: #d4edda; color: #155724;' # Green
+        return 'background-color: #d4edda; color: #155724; font-weight: bold;'
     elif val >= -2.0:
-        return 'background-color: #fff3cd; color: #856404;' # Yellow
+        return 'background-color: #fff3cd; color: #856404;'
     else:
-        return 'background-color: #f8d7da; color: #721c24;' # Red
+        return 'background-color: #f8d7da; color: #721c24;'
 
+# Render Interactive Table
 st.dataframe(
-    df_results.style.map(color_score, subset=['Net Score (Mj)']),
+    df_results.style.map(apply_traffic_lights, subset=['Net Score (Mj)']),
     use_container_width=True
 )
 
-st.info("**Traffic Light Guide:** Green = Optimal Match | Yellow = Proceed with Caution | Red = Flagged High Toxicity Risk")
+st.info("**Traffic Light Guide:** Green = Optimal Match (Mj > 1.0) | Yellow = Proceed with Caution (-2.0 ≤ Mj ≤ 1.0) | Red = High Risk Flag (Mj < -2.0)")
+
+# Explainable AI Component (Expander Tooltips)
+with st.expander("🔍 Explainable AI: Breakdown of Receptor Calculation"):
+    st.markdown(
+        """
+        The Net Score ($M_j$) combines target therapeutic efficacy, off-target toxicity risk, and cognitive impairment adjustments:
+        $$M_j = \\sum (w_r \\cdot pK_{i,r} \\cdot A_r) - \\sum (\\lambda_r \\cdot pK_{i,r}) - P_{\\text{ACB}}$$
+        """
+    )
+    st.table(df_results)
