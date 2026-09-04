@@ -148,7 +148,6 @@ st.markdown(
         </p>
     </div>
     """,
-    unsafe_allow_highlight=True
 )
 
 # Apply bold dynamic formatting to the 'Drug' column in the data table
