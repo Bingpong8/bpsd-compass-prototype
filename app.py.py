@@ -121,7 +121,7 @@ with col2:
     lambda_risks = {"H1": l_h1, "alpha1": l_alpha1}
 
 st.markdown("---")
-st.subheader("3. Calculated Drug Match Dashboard")
+st.subheader("Calculated Drug Match Dashboard")
 
 # Calculate results for all candidate drugs
 results = []
@@ -148,6 +148,7 @@ st.markdown(
         </p>
     </div>
     """,
+    unsafe_allow_html=True
 )
 
 # Apply bold dynamic formatting to the 'Drug' column in the data table
