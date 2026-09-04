@@ -10,6 +10,10 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 9.33, "D2": 9.52, "NET": 5.00, "α2a": 8.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 7.72, "α1": 8.42, "M1": 5.50},
         "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "α2a": 1.0, "NMDA": 0.0, "GABA-A": 0.0}
     },
+    "Aripiprazole": {
+        "pKi": {"5HT2A": 8.40, "D2": 8.80, "NET": 5.00, "α2A": 6.80, "NMDA": 5.00, "GABA-A": 5.00, "H1": 7.50, "alpha1": 7.30, "M1": 5.00},
+        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "α2A": 0.5, "NMDA": 0.0, "GABA-A": 0.0}
+    },
     "Olanzapine": {
         "pKi": {"5HT2A": 8.40, "D2": 7.96, "NET": 5.00, "α2a": 6.20, "NMDA": 5.00, "GABA-A": 5.00, "H1": 8.15, "α1": 7.72, "M1": 7.59},
         "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "α2a": 0.5, "NMDA": 0.0, "GABA-A": 0.0}
@@ -49,7 +53,23 @@ DRUG_DATABASE = {
 }
 
 # ---------------------------------------------------------
-# 2. CALCULATION ENGINE (Clean 1-Decimal Output)
+# 2. BLACK BOX WARNINGS & CLINICAL CAUTIONS DATABASE
+# ---------------------------------------------------------
+BLACK_BOX_WARNINGS = {
+    "Brexpiprazole": "Warning: Exercise extreme caution for akathisia and impulse-control disorders.",
+    "Aripiprazole": "Warning: High clinical risk of akathisia, restlessness, and compulsive behavior.",
+    "Olanzapine": "Warning: High risk of severe metabolic syndrome, rapid weight gain, profound sedation, and anticholinergic cognitive impairment (M1 pKi ≥ 7.0).",
+    "Quetiapine": "Warning: Risk of severe orthostatic hypotension, somnolence, and metabolic dysregulation.",
+    "Risperidone": "Warning: Dose-dependent extrapyramidal symptoms and hyperprolactinemia related to Elevated risk of cerebrovascular adverse events.",
+    "Haloperidol": "Warning: High risk of severe Extrapyramidal Symptoms (EPS), Tardive Dyskinesia, and QTc prolongation/Torsades de Pointes.",
+    "Mirtazapine": "Warning: Increased risk of suicidal ideation in young adults. Causes marked somnolence, appetite stimulation, and potential agranulocytosis.",
+    "Memantine": "Caution: Requires dose adjustment in severe renal impairment (CrCl < 30 mL/min). May cause mild dizziness, confusion, and headache.",
+    "Clonidine": "Caution: High risk of severe rebound hypertension upon abrupt withdrawal. Causes sinus bradycardia, orthostatic hypotension, and sedation.",
+    "Lorazepam": "Warning: Concomitant use with opioids may result in severe sedation, respiratory depression, coma, and death. High risk ofataxia, paradoxical disinhibition in dementia, and falls.",
+    "Escitalopram": "Warning: Dose-dependent QTc prolongation (maximum recommended dose 10 mg/day in elderly patients). Risk of hyponatremia / SIADH."
+}
+# ---------------------------------------------------------
+# 3. CALCULATION ENGINE
 # ---------------------------------------------------------
 def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_score):
     pk = drug_data["pKi"]
@@ -92,7 +112,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_scor
     }
 
 # ---------------------------------------------------------
-# 3. STREAMLIT FRONTEND / USER INTERFACE
+# 4. STREAMLIT FRONTEND / USER INTERFACE
 # ---------------------------------------------------------
 st.set_page_config(page_title="BPSD Compass - Prototype", layout="wide")
 
@@ -101,6 +121,10 @@ st.caption("Parameter-driven clinical matching algorithm based on Neurotransmitt
 
 st.markdown("---")
 
+# Session State for Rule-Out Exclusions
+if "excluded_drugs" not in st.session_state:
+    st.session_state.excluded_drugs = []
+    
 # Standardized Clinical Anchor Mappings (Translates Bedside Evaluations to Weights)
 NPI_MAPPING = {
     "0 - Absent / No Symptoms": 0.0,
@@ -131,6 +155,7 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     st.subheader("Target Symptom Severity (Bedside Anchor Scales)")
+    st.caption("💡 *Normalized Weight (ωr) = Bedside Score / Maximum Score (0.0 to 1.0)*")
     
     npi_agit = st.selectbox(
         "Psychotic Agitation / Hallucinations (5-HT2A Target)",
@@ -178,6 +203,7 @@ with col1:
 
 with col2:
     st.subheader("Patient Risk Profile & Vulnerabilities")
+    st.caption("💡 *Risk Coefficients (λr) map clinical frailty scores directly to toxicity penalties*")
     
     fall_sel = st.selectbox(
         "Fall & Sedation Risk Assessment (Morse Fall Scale)",
@@ -221,14 +247,18 @@ st.subheader("Calculated Multi-System Match Dashboard")
 results = [calculate_match_score(d, data, weights, lambda_risks, TMSE) for d, data in DRUG_DATABASE.items()]
 df_results = pd.DataFrame(results).sort_values(by="Net Score (Mj)", ascending=False).reset_index(drop=True)
 
-# Strictly format values to 1 decimal place across all score columns
-df_results["Net Score (Mj)"] = df_results["Net Score (Mj)"].map("{:.1f}".format)
-df_results["Therapeutic Gain"] = df_results["Therapeutic Gain"].map("{:.1f}".format)
-df_results["Risk Deductions"] = df_results["Risk Deductions"].map("{:.1f}".format)
-df_results["ACB Penalty"] = df_results["ACB Penalty"].map("{:.1f}".format)
+# Filter out user-ruled-out medications
+df_filtered = df_results[~df_results["Drug"].isin(st.session_state.excluded_drugs)].reset_index(drop=True)
 
-# Highlight Top Recommended Option
-top_drug = df_results.iloc[0]
+# Format numerical columns strictly to 1 decimal place
+for col in ["Net Score (Mj)", "Therapeutic Gain", "Risk Deductions", "ACB Penalty", "M1 Potency (pKi)"]:
+    df_results[col] = df_results[col].map("{:.1f}".format)
+    df_filtered[col] = df_filtered[col].map("{:.1f}".format)
+
+# Render Top Recommended Drug Card & Dynamic Rule-Out Engine
+if not df_filtered.empty:
+    top_drug = df_filtered.iloc[0]
+    top_name = top_drug['Drug']
 
 st.markdown(
     f"""
@@ -247,6 +277,31 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# Black Box Warning & Clinical Caution Box
+    st.warning(f"⚠️ **Clinical Cautions & Warnings for {top_name}:**\n\n{BLACK_BOX_WARNINGS.get(top_name, 'No specific black box warning listed.')}")
+    
+    # Rule-Out Checkbox Mechanism
+    rule_out_check = st.checkbox(
+        f"🚫 **Rule out {top_name} for this patient** (Check if patient has contraindications, severe QTc prolongation, prior failure, or intolerance)",
+        key=f"ruleout_{top_name}"
+    )
+    
+    if rule_out_check:
+        st.session_state.excluded_drugs.append(top_name)
+        st.rerun()
+
+else:
+    st.error("All candidate medications have been ruled out. Please reset the rule-out filters.")
+
+# Reset Button for Rule-Out Filters
+if st.session_state.excluded_drugs:
+    st.markdown(" ")
+    if st.button(f"🔄 Reset Ruled-Out Medications ({len(st.session_state.excluded_drugs)} Currently Excluded)"):
+        st.session_state.excluded_drugs = []
+        st.rerun()
+
+st.markdown("### Complete Comparative Drug Matrix")
 
 # Apply Styling Matrix to Net Score
 def apply_traffic_lights(val):
@@ -278,38 +333,36 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         
         ---
 
-        #### 1. Multi-Target Therapeutic Gain ($U_{\\text{thera}}$)
-        The total therapeutic utility is calculated across six neurotransmitter pathways:
-        
-        $$U_{\\text{thera}} = \\sum_{r \\in \\{5HT2A, D2, NET, α2a, NMDA, GABA-A\\}} \\left( ω_r \\cdot pK_{i,r} \\cdot A_r \\right)$$
-        
-        * **$5\\text{-HT}_{2\\text{A}}$ Serotonergic Target:** $5\\text{-HT}_{2\\text{A}}$ inverse agonism ($A_r = +1.0$) attenuates cortical serotonergic hyperfunction driving psychotic agitation, visual hallucinations, and paranoia[cite: 1].
-        * **$D_2$ Dopaminergic & $\\text{NET}$ Targets:** Frontostriatal dopamine and norepinephrine depletion drive apathy, motor slowing, and executive dysfunction[cite: 1]. Partial $D_2$ agonists (e.g., Brexpiprazole) stabilize dopamine neurotransmission ($A_r = +1.0$) without triggering motor block[cite: 1].
-        * **$\\alpha_{2\\text{A}}$ Noradrenergic Target:** Central $\\alpha_{2\\text{A}}$ presynaptic agonism ($A_r = +1.0$) reduces hyperadrenergic outflow, calming autonomic arousal, tachycardia, and noradrenergic agitation[cite: 1].
-        * **$\\text{GABA}_{A}$ Benzodiazepine Target:** $\\text{GABA}_{A}$ positive allosteric modulation ($A_r = +1.0$) enhances inhibitory neurotransmission to rapidly alleviate acute hyperarousal and panic[cite: 1].
-        * **$\\text{NMDA}$ Glutamatergic Target:** Uncompetitive $\\text{NMDA}$ receptor antagonism ($A_r = +1.0$) protects against excess glutamatergic excitotoxicity and delirium.
+#### 1. Bedside Parameter Derivation & Weighting Logic
+        * **Target Weights ($\omega_r$):** Derived directly from bedside rating scales like the NPI-Q[cite: 1]. The clinician's 4-point input score ($0$ to $3$) is normalized via $\omega_r = \frac{\text{Score}}{3.0}$, producing a bounded parameter $\omega_r \in [0.0, 1.0]$[cite: 1].
+        * **Histamine Risk ($\lambda_{H1}$):** Mapped to the bedside **Morse Fall Scale** ($0\text{--}125$), where scores $\ge 45$ set $\lambda_{H1} = 0.9$ to penalize central $H_1$ sedation and gait instability[cite: 1].
+        * **Orthostatic Risk ($\lambda_{\alpha1}$):** Mapped to standing systolic blood pressure drop, where diagnostic orthostasis ($\Delta\text{SBP} \ge 20\text{ mmHg}$) sets $\lambda_{\alpha1} = 0.9$ to penalize $\alpha_1$-adrenergic blockade[cite: 1].
+        * **Parkinsonism Risk ($\lambda_{D2\_full}$):** Mapped to extrapyramidal motor signs (Simpson-Angus Scale), where pre-existing rigidity or Lewy body dementia sets $\lambda_{D2\_full} = 1.0$, heavily penalizing full $D_2$ antagonists like Haloperidol[cite: 1].
 
         ---
 
-        #### 2. Risk Deductions ($U_{\\text{risk}}$)
-        Off-target risk penalties scale dynamically based on patient frailty and baseline clinical scores:
+        #### 2. Multi-Target Therapeutic Gain ($U_{\\text{thera}}$)
+        $$U_{\\text{thera}} = \\sum_{r \\in \\{5HT2A, D2, NET, \\alpha2A, NMDA, GABAA\\}} \\left( \\omega_r \\cdot pK_{i,r} \\cdot A_r \\right)$$
         
-        * **Histamine $H_1$ Blockade:** Off-target $H_1$ affinity induces severe central sedation and gait ataxia. Penalty weight ($\lambda_{H1}$) is scaled using the bedside **Morse Fall Scale**.
-        * **$\\alpha_1$-Adrenergic Blockade:** $\\alpha_1$ antagonism inhibits vascular vasoconstriction, causing postural hypotension and syncope. Penalty weight ($\lambda_{α1}$) is scaled using standing systolic blood pressure drop.
-        * **Full $D_2$ Antagonism Penalty:** Potent full $D_2$ antagonists (e.g., Haloperidol, $A_{D2} = -1.0$) block extrapyramidal motor pathways, worsening apathy and inducing severe parkinsonism[cite: 1]. Scaled via baseline **Simpson-Angus Scale (SAS)** ($\lambda_{D2\\_full}$).
+        * **$5\\text{-HT}_{2\\text{A}}$ Target:** $5\\text{-HT}_{2\\text{A}}$ inverse agonism ($A_r = +1.0$) attenuates cortical serotonergic hyperfunction driving psychotic agitation and hallucinations[cite: 1].
+        * **$D_2$ & $\\text{NET}$ Targets:** Frontostriatal dopamine and norepinephrine hypofunction drive apathy[cite: 1]. Partial $D_2$ agonists (e.g., Brexpiprazole, Aripiprazole) stabilize transmission ($A_r = +1.0$) without causing extrapyramidal motor block[cite: 1].
+        * **$\\alpha_{2\\text{A}}$ Target:** Presynaptic $\alpha_{2A}$ agonism ($A_r = +1.0$) suppresses central noradrenergic outflow, reducing hyperadrenergic autonomic arousal[cite: 1].
+        * **$\\text{GABA}_{A}$ Target:** Positive allosteric modulation ($A_r = +1.0$) enhances central inhibition to rapidly calm severe panic[cite: 1].
+        * **$\\text{NMDA}$ Target:** Uncompetitive $\text{NMDA}$ antagonism ($A_r = +1.0$) protects against glutamatergic excitotoxicity and delirium[cite: 1].
 
         ---
 
-        #### 3. Discontinuous Anticholinergic Penalty ($P_{\\text{ACB}}$)
-        Central $M_1$ muscarinic receptor blockade impairs memory encoding and precipitates acute delirium.
-        * **Threshold Penalty:** Applied as a step function when $M_1$ binding potency reaches or exceeds $pK_{i,M1} \\ge 7.0$ ($K_i \\le 100\\text{ nM}$).
-        * **Cognitive Scaling:** Penalty magnitude is scaled dynamically using baseline TMSE score: $C_{\\text{patient}} = 3.0$ for severe dementia (TMSE < 10), $2.0$ for moderate impairment (TMSE 10-20), and $1.0$ for mild/normal baseline cognition.
+        #### 3. Cognitive Burden Penalty ($P_{\\text{ACB}}$) & Rule-Out Guardrails
+        * **$M_1$ Potency Threshold:** Central $M_1$ muscarinic blockade triggers a step-function penalty when binding potency reaches $pK_{i,M1} \\ge 7.0$ ($K_i \\le 100\\text{ nM}$)[cite: 1].
+        * **Cognitive Scaling ($C_{\\text{patient}}$):** Scaled via baseline MMSE score ($3.0$ for MMSE < 10, $2.0$ for MMSE 10-20, and $1.0$ for MMSE > 20)[cite: 1].
+        * **Dynamic Rule-Out Engine:** When a clinician checks the rule-out box for a top drug, the system dynamically filters out that agent and recalculates the matrix to present the safest second-line alternative[cite: 1].
         """
     )
     
     st.write("**Current Parameter Values Applied in Calculation:**")
     st.json({
         "Normalized Target Weights (ω_r)": weights,
-        "Normalized Risk Coefficients (lambda_r)": lambda_risks,
-        "Baseline Cognitive Score (TMSE)": TMSE
+        "Normalized Risk Coefficients (λ_r)": lambda_risks,
+        "Baseline Cognitive Score (TMSE)": tmse,
+        "Currently Ruled-Out Medications": st.session_state.excluded_drugs
     })
