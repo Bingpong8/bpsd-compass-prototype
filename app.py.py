@@ -7,48 +7,48 @@ import pandas as pd
 # ---------------------------------------------------------
 DRUG_DATABASE = {
     "Brexpiprazole": {
-        "pKi": {"5HT2A": 9.33, "D2": 9.52, "NET": 5.00, "a2A": 8.00, "NMDA": 5.00, "GABAA": 5.00, "H1": 7.72, "alpha1": 8.42, "M1": 5.50},
-        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "a2A": 1.0, "NMDA": 0.0, "GABAA": 0.0}
+        "pKi": {"5HT2A": 9.33, "D2": 9.52, "NET": 5.00, "α2a": 8.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 7.72, "α1": 8.42, "M1": 5.50},
+        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "α2a": 1.0, "NMDA": 0.0, "GABA-A": 0.0}
     },
     "Aripiprazole": {
-        "pKi": {"5HT2A": 8.40, "D2": 8.80, "NET": 5.00, "a2A": 6.80, "NMDA": 5.00, "GABAA": 5.00, "H1": 7.50, "alpha1": 7.30, "M1": 5.00},
-        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "a2A": 0.5, "NMDA": 0.0, "GABAA": 0.0}
+        "pKi": {"5HT2A": 8.40, "D2": 8.80, "NET": 5.00, "α2a": 6.80, "NMDA": 5.00, "GABA-A": 5.00, "H1": 7.50, "α1": 7.30, "M1": 5.00},
+        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "α2a": 0.5, "NMDA": 0.0, "GABA-A": 0.0}
     },
     "Olanzapine": {
-        "pKi": {"5HT2A": 8.40, "D2": 7.96, "NET": 5.00, "a2A": 6.20, "NMDA": 5.00, "GABAA": 5.00, "H1": 8.15, "alpha1": 7.72, "M1": 7.59},
-        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "a2A": 0.5, "NMDA": 0.0, "GABAA": 0.0}
+        "pKi": {"5HT2A": 8.40, "D2": 7.96, "NET": 5.00, "α2a": 6.20, "NMDA": 5.00, "GABA-A": 5.00, "H1": 8.15, "α1": 7.72, "M1": 7.59},
+        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "α2a": 0.5, "NMDA": 0.0, "GABA-A": 0.0}
     },
     "Quetiapine": {
-        "pKi": {"5HT2A": 6.70, "D2": 5.80, "NET": 6.60, "a2A": 6.10, "NMDA": 5.00, "GABAA": 5.00, "H1": 8.00, "alpha1": 7.00, "M1": 6.00},
-        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 1.0, "a2A": 0.5, "NMDA": 0.0, "GABAA": 0.0}
+        "pKi": {"5HT2A": 6.70, "D2": 5.80, "NET": 6.60, "α2a": 6.10, "NMDA": 5.00, "GABA-A": 5.00, "H1": 8.00, "α1": 7.00, "M1": 6.00},
+        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 1.0, "α2a": 0.5, "NMDA": 0.0, "GABA-A": 0.0}
     },
     "Risperidone": {
-        "pKi": {"5HT2A": 9.30, "D2": 8.43, "NET": 5.00, "a2A": 7.20, "NMDA": 5.00, "GABAA": 5.00, "H1": 7.70, "alpha1": 8.15, "M1": 5.00},
-        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "a2A": 0.5, "NMDA": 0.0, "GABAA": 0.0}
+        "pKi": {"5HT2A": 9.30, "D2": 8.43, "NET": 5.00, "α2a": 7.20, "NMDA": 5.00, "GABA-A": 5.00, "H1": 7.70, "α1": 8.15, "M1": 5.00},
+        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "α2a": 0.5, "NMDA": 0.0, "GABA-A": 0.0}
     },
     "Haloperidol": {
-        "pKi": {"5HT2A": 7.10, "D2": 8.70, "NET": 5.00, "a2A": 5.00, "NMDA": 5.00, "GABAA": 5.00, "H1": 6.00, "alpha1": 7.20, "M1": 5.00},
-        "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "a2A": 0.0, "NMDA": 0.0, "GABAA": 0.0}
+        "pKi": {"5HT2A": 7.10, "D2": 8.70, "NET": 5.00, "α2a": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 6.00, "α1": 7.20, "M1": 5.00},
+        "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
     },
     "Mirtazapine": {
-        "pKi": {"5HT2A": 8.10, "D2": 5.00, "NET": 5.00, "a2A": 7.80, "NMDA": 5.00, "GABAA": 5.00, "H1": 9.00, "alpha1": 7.20, "M1": 5.00},
-        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "a2A": 1.0, "NMDA": 0.0, "GABAA": 0.0}
+        "pKi": {"5HT2A": 8.10, "D2": 5.00, "NET": 5.00, "α2a": 7.80, "NMDA": 5.00, "GABA-A": 5.00, "H1": 9.00, "α1": 7.20, "M1": 5.00},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2a": 1.0, "NMDA": 0.0, "GABA-A": 0.0}
     },
     "Memantine": {
-        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "a2A": 5.00, "NMDA": 6.30, "GABAA": 5.00, "H1": 5.00, "alpha1": 5.00, "M1": 5.00},
-        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "a2A": 0.0, "NMDA": 1.0, "GABAA": 0.0}
+        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "α2a": 5.00, "NMDA": 6.30, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2a": 0.0, "NMDA": 1.0, "GABA-A": 0.0}
     },
     "Clonidine": {
-        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "a2A": 7.50, "NMDA": 5.00, "GABAA": 5.00, "H1": 5.00, "alpha1": 6.20, "M1": 5.00},
-        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "a2A": 1.0, "NMDA": 0.0, "GABAA": 0.0}
+        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "α2a": 7.50, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 6.20, "M1": 5.00},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2a": 1.0, "NMDA": 0.0, "GABA-A": 0.0}
     },
     "Lorazepam": {
-        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "a2A": 5.00, "NMDA": 5.00, "GABAA": 7.80, "H1": 5.00, "alpha1": 5.00, "M1": 5.00},
-        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "a2A": 0.0, "NMDA": 0.0, "GABAA": 1.0}
+        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "α2a": 5.00, "NMDA": 5.00, "GABA-A": 7.80, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 1.0}
     },
     "Escitalopram": {
-        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "a2A": 5.00, "NMDA": 5.00, "GABAA": 5.00, "H1": 5.00, "alpha1": 5.00, "M1": 5.00},
-        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "a2A": 0.0, "NMDA": 0.0, "GABAA": 0.0}
+        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "α2a": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
     }
 }
 
@@ -56,17 +56,17 @@ DRUG_DATABASE = {
 # 2. BLACK BOX WARNINGS & CLINICAL CAUTIONS DATABASE
 # ---------------------------------------------------------
 BLACK_BOX_WARNINGS = {
-    "Brexpiprazole": "FDA Black Box Warning: Increased mortality in elderly patients with dementia-related psychosis. Exercise extreme caution for akathisia and impulse-control disorders.",
-    "Aripiprazole": "FDA Black Box Warning: Increased mortality in elderly patients with dementia-related psychosis. High clinical risk of akathisia, restlessness, and compulsive behavior.",
-    "Olanzapine": "FDA Black Box Warning: Increased mortality in elderly dementia patients. High risk of severe metabolic syndrome, rapid weight gain, profound sedation, and anticholinergic cognitive impairment (M1 pKi ≥ 7.0).",
-    "Quetiapine": "FDA Black Box Warning: Increased mortality in elderly dementia patients. Risk of severe orthostatic hypotension, somnolence, and metabolic dysregulation.",
-    "Risperidone": "FDA Black Box Warning: Increased mortality in elderly dementia patients; elevated risk of cerebrovascular adverse events (stroke/TIA). Dose-dependent extrapyramidal symptoms and hyperprolactinemia.",
-    "Haloperidol": "FDA Black Box Warning: Increased mortality in elderly dementia patients. High risk of severe Extrapyramidal Symptoms (EPS), Tardive Dyskinesia, and QTc prolongation / Torsades de Pointes.",
-    "Mirtazapine": "FDA Warning: Increased risk of suicidal ideation in young adults. Causes marked somnolence, appetite stimulation, and potential agranulocytosis.",
-    "Memantine": "Clinical Caution: Requires dose adjustment in severe renal impairment (CrCl < 30 mL/min). May cause mild dizziness, confusion, and headache.",
-    "Clonidine": "Clinical Caution: High risk of severe rebound hypertension upon abrupt withdrawal. Causes sinus bradycardia, orthostatic hypotension, and central sedation.",
-    "Lorazepam": "FDA Black Box Warning: Concomitant use with opioids may result in severe sedation, respiratory depression, coma, and death. High risk of physical dependence, ataxia, paradoxical disinhibition in dementia, and falls.",
-    "Escitalopram": "FDA Warning: Dose-dependent QTc prolongation (maximum recommended dose 10 mg/day in elderly patients). Risk of hyponatremia / SIADH."
+    "Brexpiprazole": "Warning: Exercise extreme caution for akathisia and impulse-control disorders.",
+    "Aripiprazole": "Warning: High clinical risk of akathisia, restlessness, and compulsive behavior.",
+    "Olanzapine": "Warning: High risk of severe metabolic syndrome, rapid weight gain, profound sedation, and anticholinergic cognitive impairment (M1 pKi ≥ 7.0).",
+    "Quetiapine": "Warning: Risk of severe orthostatic hypotension, somnolence, and metabolic dysregulation.",
+    "Risperidone": "Warning: Dose-dependent extrapyramidal symptoms and hyperprolactinemia with elevated risk of cerebrovascular adverse events (stroke/TIA).",
+    "Haloperidol": "Warning: High risk of severe Extrapyramidal Symptoms (EPS), Tardive Dyskinesia, and QTc prolongation / Torsades de Pointes.",
+    "Mirtazapine": "Warning: Increased risk of suicidal ideation in young adults. Causes marked somnolence, appetite stimulation, and potential agranulocytosis.",
+    "Memantine": "Caution: Requires dose adjustment in severe renal impairment (CrCl < 30 mL/min). May cause mild dizziness, confusion, and headache.",
+    "Clonidine": "Caution: High risk of severe rebound hypertension upon abrupt withdrawal. Causes sinus bradycardia, orthostatic hypotension, and central sedation.",
+    "Lorazepam": "Warning: Concomitant use with opioids may result in severe sedation, respiratory depression, coma, and death. High risk of physical dependence, ataxia, paradoxical disinhibition in dementia, and falls.",
+    "Escitalopram": "Warning: Dose-dependent QTc prolongation (maximum recommended dose 10 mg/day in elderly patients). Risk of hyponatremia / SIADH."
 }
 
 # ---------------------------------------------------------
@@ -80,14 +80,14 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
     u_thera = (weights["5HT2A"] * pk["5HT2A"] * ar["5HT2A"]) + \
               (weights["D2"] * pk["D2"] * ar["D2"]) + \
               (weights["NET"] * pk["NET"] * ar["NET"]) + \
-              (weights["a2A"] * pk["a2A"] * ar["a2A"]) + \
+              (weights["α2a"] * pk["α2a"] * ar["α2a"]) + \
               (weights["NMDA"] * pk["NMDA"] * ar["NMDA"]) + \
-              (weights["GABAA"] * pk["GABAA"] * ar["GABAA"])
+              (weights["GABA-A"] * pk["GABA-A"] * ar["GABA-A"])
     
     # 2. Risk Deductions
     d2_risk = (lambda_risks["D2_full"] * pk["D2"]) if ar["D2"] < 0 else 0.0
     u_risk = (lambda_risks["H1"] * pk["H1"]) + \
-             (lambda_risks["alpha1"] * pk["alpha1"]) + \
+             (lambda_risks["α1"] * pk["α1"]) + \
              d2_risk
     
     # 3. Discontinuous Anticholinergic Cognitive Burden Penalty (PACB)
@@ -115,10 +115,10 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
 # ---------------------------------------------------------
 # 4. STREAMLIT FRONTEND & INTERACTIVE UI
 # ---------------------------------------------------------
-st.set_page_config(page_title="Expanded BPSD Prescribing Compass", layout="wide")
+st.set_page_config(page_title="BPSD Prescribing Compass", layout="wide")
 
-st.title("🧠 Multi-Neurotransmitter BPSD Prescribing Compass")
-st.caption("Parameter-driven clinical decision-support mapping across Serotonin, Dopamine, Norepinephrine, Alpha-2, GABA, and Glutamate systems")
+st.title("🧠 BPSD Prescribing Compass - Prototype")
+st.caption("Parameter-driven clinical decision-support across multiple neurotransmitters affinity")
 
 st.markdown("---")
 
@@ -128,28 +128,28 @@ if "excluded_drugs" not in st.session_state:
 
 # Standardized Bedside Rating Scale Mappings
 NPI_MAPPING = {
-    "0 - Absent (No symptoms) [w_r = 0.0]": 0.0,
-    "1 - Mild (Slight distress, no functional impairment) [w_r = 0.33]": 0.33,
-    "2 - Moderate (Significant distress, partial impairment) [w_r = 0.67]": 0.67,
-    "3 - Severe (Major disruption, marked impairment) [w_r = 1.00]": 1.00
+    "0 - Absent (No symptoms)": 0.0,
+    "1 - Mild (Slight distress, no functional impairment)": 0.33,
+    "2 - Moderate (Significant distress, partial impairment)": 0.67,
+    "3 - Severe (Major disruption, marked impairment)": 1.00
 }
 
 FALL_RISK_MAPPING = {
-    "Low Risk (Morse Fall Score 0-24) [λ_H1 = 0.1]": 0.1,
-    "Moderate Risk (Morse Fall Score 25-44) [λ_H1 = 0.5]": 0.5,
-    "High Risk (Morse Fall Score ≥ 45 or fall history) [λ_H1 = 0.9]": 0.9
+    "Low Risk (Morse Fall Score 0-24)": 0.1,
+    "Moderate Risk (Morse Fall Score 25-44)": 0.5,
+    "High Risk (Morse Fall Score ≥ 45 or fall history)": 0.9
 }
 
 ORTHO_BP_MAPPING = {
-    "Normal (< 10 mmHg drop upon standing) [λ_α1 = 0.1]": 0.1,
-    "Subclinical Drop (10-19 mmHg drop) [λ_α1 = 0.5]": 0.5,
-    "Diagnostic Orthostasis (≥ 20 mmHg SBP drop) [λ_α1 = 0.9]": 0.9
+    "Normal (< 10 mmHg drop upon standing)": 0.1,
+    "Subclinical Drop (10-19 mmHg drop)": 0.5,
+    "Diagnostic Orthostasis (≥ 20 mmHg SBP drop)": 0.9
 }
 
 PARKINSONISM_MAPPING = {
-    "None (Normal muscle tone and gait) [λ_D2 = 0.0]": 0.0,
-    "Mild (Pre-existing mild tremor or rigidity) [λ_D2 = 0.5]": 0.5,
-    "Severe (Diagnosed Parkinsonism / DLB / High SAS score) [λ_D2 = 1.0]": 1.0
+    "None (Normal muscle tone and gait)": 0.0,
+    "Mild (Pre-existing mild tremor or rigidity)": 0.5,
+    "Severe (Diagnosed Parkinsonism / DLB / High SAS score)": 1.0
 }
 
 col1, col2 = st.columns([1, 1])
@@ -197,9 +197,9 @@ with col1:
         "5HT2A": NPI_MAPPING[npi_agit],
         "D2": NPI_MAPPING[npi_apat],
         "NET": NPI_MAPPING[npi_apat] * 0.5,
-        "a2A": NPI_MAPPING[npi_arousal],
+        "α2a": NPI_MAPPING[npi_arousal],
         "NMDA": NPI_MAPPING[npi_excit],
-        "GABAA": NPI_MAPPING[npi_anx]
+        "GABA-A": NPI_MAPPING[npi_anx]
     }
 
 with col2:
@@ -237,7 +237,7 @@ with col2:
     
     lambda_risks = {
         "H1": FALL_RISK_MAPPING[fall_sel],
-        "alpha1": ORTHO_BP_MAPPING[ortho_sel],
+        "α1": ORTHO_BP_MAPPING[ortho_sel],
         "D2_full": PARKINSONISM_MAPPING[park_sel]
     }
 
@@ -344,13 +344,13 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         #### 1. Bedside Parameter Derivation & Weighting Logic
         * **Target Weights ($\omega_r$):** Derived directly from bedside rating scales like the NPI-Q[cite: 1]. The clinician's 4-point input score ($0$ to $3$) is normalized via $\omega_r = \frac{\text{Score}}{3.0}$, producing a bounded parameter $\omega_r \in [0.0, 1.0]$[cite: 1].
         * **Histamine Risk ($\lambda_{H1}$):** Mapped to the bedside **Morse Fall Scale** ($0\text{--}125$), where scores $\ge 45$ set $\lambda_{H1} = 0.9$ to penalize central $H_1$ sedation and gait instability[cite: 1].
-        * **Orthostatic Risk ($\lambda_{\alpha1}$):** Mapped to standing systolic blood pressure drop, where diagnostic orthostasis ($\Delta\text{SBP} \ge 20\text{ mmHg}$) sets $\lambda_{\alpha1} = 0.9$ to penalize $\alpha_1$-adrenergic blockade[cite: 1].
+        * **Orthostatic Risk ($\lambda_{\α1}$):** Mapped to standing systolic blood pressure drop, where diagnostic orthostasis ($\Delta\text{SBP} \ge 20\text{ mmHg}$) sets $\lambda_{\α1} = 0.9$ to penalize $\alpha_1$-adrenergic blockade[cite: 1].
         * **Parkinsonism Risk ($\lambda_{D2\_full}$):** Mapped to extrapyramidal motor signs (Simpson-Angus Scale), where pre-existing rigidity or Lewy body dementia sets $\lambda_{D2\_full} = 1.0$, heavily penalizing full $D_2$ antagonists like Haloperidol[cite: 1].
 
         ---
 
         #### 2. Multi-Target Therapeutic Gain ($U_{\\text{thera}}$)
-        $$U_{\\text{thera}} = \\sum_{r \\in \\{5HT2A, D2, NET, \\alpha2A, NMDA, GABAA\\}} \\left( \\omega_r \\cdot pK_{i,r} \\cdot A_r \\right)$$
+        $$U_{\\text{thera}} = \\sum_{r \\in \\{5HT2A, D2, NET, \\alphα2a, NMDA, GABA-A\\}} \\left( \\omega_r \\cdot pK_{i,r} \\cdot A_r \\right)$$
         
         * **$5\\text{-HT}_{2\\text{A}}$ Target:** $5\\text{-HT}_{2\\text{A}}$ inverse agonism ($A_r = +1.0$) attenuates cortical serotonergic hyperfunction driving psychotic agitation and hallucinations[cite: 1].
         * **$D_2$ & $\\text{NET}$ Targets:** Frontostriatal dopamine and norepinephrine hypofunction drive apathy[cite: 1]. Partial $D_2$ agonists (e.g., Brexpiprazole, Aripiprazole) stabilize transmission ($A_r = +1.0$) without causing extrapyramidal motor block[cite: 1].
