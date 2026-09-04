@@ -285,7 +285,7 @@ if not df_filtered.empty:
     
     # Rule-Out Checkbox Mechanism
     rule_out_check = st.checkbox(
-        f"🚫 **Rule out {top_name} for this patient** (Check if patient has contraindications, severe QTc prolongation, prior failure, or intolerance)",
+        f"🚫 **Rule out {top_name} for this patient** (Check if patient has contraindications, high risks for exact medication, intolerance or allergy)",
         key=f"ruleout_{top_name}"
     )
     
@@ -321,7 +321,7 @@ df_results_display["Status"] = df_results_display["Drug"].apply(
     lambda x: "❌ Ruled Out" if x in st.session_state.excluded_drugs else "✅ Candidate"
 )
 
-# Render Interactive Table
+# Interactive Table
 st.dataframe(
     df_results_display.style.map(apply_traffic_lights, subset=['Net Score (Mj)']),
     use_container_width=True
@@ -329,41 +329,41 @@ st.dataframe(
 
 st.info("**Traffic Light Guide:** Green = Optimal Match (Mj > 1.0) | Yellow = Proceed with Caution (-2.0 ≤ Mj ≤ 1.0) | Red = High Risk Flag (Mj < -2.0)")
 
-# Explainable AI Component with Complete Rationale
+# Rationale
 with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details"):
     st.markdown(
         """
         ### Multi-Neurotransmitter Algorithmic Architecture
         
-        The Net Therapeutic Match Score ($M_j$) evaluates psychotropic suitability across 6 distinct neurochemical systems by balancing symptom-weighted target affinities against off-target safety penalties[cite: 1]:
+        The Net Therapeutic Match Score ($M_j$) evaluates psychotropic suitability across 6 distinct neurochemical systems by balancing symptom-weighted target affinities against off-target safety penalties:
         
         $$M_j = U_{\\text{thera}} - U_{\\text{risk}} - P_{\\text{ACB}}$$
         
         ---
 
         #### 1. Bedside Parameter Derivation & Weighting Logic
-        * **Target Weights ($\omega_r$):** Derived directly from bedside rating scales like the NPI-Q[cite: 1]. The clinician's 4-point input score ($0$ to $3$) is normalized via $\omega_r = \frac{\text{Score}}{3.0}$, producing a bounded parameter $\omega_r \in [0.0, 1.0]$[cite: 1].
-        * **Histamine Risk ($\lambda_{H1}$):** Mapped to the bedside **Morse Fall Scale** ($0\text{--}125$), where scores $\ge 45$ set $\lambda_{H1} = 0.9$ to penalize central $H_1$ sedation and gait instability[cite: 1].
-        * **Orthostatic Risk ($\lambda_{\α1}$):** Mapped to standing systolic blood pressure drop, where diagnostic orthostasis ($\Delta\text{SBP} \ge 20\text{ mmHg}$) sets $\lambda_{\α1} = 0.9$ to penalize $\alpha_1$-adrenergic blockade[cite: 1].
-        * **Parkinsonism Risk ($\lambda_{D2\_full}$):** Mapped to extrapyramidal motor signs (Simpson-Angus Scale), where pre-existing rigidity or Lewy body dementia sets $\lambda_{D2\_full} = 1.0$, heavily penalizing full $D_2$ antagonists like Haloperidol[cite: 1].
+        * **Target Weights ($\omega_r$):** Derived directly from bedside rating scales like the NPI-Q. The clinician's 4-point input score ($0$ to $3$) is normalized via $\omega_r$ = $\frac{\text{Score}}{3.0}$, producing a bounded parameter $\omega_r \in [0.0, 1.0]$.
+        * **Histamine Risk ($\lambda_{H1}$):** Mapped to the bedside **Morse Fall Scale** ($0\text{--}125$), where scores $\ge 45$ set $\lambda_{H1} = 0.9$ to penalize central $H_1$ sedation and gait instability.
+        * **Orthostatic Risk ($\lambda_{\α1}$):** Mapped to standing systolic blood pressure drop, where diagnostic orthostasis ($\Delta\text{SBP} \ge 20 $\text{ mmHg}$) sets $\lambda_{α1} = 0.9$ to penalize $\alpha_1$-adrenergic blockade.
+        * **Parkinsonism Risk ($\lambda_{D2\_full}$):** Mapped to extrapyramidal motor signs (Simpson-Angus Scale), where pre-existing rigidity or Lewy body dementia sets $\lambda_{D2\_full} = 1.0$, heavily penalizing full $D_2$ antagonists like Haloperidol.
 
         ---
 
         #### 2. Multi-Target Therapeutic Gain ($U_{\\text{thera}}$)
-        $$U_{\\text{thera}} = \\sum_{r \\in \\{5HT2A, D2, NET, \\alphα2a, NMDA, GABA-A\\}} \\left( \\omega_r \\cdot pK_{i,r} \\cdot A_r \\right)$$
+        $$U_{\\text{thera}} = \\sum_{r \\in \\{5HT2A, D2, NET, α2a, NMDA, GABA-A\\}} \\left( \\omega_r \\cdot pK_{i,r} \\cdot A_r \\right)$$
         
-        * **$5\\text{-HT}_{2\\text{A}}$ Target:** $5\\text{-HT}_{2\\text{A}}$ inverse agonism ($A_r = +1.0$) attenuates cortical serotonergic hyperfunction driving psychotic agitation and hallucinations[cite: 1].
-        * **$D_2$ & $\\text{NET}$ Targets:** Frontostriatal dopamine and norepinephrine hypofunction drive apathy[cite: 1]. Partial $D_2$ agonists (e.g., Brexpiprazole, Aripiprazole) stabilize transmission ($A_r = +1.0$) without causing extrapyramidal motor block[cite: 1].
-        * **$\\alpha_{2\\text{A}}$ Target:** Presynaptic $\alpha_{2A}$ agonism ($A_r = +1.0$) suppresses central noradrenergic outflow, reducing hyperadrenergic autonomic arousal[cite: 1].
-        * **$\\text{GABA}_{A}$ Target:** Positive allosteric modulation ($A_r = +1.0$) enhances central inhibition to rapidly calm severe panic[cite: 1].
-        * **$\\text{NMDA}$ Target:** Uncompetitive $\text{NMDA}$ antagonism ($A_r = +1.0$) protects against glutamatergic excitotoxicity and delirium[cite: 1].
+        * **$5\\text{-HT}_{2\\text{A}}$ Target:** $5\\text{-HT}_{2\\text{A}}$ inverse agonism ($A_r = +1.0$) attenuates cortical serotonergic hyperfunction driving psychotic agitation and hallucinations.
+        * **$D_2$ & $\\text{NET}$ Targets:** Frontostriatal dopamine and norepinephrine hypofunction drive apathy. Partial $D_2$ agonists (e.g., Brexpiprazole, Aripiprazole) stabilize transmission ($A_r = +1.0$) without causing extrapyramidal motor block.
+        * **$\\alpha_{2\\text{A}}$ Target:** Presynaptic $\\alpha_{2A}$ agonism ($A_r = +1.0$) suppresses central noradrenergic outflow, reducing hyperadrenergic autonomic arousal.
+        * **$\\text{GABA}_{A}$ Target:** Positive allosteric modulation ($A_r = +1.0$) enhances central inhibition to rapidly calm severe panic.
+        * **$\\text{NMDA}$ Target:** Uncompetitive $\text{NMDA}$ antagonism ($A_r = +1.0$) protects against glutamatergic excitotoxicity and delirium.
 
         ---
 
         #### 3. Cognitive Burden Penalty ($P_{\\text{ACB}}$) & Rule-Out Guardrails
-        * **$M_1$ Potency Threshold:** Central $M_1$ muscarinic blockade triggers a step-function penalty when binding potency reaches $pK_{i,M1} \\ge 7.0$ ($K_i \\le 100\\text{ nM}$)[cite: 1].
-        * **Cognitive Scaling ($C_{\\text{patient}}$):** Scaled via baseline MMSE score ($3.0$ for MMSE < 10, $2.0$ for MMSE 10-20, and $1.0$ for MMSE > 20)[cite: 1].
-        * **Dynamic Rule-Out Engine:** When a clinician checks the rule-out box for a top drug, the system dynamically filters out that agent and recalculates the matrix to present the safest second-line alternative[cite: 1].
+        * **$M_1$ Potency Threshold:** Central $M_1$ muscarinic blockade triggers a step-function penalty when binding potency reaches $pK_{i,M1} \\ge 7.0$ ($K_i \\le 100\\text{ nM}$).
+        * **Cognitive Scaling ($C_{\\text{patient}}$):** Scaled via baseline MMSE score ($3.0$ for MMSE < 10, $2.0$ for MMSE 10-20, and $1.0$ for MMSE > 20).
+        * **Dynamic Rule-Out Engine:** When a clinician checks the rule-out box for a top drug, the system dynamically filters out that agent and recalculates the matrix to present the safest second-line alternative.
         """
     )
     
