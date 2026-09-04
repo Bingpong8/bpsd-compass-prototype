@@ -20,9 +20,8 @@ ascii_header = r"""
 			                 { }
 """
 
-# Render as monospaced code block
 st.code(ascii_header, language=None)
-# ---------------------------------------------------------
+
 # 1. PHARMACODYNAMIC DATABASE (pKi = -log10(K_i))
 # ---------------------------------------------------------
 DRUG_DATABASE = {
@@ -72,7 +71,7 @@ DRUG_DATABASE = {
     }
 }
 
-# ---------------------------------------------------------
+
 # 2. CLINICAL CAUTIONS DATABASE
 # ---------------------------------------------------------
 BLACK_BOX_WARNINGS = {
@@ -89,7 +88,7 @@ BLACK_BOX_WARNINGS = {
     "Escitalopram": "Warning: Dose-dependent QTc prolongation (maximum recommended dose 10 mg/day in elderly patients). Risk of hyponatremia / SIADH."
 }
 
-# ---------------------------------------------------------
+
 # 3. CALCULATION ENGINE
 # ---------------------------------------------------------
 def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_score):
@@ -132,10 +131,9 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_scor
         "M1 Potency (pKi)": round(pk["M1"], 1)
     }
 
-# ---------------------------------------------------------
+
 # 4. STREAMLIT FRONTEND & UI
 # ---------------------------------------------------------
-st.set_page_config(page_title="BPSD Prescribing Compass", layout="wide")
 
 st.markdown("---")
 
