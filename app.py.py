@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 
 st.set_page_config(page_title="The Death of Peace of Mind", layout="wide")
+st.title("🧠 Multi-Neurotransmitter BPSD Prescribing Compass")
+st.caption("Parameter-driven decision-support across multiple neurotransmitters affinity")
 
 ascii_header = r"""
 			THE DEATH OF PEACE OF MIND:
@@ -17,8 +19,6 @@ ascii_header = r"""
 			               `\  }
 			                 { }
 """
-st.set_page_config(page_title="BPSD Compass - Prototype")
-st.caption("Parameter-driven decision-support across multiple neurotransmitters affinity")
 
 # Render as monospaced code block
 st.code(ascii_header, language=None)
