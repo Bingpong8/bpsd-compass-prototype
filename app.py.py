@@ -72,7 +72,7 @@ BLACK_BOX_WARNINGS = {
 # ---------------------------------------------------------
 # 3. CALCULATION ENGINE
 # ---------------------------------------------------------
-def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_score):
+def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_score):
     pk = drug_data["pKi"]
     ar = drug_data["Ar"]
     
@@ -91,9 +91,9 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
              d2_risk
     
     # 3. Discontinuous Anticholinergic Cognitive Burden Penalty (PACB)
-    if mmse_score < 10:
+    if TMSE_score < 10:
         c_patient = 3.0
-    elif mmse_score <= 20:
+    elif TMSE_score <= 20:
         c_patient = 2.0
     else:
         c_patient = 1.0
@@ -227,8 +227,8 @@ with col2:
         help="Determines penalty weight for full D2 receptor antagonists."
     )
     
-    mmse = st.number_input(
-        "Baseline MMSE Score (Cognitive Assessment)",
+    TMSE = st.number_input(
+        "Baseline TMSE Score (Cognitive Assessment)",
         min_value=0,
         max_value=30,
         value=15,
@@ -245,7 +245,7 @@ st.markdown("---")
 st.subheader("Calculated Multi-System Match Dashboard")
 
 # Calculate results for all candidate drugs
-raw_results = [calculate_match_score(d, data, weights, lambda_risks, mmse) for d, data in DRUG_DATABASE.items()]
+raw_results = [calculate_match_score(d, data, weights, lambda_risks, TMSE) for d, data in DRUG_DATABASE.items()]
 df_results = pd.DataFrame(raw_results).sort_values(by="Net Score (Mj)", ascending=False).reset_index(drop=True)
 
 # Filter out user-ruled-out medications
@@ -356,13 +356,13 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         * **$D_2$ & $\\text{NET}$ Targets:** Frontostriatal dopamine and norepinephrine hypofunction drive apathy. Partial $D_2$ agonists (e.g., Brexpiprazole, Aripiprazole) stabilize transmission ($A_r = +1.0$) without causing extrapyramidal motor block.
         * **$\\alpha_{2\\text{A}}$ Target:** Presynaptic $\\alpha_{2A}$ agonism ($A_r = +1.0$) suppresses central noradrenergic outflow, reducing hyperadrenergic autonomic arousal.
         * **$\\text{GABA}_{A}$ Target:** Positive allosteric modulation ($A_r = +1.0$) enhances central inhibition to rapidly calm severe panic.
-        * **$\\text{NMDA}$ Target:** Uncompetitive $\text{NMDA}$ antagonism ($A_r = +1.0$) protects against glutamatergic excitotoxicity and delirium.
+        * **$\\text{NMDA}$ Target:** Uncompetitive $\\text{NMDA}$ antagonism ($A_r = +1.0$) protects against glutamatergic excitotoxicity and delirium.
 
         ---
 
         #### 3. Cognitive Burden Penalty ($P_{\\text{ACB}}$) & Rule-Out Guardrails
         * **$M_1$ Potency Threshold:** Central $M_1$ muscarinic blockade triggers a step-function penalty when binding potency reaches $pK_{i,M1} \\ge 7.0$ ($K_i \\le 100\\text{ nM}$).
-        * **Cognitive Scaling ($C_{\\text{patient}}$):** Scaled via baseline MMSE score ($3.0$ for MMSE < 10, $2.0$ for MMSE 10-20, and $1.0$ for MMSE > 20).
+        * **Cognitive Scaling ($C_{\\text{patient}}$):** Scaled via baseline TMSE score ($3.0$ for TMSE < 10, $2.0$ for TMSE 10-20, and $1.0$ for TMSE > 20).
         * **Dynamic Rule-Out Engine:** When a clinician checks the rule-out box for a top drug, the system dynamically filters out that agent and recalculates the matrix to present the safest second-line alternative.
         """
     )
@@ -371,6 +371,6 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
     st.json({
         "Normalized Target Weights (w_r)": weights,
         "Normalized Risk Coefficients (lambda_r)": lambda_risks,
-        "Baseline Cognitive Score (MMSE)": mmse,
+        "Baseline Cognitive Score (TMSE)": TMSE,
         "Currently Ruled-Out Medications": st.session_state.excluded_drugs
     })
