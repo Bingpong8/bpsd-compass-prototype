@@ -96,7 +96,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
 # ---------------------------------------------------------
 st.set_page_config(page_title="BPSD Compass - Prototype", layout="wide")
 
-st.title("🧠 Multi-Neurotransmitter BPSD Prescribing Compass")
+st.title("🧠 BPSD Prescribing Compass Prototype")
 st.caption("Parameter-driven clinical matching algorithm based on Neurotransmitter-Receptor Affinities")
 
 st.markdown("---")
@@ -294,16 +294,16 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         #### 2. Risk Deductions ($U_{\\text{risk}}$)
         Off-target risk penalties scale dynamically based on patient frailty and baseline clinical scores:
         
-        * **Histamine $H_1$ Blockade:** Off-target $H_1$ affinity induces severe central sedation and gait ataxia. Penalty weight ($\lambda_{H1}$) is scaled using the bedside **Morse Fall Scale**[cite: 1].
-        * **$\\alpha_1$-Adrenergic Blockade:** $\\alpha_1$ antagonism inhibits vascular vasoconstriction, causing postural hypotension and syncope. Penalty weight ($\lambda_{α1}$) is scaled using standing systolic blood pressure drop[cite: 1].
-        * **Full $D_2$ Antagonism Penalty:** Potent full $D_2$ antagonists (e.g., Haloperidol, $A_{D2} = -1.0$) block extrapyramidal motor pathways, worsening apathy and inducing severe parkinsonism[cite: 1]. Scaled via baseline **Simpson-Angus Scale (SAS)** ($\lambda_{D2\\_full}$)[cite: 1].
+        * **Histamine $H_1$ Blockade:** Off-target $H_1$ affinity induces severe central sedation and gait ataxia. Penalty weight ($\lambda_{H1}$) is scaled using the bedside **Morse Fall Scale**.
+        * **$\\alpha_1$-Adrenergic Blockade:** $\\alpha_1$ antagonism inhibits vascular vasoconstriction, causing postural hypotension and syncope. Penalty weight ($\lambda_{α1}$) is scaled using standing systolic blood pressure drop.
+        * **Full $D_2$ Antagonism Penalty:** Potent full $D_2$ antagonists (e.g., Haloperidol, $A_{D2} = -1.0$) block extrapyramidal motor pathways, worsening apathy and inducing severe parkinsonism[cite: 1]. Scaled via baseline **Simpson-Angus Scale (SAS)** ($\lambda_{D2\\_full}$).
 
         ---
 
         #### 3. Discontinuous Anticholinergic Penalty ($P_{\\text{ACB}}$)
-        Central $M_1$ muscarinic receptor blockade impairs memory encoding and precipitates acute delirium[cite: 1].
+        Central $M_1$ muscarinic receptor blockade impairs memory encoding and precipitates acute delirium.
         * **Threshold Penalty:** Applied as a step function when $M_1$ binding potency reaches or exceeds $pK_{i,M1} \\ge 7.0$ ($K_i \\le 100\\text{ nM}$).
-        * **Cognitive Scaling:** Penalty magnitude is scaled dynamically using baseline MMSE score: $C_{\\text{patient}} = 3.0$ for severe dementia (MMSE < 10), $2.0$ for moderate impairment (MMSE 10-20), and $1.0$ for mild/normal baseline cognition[cite: 1].
+        * **Cognitive Scaling:** Penalty magnitude is scaled dynamically using baseline MMSE score: $C_{\\text{patient}} = 3.0$ for severe dementia (MMSE < 10), $2.0$ for moderate impairment (MMSE 10-20), and $1.0$ for mild/normal baseline cognition.
         """
     )
     
