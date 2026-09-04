@@ -278,7 +278,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Black Box Warning & Clinical Caution Box
+    # Black Box Warning & Clinical Caution Box
     st.warning(f"⚠️ **Clinical Cautions & Warnings for {top_name}:**\n\n{BLACK_BOX_WARNINGS.get(top_name, 'No specific black box warning listed.')}")
     
     # Rule-Out Checkbox Mechanism
