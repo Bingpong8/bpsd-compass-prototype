@@ -97,7 +97,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
 st.set_page_config(page_title="BPSD Compass - Prototype", layout="wide")
 
 st.title("🧠 Multi-Neurotransmitter BPSD Prescribing Compass")
-st.caption(""Parameter-driven clinical matching algorithm based on Neurotransmitter-Receptor Affinities")
+st.caption("Parameter-driven clinical matching algorithm based on Neurotransmitter-Receptor Affinities")
 
 st.markdown("---")
 
