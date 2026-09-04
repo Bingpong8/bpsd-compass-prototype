@@ -281,28 +281,28 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         #### 1. Multi-Target Therapeutic Gain ($U_{\\text{thera}}$)
         The total therapeutic utility is calculated across six neurotransmitter pathways:
         
-        $$U_{\\text{thera}} = \\sum_{r \\in \\{5HT2A, D2, NET, \\alphα2a, NMDA, GABA-A\\}} \\left( ω_r \\cdot pK_{i,r} \\cdot A_r \\right)$$
+        $$U_{\\text{thera}} = \\sum_{r \\in \\{5HT2A, D2, NET, α2a, NMDA, GABA-A\\}} \\left( ω_r \\cdot pK_{i,r} \\cdot A_r \\right)$$
         
         * **$5\\text{-HT}_{2\\text{A}}$ Serotonergic Target:** $5\\text{-HT}_{2\\text{A}}$ inverse agonism ($A_r = +1.0$) attenuates cortical serotonergic hyperfunction driving psychotic agitation, visual hallucinations, and paranoia[cite: 1].
         * **$D_2$ Dopaminergic & $\\text{NET}$ Targets:** Frontostriatal dopamine and norepinephrine depletion drive apathy, motor slowing, and executive dysfunction[cite: 1]. Partial $D_2$ agonists (e.g., Brexpiprazole) stabilize dopamine neurotransmission ($A_r = +1.0$) without triggering motor block[cite: 1].
         * **$\\alpha_{2\\text{A}}$ Noradrenergic Target:** Central $\\alpha_{2\\text{A}}$ presynaptic agonism ($A_r = +1.0$) reduces hyperadrenergic outflow, calming autonomic arousal, tachycardia, and noradrenergic agitation[cite: 1].
         * **$\\text{GABA}_{A}$ Benzodiazepine Target:** $\\text{GABA}_{A}$ positive allosteric modulation ($A_r = +1.0$) enhances inhibitory neurotransmission to rapidly alleviate acute hyperarousal and panic[cite: 1].
-        * **$\\text{NMDA}$ Glutamatergic Target:** Uncompetitive $\\text{NMDA}$ receptor antagonism ($A_r = +1.0$) protects against excess glutamatergic excitotoxicity and delirium[cite: 1].
+        * **$\\text{NMDA}$ Glutamatergic Target:** Uncompetitive $\\text{NMDA}$ receptor antagonism ($A_r = +1.0$) protects against excess glutamatergic excitotoxicity and delirium.
 
         ---
 
         #### 2. Risk Deductions ($U_{\\text{risk}}$)
-        Off-target risk penalties scale dynamically based on patient frailty and baseline clinical scores[cite: 1]:
+        Off-target risk penalties scale dynamically based on patient frailty and baseline clinical scores:
         
-        * **Histamine $H_1$ Blockade:** Off-target $H_1$ affinity induces severe central sedation and gait ataxia[cite: 1]. Penalty weight ($\lambda_{H1}$) is scaled using the bedside **Morse Fall Scale**[cite: 1].
-        * **$\\alpha_1$-Adrenergic Blockade:** $\\alpha_1$ antagonism inhibits vascular vasoconstriction, causing postural hypotension and syncope[cite: 1]. Penalty weight ($\lambda_{\\α1}$) is scaled using standing systolic blood pressure drop[cite: 1].
+        * **Histamine $H_1$ Blockade:** Off-target $H_1$ affinity induces severe central sedation and gait ataxia. Penalty weight ($\lambda_{H1}$) is scaled using the bedside **Morse Fall Scale**[cite: 1].
+        * **$\\alpha_1$-Adrenergic Blockade:** $\\alpha_1$ antagonism inhibits vascular vasoconstriction, causing postural hypotension and syncope. Penalty weight ($\lambda_{α1}$) is scaled using standing systolic blood pressure drop[cite: 1].
         * **Full $D_2$ Antagonism Penalty:** Potent full $D_2$ antagonists (e.g., Haloperidol, $A_{D2} = -1.0$) block extrapyramidal motor pathways, worsening apathy and inducing severe parkinsonism[cite: 1]. Scaled via baseline **Simpson-Angus Scale (SAS)** ($\lambda_{D2\\_full}$)[cite: 1].
 
         ---
 
         #### 3. Discontinuous Anticholinergic Penalty ($P_{\\text{ACB}}$)
         Central $M_1$ muscarinic receptor blockade impairs memory encoding and precipitates acute delirium[cite: 1].
-        * **Threshold Penalty:** Applied as a step function when $M_1$ binding potency reaches or exceeds $pK_{i,M1} \\ge 7.0$ ($K_i \\le 100\\text{ nM}$)[cite: 1].
+        * **Threshold Penalty:** Applied as a step function when $M_1$ binding potency reaches or exceeds $pK_{i,M1} \\ge 7.0$ ($K_i \\le 100\\text{ nM}$).
         * **Cognitive Scaling:** Penalty magnitude is scaled dynamically using baseline MMSE score: $C_{\\text{patient}} = 3.0$ for severe dementia (MMSE < 10), $2.0$ for moderate impairment (MMSE 10-20), and $1.0$ for mild/normal baseline cognition[cite: 1].
         """
     )
