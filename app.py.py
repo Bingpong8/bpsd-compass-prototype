@@ -244,7 +244,7 @@ st.markdown("---")
 st.subheader("Calculated Multi-System Match Dashboard")
 
 # Calculate results for all candidate drugs
-results = [calculate_match_score(d, data, weights, lambda_risks, tmse) for d, data in DRUG_DATABASE.items()]
+results = [calculate_match_score(d, data, weights, lambda_risks, TMSE_score) for d, data in DRUG_DATABASE.items()]
 df_results = pd.DataFrame(results).sort_values(by="Net Score (Mj)", ascending=False).reset_index(drop=True)
 
 # Filter out user-ruled-out medications
