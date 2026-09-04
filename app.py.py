@@ -185,7 +185,7 @@ st.dataframe(
 st.info("**Traffic Light Guide:** Green = Optimal Match (Mj > 1.0) | Yellow = Proceed with Caution (-2.0 ≤ Mj ≤ 1.0) | Red = High Risk Flag (Mj < -2.0)")
 
 # Explainable AI Component (Expander Tooltips)
-with st.expander("🔍 Explainable AI: Breakdown of Receptor Calculation"):
+with st.expander("🔍 Breakdown of Receptor Calculation"):
     st.markdown(
         """
         The Net Score ($M_j$) combines target therapeutic efficacy, off-target toxicity risk, and cognitive impairment adjustments:
