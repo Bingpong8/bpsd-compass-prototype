@@ -88,7 +88,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
         "Therapeutic Gain": round(u_thera, 1),
         "Risk Deductions": round(u_risk, 1),
         "ACB Penalty": round(pacb, 1),
-        "M1 Potency (pKi)": round(pk["M1"], 1)
+        "M1 Potency (pKi)": round(pk["M1"], 2)
     }
 
 # ---------------------------------------------------------
@@ -201,7 +201,7 @@ with col2:
     )
     
     mmse = st.number_input(
-        "Baseline MMSE Score (Cognitive Assessment)",
+        "Baseline TMSE Score (Cognitive Assessment)",
         min_value=0,
         max_value=30,
         value=15,
