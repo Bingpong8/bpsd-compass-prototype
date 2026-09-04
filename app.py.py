@@ -7,20 +7,20 @@ st.title("BPSD Compass Prototype")
 st.caption("Parameter-driven decision-support across multiple neurotransmitters affinity")
 
 ascii_header = r"""
-													THE DEATH OF PEACE OF MIND
+								THE DEATH OF PEACE OF MIND
 													
-													      _---~~(~~-_.
-													    _{        )   )
-													  ,   ) -~~- ( ,-' )_
-													 (   `-,\_..`., )-- '_,)
-													( `\_)  (  -\~( -\_`,  }
-													(_-  _  ~_-~~~~`,  ,' )
-													  `~ -^(    __;-,((()))
-													        ~~~~ {_ -_(())
-													               `\  }
-													                 { }
+								      _---~~(~~-_.
+								    _{        )   )
+								  ,   ) -~~- ( ,-' )_
+								 (   `-,\_..`., )-- '_,)
+								( `\_)  (  -\~( -\_`,  }
+								(_-  _  ~_-~~~~`,  ,' )
+								  `~ -^(    __;-,((()))
+								        ~~~~ {_ -_(())
+								               `\  }
+								                 { }
 																	 
-												Dolor et Astra, Nihil est Veritas
+							Dolor et Astra, Nihil est Veritas
 """
 
 st.code(ascii_header, language=None)
