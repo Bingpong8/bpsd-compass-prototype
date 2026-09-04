@@ -400,7 +400,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
     )
     
 st.markdown("---")
-with st.expander("### Core References & Algorithmic Framework Citations"):
+with st.expander("🔍 Core References & Algorithmic Framework Citations"):
 	st.markdown(
     	"""
     	1. **Roth, B. L., et al.** *NIMH Psychoactive Drug Screening Program (PDSP) Database*. University of North Carolina at Chapel Hill. [Quantitative receptor binding constants ($K_i$ and $p K_i$ values across monoaminergic, cholinergic, and histaminergic targets)]
