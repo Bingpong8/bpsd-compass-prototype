@@ -129,7 +129,7 @@ for drug_name, drug_data in DRUG_DATABASE.items():
     res = calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse)
     results.append(res)
 
-df_results = pd.DataFrame(results).sort_values(by="Net Score (M_j)", ascending=False)
+df_results = pd.DataFrame(results).sort_values(by="Net Score (Mj)", ascending=False)
 
 # Prominently Highlight Top Recommended Drug
 top_drug = df_results.iloc[0]
