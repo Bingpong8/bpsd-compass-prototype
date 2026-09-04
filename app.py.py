@@ -361,6 +361,7 @@ st.dataframe(
 
 st.info("**Traffic Light Guide:** Green = Optimal Match (Mj > 1.0) | Yellow = Proceed with Caution (-2.0 ≤ Mj ≤ 1.0) | Red = High Risk Flag (Mj < -2.0)")
 
+st.markdown("---")
 # Rationale
 with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details"):
     st.markdown(
@@ -398,9 +399,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         * **Dynamic Rule-Out Engine:** When a clinician checks the rule-out box for a top drug, the system dynamically filters out that agent and recalculates the matrix to present the safest second-line alternative.
         """
     )
-    
-st.markdown("---")
-with st.expander("🔍 Core References & Algorithmic Framework Citations"):
+with st.expander("🔍 Core References & Algorithmic Citations"):
 	st.markdown(
     	"""
     	1. **Roth, B. L., et al.** *NIMH Psychoactive Drug Screening Program (PDSP) Database*. University of North Carolina at Chapel Hill. [Quantitative receptor binding constants ($K_i$ and $p K_i$ values across monoaminergic, cholinergic, and histaminergic targets)]
