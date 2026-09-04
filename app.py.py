@@ -281,14 +281,14 @@ st.markdown(
 # Black Box Warning & Clinical Caution Box
 st.warning(f"⚠️ **Clinical Cautions & Warnings for {top_name}:**\n\n{BLACK_BOX_WARNINGS.get(top_name, 'No specific black box warning listed.')}")
     # Rule-Out Checkbox Mechanism
-    rule_out_check = st.checkbox(
+rule_out_check = st.checkbox(
         f"🚫 **Rule out {top_name} for this patient** (Check if patient has contraindications, severe QTc prolongation, prior failure, or intolerance)",
         key=f"ruleout_{top_name}"
     )
     
-    if rule_out_check:
-        st.session_state.excluded_drugs.append(top_name)
-        st.rerun()
+if rule_out_check:
+    st.session_state.excluded_drugs.append(top_name)
+    st.rerun()
 
 else:
     st.error("All candidate medications have been ruled out. Please reset the rule-out filters.")
