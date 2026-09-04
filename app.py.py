@@ -129,13 +129,32 @@ for drug_name, drug_data in DRUG_DATABASE.items():
     res = calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse)
     results.append(res)
 
-df_results = pd.DataFrame(results).sort_values(by="Net Score (Mj)", ascending=False)
+df_results = pd.DataFrame(results).sort_values(by="Net Score (M_j)", ascending=False)
 
-# Render Top Recommended Drug Card
+# Prominently Highlight Top Recommended Drug
 top_drug = df_results.iloc[0]
-st.success(f"**Top Recommended Option:** {top_drug['Drug']} (Net Score Mj = {top_drug['Net Score (Mj)']})")
 
-# Render Interactive Results Table
+st.markdown(
+    f"""
+    <div style="background-color: #d1e7dd; border-left: 8px solid #0f5132; padding: 18px; border-radius: 6px; margin-bottom: 20px;">
+        <span style="font-size: 14px; color: #0f5132; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Top Recommended Option</span>
+        <h1 style="color: #0f5132; margin: 4px 0 0 0; font-size: 32px; font-weight: 800;">
+            🏆 {top_drug['Drug']}
+        </h1>
+        <p style="color: #0f5132; font-size: 18px; margin: 6px 0 0 0;">
+            Net Match Score (Mj): <strong>{top_drug['Net Score (Mj)']}</strong> 
+            &nbsp;|&nbsp; Therapeutic Gain: <strong>+{top_drug['Therapeutic Gain']}</strong> 
+            &nbsp;|&nbsp; Risk Penalty: <strong>-{top_drug['Risk Deductions']}</strong>
+        </p>
+    </div>
+    """,
+    unsafe_allow_highlight=True
+)
+
+# Apply bold dynamic formatting to the 'Drug' column in the data table
+df_results['Drug'] = df_results['Drug'].apply(lambda x: f"💊 {x}")
+
+# Render Interactive Results Table with score highlighting
 def color_score(val):
     if val > 1.0:
         return 'background-color: #d4edda; color: #155724;' # Green
@@ -145,7 +164,7 @@ def color_score(val):
         return 'background-color: #f8d7da; color: #721c24;' # Red
 
 st.dataframe(
-    df_results.style.map(color_score, subset=['Net Score (Mj)']),
+    df_results.style.applymap(color_score, subset=['Net Score (Mj)']),
     use_container_width=True
 )
 
