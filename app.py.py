@@ -227,7 +227,7 @@ weights = {
         "5HT2A": NPI_MAPPING[npi_agit],
         "D2": NPI_MAPPING[npi_apat],
         "NET": NPI_MAPPING[npi_apat] * 0.5,
-        "a2A": NPI_MAPPING[npi_arousal],
+        "α2a": NPI_MAPPING[npi_arousal],
         "NMDA": NPI_MAPPING[npi_cog],
         "GABA-A": NPI_MAPPING[npi_anx],
         "SERT": NPI_MAPPING[npi_depr],
