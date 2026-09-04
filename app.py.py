@@ -2,9 +2,9 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-st.set_page_config(page_title="The Death of Peace of Mind", layout="wide")
+st.set_page_config(page_title="BPSD Compass Prototype", layout="wide")
 st.title("BPSD Compass Prototype")
-st.caption("Parameter-driven decision-support across multiple neurotransmitters affinity")
+st.caption("Parameter-driven decision-support via neurotransmitters affinity")
 
 ascii_header = r"""
 								THE DEATH OF PEACE OF MIND
