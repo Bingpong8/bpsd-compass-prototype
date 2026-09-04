@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 st.set_page_config(page_title="The Death of Peace of Mind", layout="wide")
-st.title("🧠 Multi-Neurotransmitter BPSD Prescribing Compass")
+st.title("BPSD Compass Prototype")
 st.caption("Parameter-driven decision-support across multiple neurotransmitters affinity")
 
 ascii_header = r"""
