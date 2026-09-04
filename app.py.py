@@ -163,7 +163,7 @@ def color_score(val):
         return 'background-color: #f8d7da; color: #721c24;' # Red
 
 st.dataframe(
-    df_results.style.applymap(color_score, subset=['Net Score (Mj)']),
+    df_results.style.map(color_score, subset=['Net Score (Mj)']),
     use_container_width=True
 )
 
