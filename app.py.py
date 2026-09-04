@@ -244,7 +244,7 @@ st.markdown("---")
 st.subheader("Calculated Multi-System Match Dashboard")
 
 # Calculate results for all candidate drugs
-results = [calculate_match_score(d, data, weights, lambda_risks, TMSE) for d, data in DRUG_DATABASE.items()]
+results = [calculate_match_score(d, data, weights, lambda_risks, tmse) for d, data in DRUG_DATABASE.items()]
 df_results = pd.DataFrame(results).sort_values(by="Net Score (Mj)", ascending=False).reset_index(drop=True)
 
 # Filter out user-ruled-out medications
@@ -341,7 +341,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         ---
 
         #### 2. Multi-Target Therapeutic Gain ($U_{\\text{thera}}$)
-        $$U_{\\text{thera}} = \\sum_{r \\in \\{5HT2A, D2, NET, \\alpha2A, NMDA, GABAA\\}} \\left( \\omega_r \\cdot pK_{i,r} \\cdot A_r \\right)$$
+        $$U_{\\text{thera}} = \\sum_{r \\in \\{5HT2A, D2, NET, alpha2A, NMDA, GABA-A\\}} \\left( \\omega_r \\cdot pK_{i,r} \\cdot A_r \\right)$$
         
         * **$5\\text{-HT}_{2\\text{A}}$ Target:** $5\\text{-HT}_{2\\text{A}}$ inverse agonism ($A_r = +1.0$) attenuates cortical serotonergic hyperfunction driving psychotic agitation and hallucinations[cite: 1].
         * **$D_2$ & $\\text{NET}$ Targets:** Frontostriatal dopamine and norepinephrine hypofunction drive apathy[cite: 1]. Partial $D_2$ agonists (e.g., Brexpiprazole, Aripiprazole) stabilize transmission ($A_r = +1.0$) without causing extrapyramidal motor block[cite: 1].
@@ -353,7 +353,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
 
         #### 3. Cognitive Burden Penalty ($P_{\\text{ACB}}$) & Rule-Out Guardrails
         * **$M_1$ Potency Threshold:** Central $M_1$ muscarinic blockade triggers a step-function penalty when binding potency reaches $pK_{i,M1} \\ge 7.0$ ($K_i \\le 100\\text{ nM}$)[cite: 1].
-        * **Cognitive Scaling ($C_{\\text{patient}}$):** Scaled via baseline MMSE score ($3.0$ for MMSE < 10, $2.0$ for MMSE 10-20, and $1.0$ for MMSE > 20)[cite: 1].
+        * **Cognitive Scaling ($C_{\\text{patient}}$):** Scaled via baseline TMSE score ($3.0$ for TMSE < 10, $2.0$ for TMSE 10-20, and $1.0$ for TMSE > 20)[cite: 1].
         * **Dynamic Rule-Out Engine:** When a clinician checks the rule-out box for a top drug, the system dynamically filters out that agent and recalculates the matrix to present the safest second-line alternative[cite: 1].
         """
     )
