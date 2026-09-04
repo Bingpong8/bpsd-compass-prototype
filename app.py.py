@@ -51,7 +51,7 @@ DRUG_DATABASE = {
 # ---------------------------------------------------------
 # 2. CALCULATION ENGINE (Clean 1-Decimal Output)
 # ---------------------------------------------------------
-def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_score):
+def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_score):
     pk = drug_data["pKi"]
     ar = drug_data["Ar"]
     
@@ -70,9 +70,9 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
              d2_risk
     
     # 3. Discontinuous Anticholinergic Cognitive Burden Penalty (PACB)
-    if mmse_score < 10:
+    if TMSE_score < 10:
         c_patient = 3.0
-    elif mmse_score <= 20:
+    elif TMSE_score <= 20:
         c_patient = 2.0
     else:
         c_patient = 1.0
@@ -200,7 +200,7 @@ with col2:
         help="Determines toxicity penalty weight for full D2 receptor antagonists."
     )
     
-    mmse = st.number_input(
+    TMSE = st.number_input(
         "Baseline TMSE Score (Cognitive Assessment)",
         min_value=0,
         max_value=30,
@@ -218,7 +218,7 @@ st.markdown("---")
 st.subheader("Calculated Multi-System Match Dashboard")
 
 # Calculate results for all candidate drugs
-results = [calculate_match_score(d, data, weights, lambda_risks, mmse) for d, data in DRUG_DATABASE.items()]
+results = [calculate_match_score(d, data, weights, lambda_risks, TMSE) for d, data in DRUG_DATABASE.items()]
 df_results = pd.DataFrame(results).sort_values(by="Net Score (Mj)", ascending=False).reset_index(drop=True)
 
 # Strictly format values to 1 decimal place across all score columns
@@ -303,7 +303,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         #### 3. Discontinuous Anticholinergic Penalty ($P_{\\text{ACB}}$)
         Central $M_1$ muscarinic receptor blockade impairs memory encoding and precipitates acute delirium.
         * **Threshold Penalty:** Applied as a step function when $M_1$ binding potency reaches or exceeds $pK_{i,M1} \\ge 7.0$ ($K_i \\le 100\\text{ nM}$).
-        * **Cognitive Scaling:** Penalty magnitude is scaled dynamically using baseline MMSE score: $C_{\\text{patient}} = 3.0$ for severe dementia (MMSE < 10), $2.0$ for moderate impairment (MMSE 10-20), and $1.0$ for mild/normal baseline cognition.
+        * **Cognitive Scaling:** Penalty magnitude is scaled dynamically using baseline TMSE score: $C_{\\text{patient}} = 3.0$ for severe dementia (TMSE < 10), $2.0$ for moderate impairment (TMSE 10-20), and $1.0$ for mild/normal baseline cognition.
         """
     )
     
@@ -311,5 +311,5 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
     st.json({
         "Normalized Target Weights (ω_r)": weights,
         "Normalized Risk Coefficients (lambda_r)": lambda_risks,
-        "Baseline Cognitive Score (MMSE)": mmse
+        "Baseline Cognitive Score (TMSE)": TMSE
     })
