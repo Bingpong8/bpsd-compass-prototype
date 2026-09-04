@@ -399,10 +399,10 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         """
     )
     
-	st.markdown("---")
-	st.markdown("### 📚 Core References & Algorithmic Framework Citations")
+st.markdown("---")
+st.markdown("### 📚 Core References & Algorithmic Framework Citations")
 
-	st.markdown(
+st.markdown(
     """
     1. **Roth, B. L., et al.** *NIMH Psychoactive Drug Screening Program (PDSP) Database*. University of North Carolina at Chapel Hill. [Quantitative receptor binding constants ($K_i$ and $p K_i$ values across monoaminergic, cholinergic, and histaminergic targets)][cite: 1].
     2. **Magierski, R., et al. (2020).** *Frontiers in Psychiatry*, 11, 7413102. [Neurochemical substrates of BPSD, mapping cholinergic, serotonergic, dopaminergic, and noradrenergic dysregulation to dementia behavioral phenotypes][cite: 1].
