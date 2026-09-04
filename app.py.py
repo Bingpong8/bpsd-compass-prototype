@@ -17,6 +17,8 @@ ascii_header = r"""
 			               `\  }
 			                 { }
 """
+st.set_page_config(page_title="BPSD Compass - Prototype")
+st.caption("Parameter-driven decision-support across multiple neurotransmitters affinity")
 
 # Render as monospaced code block
 st.code(ascii_header, language=None)
@@ -134,9 +136,6 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_scor
 # 4. STREAMLIT FRONTEND & UI
 # ---------------------------------------------------------
 st.set_page_config(page_title="BPSD Prescribing Compass", layout="wide")
-
-st.title("🧠 BPSD Compass - Prototype")
-st.caption("Parameter-driven decision-support across multiple neurotransmitters affinity")
 
 st.markdown("---")
 
