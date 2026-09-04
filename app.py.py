@@ -223,7 +223,7 @@ with col1:
         help="Maps to uncompetitive NMDA receptor antagonism."
     )
     
-	weights = {
+weights = {
         "5HT2A": NPI_MAPPING[npi_agit],
         "D2": NPI_MAPPING[npi_apat],
         "NET": NPI_MAPPING[npi_apat] * 0.5,
