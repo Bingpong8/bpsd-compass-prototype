@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 # ---------------------------------------------------------
-# 1. EXPANDED PHARMACODYNAMIC DATABASE (pKi = -log10(K_i))
+# 1. PHARMACODYNAMIC DATABASE (pKi = -log10(K_i))
 # ---------------------------------------------------------
 DRUG_DATABASE = {
     "Brexpiprazole": {
@@ -53,7 +53,7 @@ DRUG_DATABASE = {
 }
 
 # ---------------------------------------------------------
-# 2. BLACK BOX WARNINGS & CLINICAL CAUTIONS DATABASE
+# 2. CLINICAL CAUTIONS DATABASE
 # ---------------------------------------------------------
 BLACK_BOX_WARNINGS = {
     "Brexpiprazole": "Warning: Exercise extreme caution for akathisia and impulse-control disorders.",
@@ -76,7 +76,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_scor
     pk = drug_data["pKi"]
     ar = drug_data["Ar"]
     
-    # 1. Therapeutic Utility Component
+    # 1. Therapeutic Component
     u_thera = (weights["5HT2A"] * pk["5HT2A"] * ar["5HT2A"]) + \
               (weights["D2"] * pk["D2"] * ar["D2"]) + \
               (weights["NET"] * pk["NET"] * ar["NET"]) + \
@@ -113,7 +113,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_scor
     }
 
 # ---------------------------------------------------------
-# 4. STREAMLIT FRONTEND & INTERACTIVE UI
+# 4. STREAMLIT FRONTEND & UI
 # ---------------------------------------------------------
 st.set_page_config(page_title="BPSD Prescribing Compass", layout="wide")
 
@@ -248,10 +248,10 @@ st.subheader("Calculated Multi-System Match Dashboard")
 raw_results = [calculate_match_score(d, data, weights, lambda_risks, TMSE) for d, data in DRUG_DATABASE.items()]
 df_results = pd.DataFrame(raw_results).sort_values(by="Net Score (Mj)", ascending=False).reset_index(drop=True)
 
-# Filter out user-ruled-out medications
+# Ruled-out medications
 df_filtered = df_results[~df_results["Drug"].isin(st.session_state.excluded_drugs)].reset_index(drop=True)
 
-# Format numerical columns strictly to 1 decimal place
+# Format
 for col in ["Net Score (Mj)", "Therapeutic Gain", "Risk Deductions", "ACB Penalty", "M1 Potency (pKi)"]:
     df_results[col] = df_results[col].map("{:.1f}".format)
     df_filtered[col] = df_filtered[col].map("{:.1f}".format)
@@ -283,7 +283,7 @@ if not df_filtered.empty:
     # Black Box Warning & Clinical Caution Box
     st.warning(f"⚠️ **Clinical Cautions & Warnings for {top_name}:**\n\n{BLACK_BOX_WARNINGS.get(top_name, 'No specific black box warning listed.')}")
     
-    # Rule-Out Checkbox Mechanism
+    # Rule-Out Checkbox
     rule_out_check = st.checkbox(
         f"🚫 **Rule out {top_name} for this patient** (Check if patient has contraindications, high risks for exact medication, intolerance or allergy)",
         key=f"ruleout_{top_name}"
@@ -305,7 +305,7 @@ if st.session_state.excluded_drugs:
 
 st.markdown("### Complete Comparative Drug Matrix")
 
-# Apply Styling Matrix to Net Score
+# Appearances
 def apply_traffic_lights(val):
     val_float = float(val)
     if val_float > 1.0:
@@ -353,7 +353,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         $$U_{\\text{thera}} = \\sum_{r \\in \\{5HT2A, D2, NET, α2a, NMDA, GABA-A\\}} \\left( \\omega_r \\cdot pK_{i,r} \\cdot A_r \\right)$$
         
         * **$5\\text{-HT}_{2\\text{A}}$ Target:** $5\\text{-HT}_{2\\text{A}}$ inverse agonism ($A_r = +1.0$) attenuates cortical serotonergic hyperfunction driving psychotic agitation and hallucinations.
-        * **$D_2$ & $\\text{NET}$ Targets:** Frontostriatal dopamine and norepinephrine hypofunction drive apathy. Partial $D_2$ agonists (e.g., Brexpiprazole, Aripiprazole) stabilize transmission ($A_r = +1.0$) without causing extrapyramidal motor block.
+        * **$D_2$ & $\\text{NET}$ Targets:** Frontostriatal dopamine and norepinephrine hypofunction drive apathy. Partial $D_2$ agonists (e.g. Brexpiprazole, Aripiprazole) stabilize transmission ($A_r = +1.0$) without causing extrapyramidal motor block.
         * **$\\alpha_{2\\text{A}}$ Target:** Presynaptic $\\alpha_{2A}$ agonism ($A_r = +1.0$) suppresses central noradrenergic outflow, reducing hyperadrenergic autonomic arousal.
         * **$\\text{GABA}_{A}$ Target:** Positive allosteric modulation ($A_r = +1.0$) enhances central inhibition to rapidly calm severe panic.
         * **$\\text{NMDA}$ Target:** Uncompetitive $\\text{NMDA}$ antagonism ($A_r = +1.0$) protects against glutamatergic excitotoxicity and delirium.
