@@ -49,7 +49,7 @@ DRUG_DATABASE = {
 }
 
 # ---------------------------------------------------------
-# 2. CALCULATION ENGINE
+# 2. CALCULATION ENGINE (Clean 1-Decimal Output)
 # ---------------------------------------------------------
 def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_score):
     pk = drug_data["pKi"]
@@ -60,9 +60,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
               (weights["D2"] * pk["D2"] * ar["D2"])
     
     # 2. Off-Target Risk Component: sum(lambda_r * pKi)
-    # Includes D2 Full Antagonism risk if drug acts as inverse agonist/full antagonist
     d2_risk = (lambda_risks["D2_full"] * pk["D2"]) if ar["D2"] < 0 else 0.0
-    
     u_risk = (lambda_risks["H1"] * pk["H1"]) + \
              (lambda_risks["alpha1"] * pk["alpha1"]) + \
              d2_risk
@@ -80,13 +78,14 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, mmse_scor
     # Final Net Score Formula: M_j = U_thera - U_risk - P_ACB
     m_j = u_thera - u_risk - pacb
     
+    # Rounding to 1 decimal place to avoid overwhelming clinicians with long floats
     return {
         "Drug": drug_name,
-        "Net Score (Mj)": round(m_j, 2),
-        "Therapeutic Gain": round(u_thera, 2),
-        "Risk Deductions": round(u_risk, 2),
-        "ACB Penalty (PACB)": round(pacb, 2),
-        "M1 Potency (pKi)": pk["M1"]
+        "Net Score (Mj)": round(m_j, 1),
+        "Therapeutic Gain": round(u_thera, 1),
+        "Risk Deductions": round(u_risk, 1),
+        "ACB Penalty": round(pacb, 1),
+        "M1 Potency (pKi)": round(pk["M1"], 1)
     }
 
 # ---------------------------------------------------------
@@ -99,52 +98,101 @@ st.caption("Parameter-driven clinical matching algorithm based on Neurotransmitt
 
 st.markdown("---")
 
-# Quick Clinical Presets (Enhances User-Friendliness)
-st.sidebar.header("📋 Clinical Quick Presets")
-preset = st.sidebar.selectbox(
-    "Load Preset Patient Profile",
-    ["Custom Inputs", "Severe Psychotic Agitation + High Fall Risk", "Severe Apathy + Parkinsonism Risk"]
-)
+# Anchor Scale Mappings (Translates Clinical Assessments to Weights)
+NPI_MAPPING = {
+    "0 - Absent / No Symptoms": 0.0,
+    "1 - Mild (Slight distress, no impairment)": 0.3,
+    "2 - Moderate (Significant distress, partial impairment)": 0.7,
+    "3 - Severe (Major disruption, marked impairment)": 1.0
+}
 
-# Preset Logic
-if preset == "Severe Psychotic Agitation + High Fall Risk":
-    init_w_5ht2a, init_w_d2 = 0.9, 0.2
-    init_l_h1, init_l_a1, init_l_d2 = 0.9, 0.7, 0.0
-    init_mmse = 12
-elif preset == "Severe Apathy + Parkinsonism Risk":
-    init_w_5ht2a, init_w_d2 = 0.2, 0.9
-    init_l_h1, init_l_a1, init_l_d2 = 0.3, 0.2, 1.0
-    init_mmse = 18
-else:
-    init_w_5ht2a, init_w_d2 = 0.9, 0.8
-    init_l_h1, init_l_a1, init_l_d2 = 0.8, 0.7, 0.0
-    init_mmse = 15
+FALL_RISK_MAPPING = {
+    "Low Risk (Morse Score 0-24)": 0.1,
+    "Moderate Risk (Morse Score 25-44)": 0.5,
+    "High Risk (Morse Score ≥ 45 or history of falls)": 0.9
+}
+
+ORTHO_BP_MAPPING = {
+    "Normal (< 10 mmHg drop upon standing)": 0.1,
+    "Subclinical Drop (10-19 mmHg drop)": 0.5,
+    "Diagnostic Orthostasis (≥ 20 mmHg SBP drop)": 0.9
+}
+
+PARKINSONISM_MAPPING = {
+    "None (Normal muscle tone and gait)": 0.0,
+    "Mild (Pre-existing mild tremor or rigidity)": 0.5,
+    "Severe (Diagnosed Parkinsonism / DLB / High SAS score)": 1.0
+}
 
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader("Target Symptom Severity (Normalized ωr)")
-    ω_5ht2a = st.slider("Psychotic Agitation Severity (5-HT2A)", 0.0, 1.0, init_w_5ht2a, 0.1)
-    ω_d2 = st.slider("Apathy / Executive Dysfunction Severity (D2)", 0.0, 1.0, init_w_d2, 0.1)
+    st.subheader("Target Symptom Severity (Bedside Anchor Scales)")
     
-    weights = {"5HT2A": ω_5ht2a, "D2": ω_d2}
+    # Bedside Rating Scales replacing abstract floats
+    npi_agit = st.selectbox(
+        "Psychotic Agitation / Aggression Severity (NPI-Q Scale)",
+        options=list(NPI_MAPPING.keys()),
+        index=3,
+        help="Mapped to target 5-HT2A inverse agonism requirement."
+    )
+    
+    npi_apat = st.selectbox(
+        "Apathy / Executive Dysfunction Severity (NPI-Q Scale)",
+        options=list(NPI_MAPPING.keys()),
+        index=2,
+        help="Mapped to frontostriatal D2/D3 partial agonism requirement."
+    )
+    
+    weights = {
+        "5HT2A": NPI_MAPPING[npi_agit],
+        "D2": NPI_MAPPING[npi_apat]
+    }
 
 with col2:
-    st.subheader("Patient Risk Profile & Vulnerabilities (λr)")
-    l_h1 = st.slider("Fall / Sedation Vulnerability (λH1)", 0.0, 1.0, init_l_h1, 0.1)
-    l_alpha1 = st.slider("Orthostatic Hypotension Risk (λα1)", 0.0, 1.0, init_l_a1, 0.1)
-    l_d2_full = st.slider("Parkinsonism / EPS Vulnerability (λD2)", 0.0, 1.0, init_l_d2, 0.1)
+    st.subheader("Patient Clinical Vulnerabilities & Safety Profiles")
     
-    mmse = st.number_input("Baseline MMSE Score (Cognitive Assessment)", min_value=0, max_value=30, value=init_mmse)
+    fall_sel = st.selectbox(
+        "Fall & Sedation Risk Assessment (Morse Scale)",
+        options=list(FALL_RISK_MAPPING.keys()),
+        index=2,
+        help="Determines toxicity penalty weight for H1 receptor affinity."
+    )
     
-    lambda_risks = {"H1": l_h1, "alpha1": l_alpha1, "D2_full": l_d2_full}
+    ortho_sel = st.selectbox(
+        "Orthostatic Hypotension Profile (Standing SBP Drop)",
+        options=list(ORTHO_BP_MAPPING.keys()),
+        index=1,
+        help="Determines toxicity penalty weight for alpha-1 adrenergic receptor affinity."
+    )
+    
+    park_sel = st.selectbox(
+        "Parkinsonism / EPS Vulnerability (SAS / UPDRS Scale)",
+        options=list(PARKINSONISM_MAPPING.keys()),
+        index=0,
+        help="Determines toxicity penalty weight for full D2 receptor antagonists."
+    )
+    
+    mmse = st.number_input("Baseline MMSE Score (Cognitive Assessment)", min_value=0, max_value=30, value=15)
+    
+    lambda_risks = {
+        "H1": FALL_RISK_MAPPING[fall_sel],
+        "alpha1": ORTHO_BP_MAPPING[ortho_sel],
+        "D2_full": PARKINSONISM_MAPPING[park_sel]
+    }
 
 st.markdown("---")
 st.subheader("Calculated Drug Match Dashboard")
 
-# Calculate results for all candidate drugs
+# Calculate results for candidate drugs
 results = [calculate_match_score(d, data, weights, lambda_risks, mmse) for d, data in DRUG_DATABASE.items()]
 df_results = pd.DataFrame(results).sort_values(by="Net Score (Mj)", ascending=False).reset_index(drop=True)
+
+# Format numerical scores to 1 decimal place consistently
+df_results["Net Score (Mj)"] = df_results["Net Score (Mj)"].map("{:.1f}".format)
+df_results["Therapeutic Gain"] = df_results["Therapeutic Gain"].map("{:.1f}".format)
+df_results["Risk Deductions"] = df_results["Risk Deductions"].map("{:.1f}".format)
+df_results["ACB Penalty"] = df_results["ACB Penalty"].map("{:.1f}".format)
 
 # Highlight Top Recommended Option
 top_drug = df_results.iloc[0]
@@ -159,8 +207,8 @@ st.markdown(
         <p style="color: #0f5132; font-size: 18px; margin: 6px 0 0 0;">
             Net Match Score (Mj): <strong>{top_drug['Net Score (Mj)']}</strong> 
             &nbsp;|&nbsp; Therapeutic Gain: <strong>+{top_drug['Therapeutic Gain']}</strong> 
-            &nbsp;|&nbsp; Risk Penalty: <strong>-{top_drug['Risk Deductions']}</strong>
-            &nbsp;|&nbsp; ACB Penalty: <strong>-{top_drug['ACB Penalty (PACB)']}</strong>
+            &nbsp;|&nbsp; Risk Deductions: <strong>-{top_drug['Risk Deductions']}</strong>
+            &nbsp;|&nbsp; ACB Penalty: <strong>-{top_drug['ACB Penalty']}</strong>
         </p>
     </div>
     """,
@@ -169,9 +217,10 @@ st.markdown(
 
 # Apply Styling Matrix to Net Score
 def apply_traffic_lights(val):
-    if val > 1.0:
+    val_float = float(val)
+    if val_float > 1.0:
         return 'background-color: #d4edda; color: #155724; font-weight: bold;'
-    elif val >= -2.0:
+    elif val_float >= -2.0:
         return 'background-color: #fff3cd; color: #856404;'
     else:
         return 'background-color: #f8d7da; color: #721c24;'
@@ -182,14 +231,39 @@ st.dataframe(
     use_container_width=True
 )
 
-st.info("**Traffic Light Guide:** Green = Optimal Match (Mj > 1.0) | Yellow = Proceed with Caution (-2.0 ≤ Mj ≤ 1.0) | Red = High Risk Flag (Mj < -2.0)")
+st.info("**Traffic Light Guide:** Green = Optimal Match (Mj > 1.0) | Yellow = Proceed with Caution (-2.0 ≤ Mj ≤ 1.0) | Red = Flagged High Toxicity Risk (Mj < -2.0)")
 
-# Explainable AI Component (Expander Tooltips)
-with st.expander("🔍 Breakdown of Receptor Calculation"):
+# Explainable AI Component with Detailed Background Rationales
+with st.expander("🔍 Background Rationale & Pharmacodynamic Calculation Details"):
     st.markdown(
         """
-        The Net Score ($M_j$) combines target therapeutic efficacy, off-target toxicity risk, and cognitive impairment adjustments:
-        $$M_j = \\sum (w_r \\cdot pK_{i,r} \\cdot A_r) - \\sum (\\lambda_r \\cdot pK_{i,r}) - P_{\\text{ACB}}$$
+        ### Algorithmic Architecture & Pharmacodynamic Rationale
+        
+        The Net Therapeutic Match Score ($M_j$) evaluates psychotropic suitability by combining target receptor binding affinity, off-target toxicity penalties, and cognitive burden adjustments[cite: 1]:
+        
+        $$M_j = U_{\\text{thera}} - U_{\\text{risk}} - P_{\\text{ACB}}$$
+        
+        ---
+
+        #### 1. Therapeutic Gain ($U_{\\text{thera}}$)
+        * **$5\\text{-HT}_{2\\text{A}}$ Inverse Agonism / Antagonism:** Psychotic agitation in neurodegenerative illness is driven by cortical $5\\text{-HT}_{2\\text{A}}$ receptor upregulation[cite: 1]. Drugs with high $5\\text{-HT}_{2\\text{A}}$ binding potency ($pK_i$) offset serotonin hyperfunction[cite: 1].
+        * **$D_2$ Receptor Modulation:** Frontostriatal dopamine depletion causes apathy and executive dysfunction[cite: 1]. Partial agonists (e.g., Brexpiprazole) stabilize dopamine transmission without causing motor block ($A_r = +1.0$)[cite: 1]. Full $D_2$ antagonists (e.g., Haloperidol) exacerbate apathy ($A_r = -1.0$)[cite: 1].
+
+        #### 2. Risk Deductions ($U_{\\text{risk}}$)
+        * **Histamine $H_1$ Blockade:** Off-target $H_1$ affinity correlates directly with central sedation, gait instability, and fall risk[cite: 1]. Scaled via patient's baseline **Morse Fall Scale** ($\lambda_{H1}$)[cite: 1].
+        * **$\alpha_1$-Adrenergic Blockade:** $\alpha_1$ receptor antagonism impairs peripheral vasoconstriction, causing orthostatic hypotension and syncope[cite: 1]. Scaled via standing systolic BP drop ($\lambda_{\alpha1}$)[cite: 1].
+        * **Full $D_2$ Blockade Penalty:** Applying potent full $D_2$ antagonism in patients with underlying extrapyramidal vulnerability triggers acute parkinsonism[cite: 1]. Scaled via baseline **Simpson-Angus Scale** ($\lambda_{D2\\_full}$)[cite: 1].
+
+        #### 3. Discontinuous Cognitive Penalty ($P_{\\text{ACB}}$)
+        Central $M_1$ muscarinic receptor blockade degrades cholinergic transmission essential for memory[cite: 1]. 
+        * Applied as a step-function penalty when $M_1$ binding potency exceeds threshold ($pK_i \\ge 7.0$, or $K_i \\le 100\\text{ nM}$)[cite: 1].
+        * Scaled dynamically according to cognitive impairment severity: $C_{\\text{patient}} = 3.0$ for severe dementia (MMSE < 10), $2.0$ for moderate (MMSE 10-20), and $1.0$ for mild/normal baseline cognitive scores[cite: 1].
         """
     )
-    st.table(df_results)
+    
+    st.write("**Current Parameter Values Applied in Calculation:**")
+    st.json({
+        "Normalized Target Weights (w_r)": weights,
+        "Normalized Risk Coefficients (lambda_r)": lambda_risks,
+        "Cognitive Parameter (MMSE)": mmse
+    })
