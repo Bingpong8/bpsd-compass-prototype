@@ -448,25 +448,26 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         * **Dynamic Rule-Out Engine:** When a clinician checks the rule-out box for a top drug, the system dynamically filters out that agent and recalculates the matrix to present the safest second-line alternative.
         """
     )
-st.expander("🔍 Core References & Algorithmic Citations"):
-references_markdown = """
-1. **Roth BL, et al.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. University of North Carolina at Chapel Hill and the United States National Institute of Mental Health.
+with st.expander("🔍 Core References & Algorithmic Citations"):
+	references_markdown = 
+	"""
+	1. **Roth BL, et al.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. University of North Carolina at Chapel Hill and the United States National Institute of Mental Health.
 
-2. **Magierski R, et al. (2020).** *Pharmacotherapy of Behavioral and Psychological Symptoms of Dementia: State of the Art and Future Progress*. Front. Pharmacol. 11:1168. doi: 10.3389/fphar.2020.01168.
+	2. **Magierski R, et al. (2020).** *Pharmacotherapy of Behavioral and Psychological Symptoms of Dementia: State of the Art and Future Progress*. Front. Pharmacol. 11:1168. doi: 10.3389/fphar.2020.01168.
 
-3. **Caraci F., et al. (2020).** *New antipsychotic drugs for the treatment of agitation and psychosis in Alzheimer's disease: focus on brexpiprazole and pimavanserin*. F1000Res:F1000 Faculty Rev-686. doi: 10.12688/f1000research.22662.1. PMID: 32695312; PMCID: PMC7344175.
+	3. **Caraci F., et al. (2020).** *New antipsychotic drugs for the treatment of agitation and psychosis in Alzheimer's disease: focus on brexpiprazole and pimavanserin*. F1000Res:F1000 Faculty Rev-686. doi: 10.12688/f1000research.22662.1. PMID: 32695312; PMCID: PMC7344175.
 
-4. **Kim H, et al. (2026).** *Brexpiprazole for the Treatment of Agitation Associated with Dementia due to Alzheimer's Disease: Clinical Perspectives*. Clin Psychopharmacol Neurosci;24(1):15-29. doi: 10.9758/cpn.24.1252.
+	4. **Kim H, et al. (2026).** *Brexpiprazole for the Treatment of Agitation Associated with Dementia due to Alzheimer's Disease: Clinical Perspectives*. Clin Psychopharmacol Neurosci;24(1):15-29. doi: 10.9758/cpn.24.1252.
 
-5. **Davies, S. J., et al. (2018).** *Sequential drug treatment algorithm for agitation and aggression in Alzheimer's and mixed dementia*. Journal of psychopharmacology, 32(5), 509–523. https://doi.org/10.1177/0269881117744996
+	5. **Davies, S. J., et al. (2018).** *Sequential drug treatment algorithm for agitation and aggression in Alzheimer's and mixed dementia*. Journal of psychopharmacology, 32(5), 509–523. https://doi.org/10.1177/0269881117744996
 
-6. **Kales H. C., et al. (2015).** *Assessment and management of behavioral and psychological symptoms of dementia*. BMJ, 350, h369. https://doi.org/10.1136/bmj.h369
+	6. **Kales H. C., et al. (2015).** *Assessment and management of behavioral and psychological symptoms of dementia*. BMJ, 350, h369. https://doi.org/10.1136/bmj.h369
 
-7. **Cummings J., et al. (2022).** *Alzheimer's disease drug development pipeline: 2022*. Alzheimer's & dementia, 8(1), e12295. https://doi.org/10.1002/trc2.12295
+	7. **Cummings J., et al. (2022).** *Alzheimer's disease drug development pipeline: 2022*. Alzheimer's & dementia, 8(1), e12295. https://doi.org/10.1002/trc2.12295
 
-8. **Hatch S., et al. (2025).** *The Canadian Coalition for Seniors' Mental Health Canadian Clinical Practice Guidelines for Assessing and Managing Behavioural and Psychological Symptoms of Dementia (BPSD)*. Canadian geriatrics journal, 28(1), 91–102. https://doi.org/10.5770/cgj.28.820
+	8. **Hatch S., et al. (2025).** *The Canadian Coalition for Seniors' Mental Health Canadian Clinical Practice Guidelines for Assessing and Managing Behavioural and Psychological Symptoms of Dementia (BPSD)*. Canadian geriatrics journal, 28(1), 91–102. https://doi.org/10.5770/cgj.28.820
 
-9. **Siafis, S., et al. (2018).** *Antipsychotic Drugs: From Receptor-binding Profiles to Metabolic Side Effects*. Current neuropharmacology, 16(8), 1210–1223. https://doi.org/10.2174/1570159X15666170630163616
-"""
+	9. **Siafis, S., et al. (2018).** *Antipsychotic Drugs: From Receptor-binding Profiles to Metabolic Side Effects*. Current neuropharmacology, 16(8), 1210–1223. https://doi.org/10.2174/1570159X15666170630163616
+	"""
 
 st.markdown(references_markdown)
