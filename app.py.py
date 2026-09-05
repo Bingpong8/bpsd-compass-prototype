@@ -463,20 +463,3 @@ st.markdown(
     10. **Health Quality BC / CCSMH (2023–2025).** *BPSD Clinical Practice Guidelines & Decision Algorithms*. [Point-of-care behavioral decision-support benchmarks for primary care and geriatric clinicians][cite: 1].
     """
 )
-
-	3. **** n*. 
-
-	4. **Kim H, et al. (2026).** *Brexpiprazole for the Treatment of Agitation Associated with Dementia due to Alzheimer's Disease: Clinical Perspectives*. Clin Psychopharmacol Neurosci;24(1):15-29. doi: 10.9758/cpn.24.1252.
-
-	5. **Davies, S. J., et al. (2018).** *Sequential drug treatment algorithm for agitation and aggression in Alzheimer's and mixed dementia*. Journal of psychopharmacology, 32(5), 509–523. https://doi.org/10.1177/0269881117744996
-
-	6. **Kales H. C., et al. (2015).** *Assessment and management of behavioral and psychological symptoms of dementia*. BMJ, 350, h369. https://doi.org/10.1136/bmj.h369
-
-	7. **Cummings J., et al. (2022).** *Alzheimer's disease drug development pipeline: 2022*. Alzheimer's & dementia, 8(1), e12295. https://doi.org/10.1002/trc2.12295
-
-	8. **Hatch S., et al. (2025).** *The Canadian Coalition for Seniors' Mental Health Canadian Clinical Practice Guidelines for Assessing and Managing Behavioural and Psychological Symptoms of Dementia (BPSD)*. Canadian geriatrics journal, 28(1), 91–102. https://doi.org/10.5770/cgj.28.820
-
-	9. **Siafis, S., et al. (2018).** *Antipsychotic Drugs: From Receptor-binding Profiles to Metabolic Side Effects*. Current neuropharmacology, 16(8), 1210–1223. https://doi.org/10.2174/1570159X15666170630163616
-	"""
-	}
-st.markdown(references_markdown)
