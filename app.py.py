@@ -449,7 +449,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         """
     )
 with st.expander("🔍 Core References & Algorithmic Citations"):
-	references_markdown = 
+	references_markdown ={
 	"""
 	1. **Roth BL, et al.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. University of North Carolina at Chapel Hill and the United States National Institute of Mental Health.
 
@@ -469,5 +469,5 @@ with st.expander("🔍 Core References & Algorithmic Citations"):
 
 	9. **Siafis, S., et al. (2018).** *Antipsychotic Drugs: From Receptor-binding Profiles to Metabolic Side Effects*. Current neuropharmacology, 16(8), 1210–1223. https://doi.org/10.2174/1570159X15666170630163616
 	"""
-
+	}
 st.markdown(references_markdown)
