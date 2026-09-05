@@ -4,7 +4,7 @@ import pandas as pd
 
 st.set_page_config(page_title="BPSD Compass Prototype", layout="wide")
 st.title("BPSD Compass Prototype")
-st.caption("Parameter-driven decision-support via neurotransmitters affinity")
+st.caption("Parameter-driven neurotransmitters affinity based decision-support tool ")
 
 ascii_header = r"""
 								THE DEATH OF PEACE OF MIND
@@ -404,7 +404,7 @@ with st.expander("🔍 Core References & Algorithmic Citations"):
     	"""
     	1. **Roth, B. L., et al.** *NIMH Psychoactive Drug Screening Program (PDSP) Database*. University of North Carolina at Chapel Hill. [Quantitative receptor binding constants ($K_i$ and $p K_i$ values across monoaminergic, cholinergic, and histaminergic targets)]
     	2. **Magierski, R., et al. (2020).** *Frontiers in Psychiatry*, 11, 7413102. [Neurochemical substrates of BPSD, mapping cholinergic, serotonergic, dopaminergic, and noradrenergic dysregulation to dementia behavioral phenotypes]
-    	3. **De Rossi, P., et al. (2020).** *Frontiers in Pharmacology*, 11, 7344175. [Targeted receptor mechanics: $5\text{-HT}_{2\text{A}}$ inverse agonism and $D_2/D_3/5\text{-HT}_{1\text{A}}$ partial agonism in managing BPSD agitation and psychosis]
+    	3. **De Rossi, P., et al. (2020).** *Frontiers in Pharmacology*, 11, 7344175. [Targeted receptor mechanics: $5\\text{-HT}_{2\\text{A}}$ inverse agonism and $D_2/D_3/5\\text{-HT}_{1\text{A}}$ partial agonism in managing BPSD agitation and psychosis]
     	4. **Kwak, A. T., et al. (2024).** *Neuropsychiatric Disease and Treatment*, 20, 12854121. [Histamine ($H_1$) and Muscarinic ($M_1$) binding thresholds for evaluating sedation and Anticholinergic Cognitive Burden (ACB) penalties]
     	5. **Davies, S. J., et al. (2018).** *BMC Psychiatry*, 18(1), 5944080. [Sequential, evidence-based psychotropic drug treatment algorithms in dementia based on tolerability and receptor profiles]
     	6. **Kales, H. C., Gitlin, L. N., & Lyketsos, C. G. (2015).** *BMJ*, 350, h369. [The DICE Approach: Describe, Investigate, Create, Evaluate—a non-pharmacological and clinical guardrail framework for BPSD]
