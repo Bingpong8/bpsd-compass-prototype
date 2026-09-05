@@ -378,7 +378,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         * **Target Weights ($\omega_r$):** Derived directly from bedside rating scales like the NPI-Q. The clinician's 4-point input score ($0$ to $3$) is normalized via $\omega_r$ = $$\\frac{\\text{Score}}{3.0}$$, producing a bounded parameter $\omega_r \in [0.0, 1.0]$.
         * **Histamine Risk ($\lambda_{H1}$):** Mapped to the bedside **Morse Fall Scale** ($0\\text{-}125$), where scores $\ge 45$ set $\lambda_{H1} = 0.9$ to penalize central $H_1$ sedation and gait instability.
         * **Orthostatic Risk ($\lambda_{α1}$):** Mapped to standing systolic blood pressure drop, where diagnostic orthostasis ($\Delta\\text{SBP} \ge 20 \\text{ mmHg}$) sets $\lambda_{α1} = 0.9$ to penalize $\\alpha_1$-adrenergic blockade.
-        * **Parkinsonism Risk ($\lambda_{D2\_full}$):** Mapped to extrapyramidal motor signs (Simpson-Angus Scale), where pre-existing rigidity or Lewy body dementia sets $\lambda_{D2\_full} = 1.0$, heavily penalizing full $D_2$ antagonists like Haloperidol.
+        * **Parkinsonism Risk ($\lambda_{D2}$):** Mapped to extrapyramidal motor signs (Simpson-Angus Scale), where pre-existing rigidity or Lewy body dementia sets $\lambda_{D2} = 1.0$, heavily penalizing full $D_2$ antagonists like Haloperidol.
 
         ---
 
