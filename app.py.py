@@ -449,7 +449,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         """
     )
 with st.expander("🔍 Core References & Algorithmic Citations"):
-st.markdown(
+	st.markdown(
     """
     1. **Roth, B. L., et al.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. University of North Carolina at Chapel Hill and the United States National Institute of Mental Health.
     2. **Magierski, R., et al. (2020).** *Pharmacotherapy of Behavioral and Psychological Symptoms of Dementia: State of the Art and Future Progress*. Front. Pharmacol. 11:1168. doi: 10.3389/fphar.2020.01168.
