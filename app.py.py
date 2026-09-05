@@ -470,4 +470,3 @@ references_markdown = """
 """
 
 st.markdown(references_markdown)
-	)
