@@ -134,7 +134,7 @@ BLACK_BOX_WARNINGS = {
 	"Amitryptyline": "Warning: High risk of overdose, cardiac arrhythmias, anticholinergic toxicity.",
 	"Venlafaxine": "Warning: Dose-dependent sustained hypertension, QTc prolongation, severe discontinuation syndrome.",
 	"Duloxetine": "Contraindicated in Severe hepatic impairment or Chronic liver disease.",
-	"Vortixoetine": "Warning: Abnormal bleeding, Hyponatremia/SIADH, and Serotonin syndrome.",
+	"Vortioxetine": "Warning: Abnormal bleeding, Hyponatremia/SIADH, and Serotonin syndrome.",
 	"Bupropion": "Contraindicated in patients with seizure disorders, active eating disorders (bulimia/anorexia), or abrupt cessation of GABAnergic agents or alcohol.",
 	"Trazodone": "Warning: High risk of Oversedation due to high α1 blockade), QTc prologation and rare risk of Priapism.",
 	"Agomelatine": "Contraindicated in Hepatic impairment due to Hepatotoxic profile."
