@@ -71,6 +71,46 @@ DRUG_DATABASE = {
     "Escitalopram": {
         "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "α2a": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
+    },
+	"Sertraline": {
+        "pKi": {"5HT2A": 5.00, "D2": 6.60, "NET": 5.00, "α2a": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 0.0, "D2": 0.5, "NET": 0.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
+    },
+    "Fluoxetine": {
+        "pKi": {"5HT2A": 6.70, "D2": 5.00, "NET": 5.00, "α2a": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 0.5, "D2": 0.0, "NET": 0.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
+    },
+    "Nortriptyline": {
+        "pKi": {"5HT2A": 7.50, "D2": 5.00, "NET": 7.90, "α2a": 6.30, "NMDA": 5.00, "GABA-A": 5.00, "H1": 8.00, "α1": 7.20, "M1": 6.70},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 1.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
+    },
+    "Amitriptyline": {
+        "pKi": {"5HT2A": 7.80, "D2": 5.00, "NET": 7.40, "α2a": 6.10, "NMDA": 5.00, "GABA-A": 5.00, "H1": 8.90, "α1": 7.60, "M1": 8.00},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 1.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
+    },
+    "Venlafaxine": {
+        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.60, "α2a": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 1.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
+    },
+    "Duloxetine": {
+        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 7.70, "α2a": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 1.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
+    },
+    "Vortioxetine": {
+        "pKi": {"5HT2A": 7.60, "D2": 5.00, "NET": 5.00, "α2a": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
+    },
+    "Bupropion": {
+        "pKi": {"5HT2A": 5.00, "D2": 5.20, "NET": 5.20, "α2a": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 0.0, "D2": 0.5, "NET": 1.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
+    },
+	"Trazodone": {
+        "pKi": {"5HT2A": 7.80, "D2": 5.00, "NET": 5.00, "α2a": 6.40, "NMDA": 5.00, "GABA-A": 5.00, "H1": 7.50, "α1": 7.80, "M1": 5.00},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
+    },
+    "Agomelatine": {
+        "pKi": {"5HT2A": 6.20, "D2": 5.00, "NET": 5.00, "α2a": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2a": 0.0, "NMDA": 0.0, "GABA-A": 0.0}
     }
 }
 
@@ -88,7 +128,16 @@ BLACK_BOX_WARNINGS = {
     "Memantine": "Caution: Requires dose adjustment in severe renal impairment (CrCl < 30 mL/min). May cause mild dizziness, confusion, and headache.",
     "Clonidine": "Caution: High risk of severe rebound hypertension upon abrupt withdrawal. Causes sinus bradycardia, orthostatic hypotension, and central sedation.",
     "Lorazepam": "Warning: Concomitant use with opioids may result in severe sedation, respiratory depression, coma, and death. High risk of physical dependence, ataxia, paradoxical disinhibition in dementia, and falls.",
-    "Escitalopram": "Warning: Dose-dependent QTc prolongation (maximum recommended dose 10 mg/day in elderly patients). Risk of hyponatremia / SIADH."
+    "Escitalopram": "Warning: Dose-dependent QTc prolongation (maximum recommended dose 10 mg/day in elderly patients). Risk of hyponatremia / SIADH.",
+	"Sertaline": "Warning: Increased risk of suicidal ideation; caution for severe hyponatramia/SIADH, serotonin syndrome and bleeding risk.",
+	"Fluoxetine": "Warning: Long half-life with high risk of drug interactions (CYP2D6/3A4 inhibitor), and serotonin syndrome.",
+	"Amitryptyline": "Warning: High risk of overdose, cardiac arrhythmias, anticholinergic toxicity.",
+	"Venlafaxine": "Warning: Dose-dependent sustained hypertension, QTc prolongation, severe discontinuation syndrome.",
+	"Duloxetine": "Contraindicated in Severe hepatic impairment or Chronic liver disease.",
+	"Vortixoetine": "Warning: Abnormal bleeding, Hyponatremia/SIADH, and Serotonin syndrome.",
+	"Bupropion": "Contraindicated in patients with seizure disorders, active eating disorders (bulimia/anorexia), or abrupt cessation of GABAnergic agents or alcohol.",
+	"Trazodone": "Warning: High risk of Oversedation due to high α1 blockade), QTc prologation and rare risk of Priapism.",
+	"Agomelatine": "Contraindicated in Hepatic impairment due to Hepatotoxic profile."
 }
 
 
