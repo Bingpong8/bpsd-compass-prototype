@@ -445,7 +445,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         #### 3. Cognitive Burden Penalty ($P_{\\text{ACB}}$) & Rule-Out Guardrails
         * **$M_1$ Potency Threshold:** Central $M_1$ muscarinic blockade triggers a step-function penalty when binding potency reaches $pK_{i,M1} \\ge 7.0$ ($K_i \\le 100\\text{ nM}$).
         * **Cognitive Scaling ($C_{\\text{patient}}$):** Scaled via baseline TMSE score ($3.0$ for TMSE < 10, $2.0$ for TMSE 10-20, and $1.0$ for TMSE > 20).
-        * **Dynamic Rule-Out Engine:** When a clinician checks the rule-out box for a top drug, the system dynamically filters out that agent and recalculates the matrix to present the safest second-line alternative.
+        * **Rule-Out Engine:** When a clinician checks the rule-out box for a top drug, the system will filter out that agent and recalculate for the safest second-line alternative.
         """
     )
 with st.expander("🔍 Core References & Algorithmic Citations"):
