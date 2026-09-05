@@ -451,15 +451,8 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
 with st.expander("🔍 Core References & Algorithmic Citations"):
 	st.markdown(
     	"""
-    	1. **Roth, B. L., et al.** *NIMH Psychoactive Drug Screening Program (PDSP) Database*. University of North Carolina at Chapel Hill. [Quantitative receptor binding constants ($K_i$ and $p K_i$ values across monoaminergic, cholinergic, and histaminergic targets)]
-    	2. **Magierski, R., et al. (2020).** *Frontiers in Psychiatry*, 11, 7413102. [Neurochemical substrates of BPSD, mapping cholinergic, serotonergic, dopaminergic, and noradrenergic dysregulation to dementia behavioral phenotypes]
-    	3. **De Rossi, P., et al. (2020).** *Frontiers in Pharmacology*, 11, 7344175. [Targeted receptor mechanics: $5\\text{-HT}_{2\\text{A}}$ inverse agonism and $D_2/D_3/5\\text{-HT}_{1\text{A}}$ partial agonism in managing BPSD agitation and psychosis]
-    	4. **Kwak, A. T., et al. (2024).** *Neuropsychiatric Disease and Treatment*, 20, 12854121. [Histamine ($H_1$) and Muscarinic ($M_1$) binding thresholds for evaluating sedation and Anticholinergic Cognitive Burden (ACB) penalties]
-    	5. **Davies, S. J., et al. (2018).** *BMC Psychiatry*, 18(1), 5944080. [Sequential, evidence-based psychotropic drug treatment algorithms in dementia based on tolerability and receptor profiles]
-    	6. **Kales, H. C., Gitlin, L. N., & Lyketsos, C. G. (2015).** *BMJ*, 350, h369. [The DICE Approach: Describe, Investigate, Create, Evaluate—a non-pharmacological and clinical guardrail framework for BPSD]
-    	7. **Cummings, J., et al. (2022).** *Translational Neurodegeneration*, 11(1), 1-17. [Disease-modifying and symptom-specific psychopharmacology in Alzheimer's disease].
-    	8. **Ballard, C., et al. (2020).** *Nature Reviews Neurology*, 16(2), 73-84. [Frontostriatal and limbic circuit disruptions in neurodegenerative diseases and target neurotransmitter mapping].
-    	9. **Correll, C. U. (2010/2021).** *Journal of Clinical Psychiatry* / *Brazilian Journal of Psychiatry*. [Conversion of $K_i$ dissociation constants into functional receptor occupancy ratios for predicting clinical efficacy and EPS/metabolic risks].
-    	10. **Health Quality BC / CCSMH (2023–2025).** *BPSD Clinical Practice Guidelines & Decision Algorithms*. [Point-of-care behavioral decision-support benchmarks for primary care and geriatric clinicians].
+    	1. **Roth BL, Driscol J.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. University of North Carolina at Chapel Hill and the United States National Institute of Mental Health.
+    	2. **Magierski R, et al. (2020).** *Pharmacotherapy of Behavioral and Psychological Symptoms of Dementia: State of the Art and Future Progress*. Front. Pharmacol. 11:1168. doi: 10.3389/fphar.2020.01168
+    	3. **Caraci F., et al. (2020).** *New antipsychotic drugs for the treatment of agitation and psychosis in Alzheimer's disease: focus on brexpiprazole and pimavanserin*. F1000Res:F1000 Faculty Rev-686. doi: 10.12688/f1000research.22662.1. PMID: 32695312; PMCID: PMC7344175.
     	"""
 	)
