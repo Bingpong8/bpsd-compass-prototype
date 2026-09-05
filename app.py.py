@@ -448,7 +448,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         * **Dynamic Rule-Out Engine:** When a clinician checks the rule-out box for a top drug, the system dynamically filters out that agent and recalculates the matrix to present the safest second-line alternative.
         """
     )
-with st.expander("🔍 Core References & Algorithmic Citations"):
+st.expander("🔍 Core References & Algorithmic Citations"):
 references_markdown = """
 1. **Roth BL, et al.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. University of North Carolina at Chapel Hill and the United States National Institute of Mental Health.
 
