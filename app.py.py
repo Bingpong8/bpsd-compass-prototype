@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 st.set_page_config(page_title="BPSD Compass Prototype (P2)", layout="wide")
-st.title("BPSD Compass Prototype (P2)")
+st.title("BPSD Compass Prototype (V2)")
 st.caption("Parameter-driven neurotransmitters affinity based decision-support tool")
 
 ascii_header = r"""
@@ -25,7 +25,7 @@ ascii_header = r"""
 
 st.code(ascii_header, language=None)
 
-# 1. PHARMACODYNAMIC DATABASE (pKi = -log10(K_i))
+# 1. PHARMACODYNAMIC DATABASE
 # ---------------------------------------------------------
 DRUG_DATABASE = {
     "Brexpiprazole": {
@@ -114,8 +114,7 @@ DRUG_DATABASE = {
     }
 }
 
-
-# 2. CLINICAL CAUTIONS DATABASE
+# 2. CAUTIONS DATABASE
 # ---------------------------------------------------------
 BLACK_BOX_WARNINGS = {
     "Brexpiprazole": "Exercise extreme caution for akathisia and impulse-control disorders.",
@@ -140,8 +139,7 @@ BLACK_BOX_WARNINGS = {
     "Agomelatine": "Contraindicated in hepatic impairment due to hepatotoxic profile."
 }
 
-
-# 3. CALCULATION ENGINE
+# 3. CALCULATION MODEL
 # ---------------------------------------------------------
 def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_score):
     pk = drug_data["pKi"]
@@ -155,7 +153,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_scor
               (weights.get("NMDA", 0) * pk["NMDA"] * ar["NMDA"]) + \
               (weights.get("GABA-A", 0) * pk["GABA-A"] * ar["GABA-A"])
     
-    # 2. Risk Deductions
+    # 2. Risk Component
     d2_risk = (lambda_risks["D2_full"] * pk["D2"]) if ar["D2"] < 0 else 0.0
     u_risk = (lambda_risks["H1"] * pk["H1"]) + \
              (lambda_risks["α1"] * pk["α1"]) + \
@@ -171,7 +169,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_scor
         
     pacb = c_patient * 2.0 if pk["M1"] >= 7.0 else 0.0
     
-    # Net Score Calculation
+    # Score Calculation
     m_j = u_thera - u_risk - pacb
     
     return {
@@ -184,7 +182,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_scor
     }
 
 
-# 4. STREAMLIT FRONTEND & UI
+# 4. WEB-APP FRONTEND & UI
 # ---------------------------------------------------------
 
 st.markdown("---")
@@ -217,9 +215,9 @@ PARKINSONISM_MAPPING = {
     "Severe (Diagnosed Parkinsonism / DLB / High SAS score)": 1.0
 }
 
-# --- SECTION: PRIOR PSYCHOTROPIC MEDICATION EVALUATION ---
-st.subheader("📋 Pre-Evaluation: Prior Psychotropic Medication Status")
-st.caption("Assess ongoing/recent psychotropic regimens before running new target optimization.")
+# PRIOR PSYCHOTROPIC MEDICATION EVALUATION
+st.subheader("📋 Prior Psychotropic Medication Status")
+st.caption("Assess ongoing/recent psychotropic regimens before new target optimization.")
 
 col_p1, col_p2, col_p3 = st.columns(3)
 
@@ -232,7 +230,7 @@ with col_p1:
 
 with col_p2:
     prior_response = st.selectbox(
-        "Clinical Response to Current Regimen",
+        "Response to Current Regimen",
         options=[
             "N/A (Naïve)",
             "Adequate Response (Symptom Control)",
@@ -252,11 +250,11 @@ with col_p3:
 
 st.markdown("---")
 
-# --- SECTION: 11-NPI SYMPTOM DOMAIN ASSESSMENT ---
+# 11-NPI SYMPTOM DOMAIN ASSESSMENT
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader("Target Symptom Severity (11 NPI Domains)")
+    st.subheader("Target Symptom Severity (NPI Domains)")
     st.caption("💡 *Normalized Weight (ωr) = Bedside Score / Maximum Score (0.0 to 1.0)*")
     
     npi_delusions = st.selectbox("1. Delusions (5-HT2A / D2 Target)", options=list(NPI_MAPPING.keys()), index=0)
@@ -284,8 +282,8 @@ weights = {
 }
 
 with col2:
-    st.subheader("Patient Risk Profile & Safety Vulnerabilities")
-    st.caption("💡 *Risk Coefficients (λr) map clinical frailty scores directly to toxicity penalties*")
+    st.subheader("Patient Risk & Safety Profile")
+    st.caption("💡 *Risk Coefficients (λr) of frailty matched to toxicity*")
     
     fall_sel = st.selectbox("Fall & Sedation Vulnerability (Morse Fall Scale)", options=list(FALL_RISK_MAPPING.keys()), index=2)
     ortho_sel = st.selectbox("Orthostatic Hypotension Profile (Standing SBP Drop)", options=list(ORTHO_BP_MAPPING.keys()), index=1)
@@ -299,13 +297,13 @@ with col2:
     }
 
 st.markdown("---")
-st.subheader("Calculated Multi-System Match Dashboard")
+st.subheader("Dashboard")
 
 raw_results = [calculate_match_score(d, data, weights, lambda_risks, TMSE) for d, data in DRUG_DATABASE.items()]
 df_results = pd.DataFrame(raw_results).sort_values(by="Net Score (Mj)", ascending=False).reset_index(drop=True)
 df_filtered = df_results[~df_results["Drug"].isin(st.session_state.excluded_drugs)].reset_index(drop=True)
 
-for col in ["Net Score (Mj)", "Therapeutic Gain", "Risk Deductions", "ACB Penalty", "M1 Potency (pKi)"]:
+for col in ["Net Score (Mj)", "Therapeutic Gain", "Risk Deductions", "ACB Penalty", "M1 Potency"]:
     df_results[col] = df_results[col].map("{:.1f}".format)
     df_filtered[col] = df_filtered[col].map("{:.1f}".format)
 
@@ -325,21 +323,21 @@ if not df_filtered.empty:
                 &nbsp;|&nbsp; Gain: <strong>+{top_drug['Therapeutic Gain']}</strong> 
                 &nbsp;|&nbsp; Deductions: <strong>-{top_drug['Risk Deductions']}</strong>
                 &nbsp;|&nbsp; ACB Penalty: <strong>-{top_drug['ACB Penalty']}</strong>
-                &nbsp;|&nbsp; M1 Potency: <strong>{top_drug['M1 Potency (pKi)']}</strong>
+                &nbsp;|&nbsp; M1 Potency: <strong>{top_drug['M1 Potency']}</strong>
             </p>
         </div>
         """,
         unsafe_allow_html=True
     )
     
-    # --- NEXT-STEP MANAGEMENT DECISION ENGINE ---
+    # NEXT-STEP MANAGEMENT DECISION ENGINE
     if prior_drug != "None (Treatment Naïve)":
         st.markdown("### 🔀 Prior Medication Management Strategy")
         if prior_drug == top_name:
             if prior_response == "Partial Response (Subtherapeutic)" and prior_dose_status != "Maximum Tolerated Dose":
                 st.info(f"<b>Management Strategy: Dose Optimization.</b> {top_name} remains the optimal algorithmic choice. Continue {top_name} and titrate upward to target dose before switching.")
             elif prior_response == "Intolerable Adverse Effects":
-                st.warning(f"<b>Management Strategy: Cross-Titration Indicated.</b> Although {top_name} ranks highest algorithmically, the patient experienced intolerable side effects. Consider checking the rule-out box for {top_name} to evaluate second-line alternatives.")
+                st.warning(f"<b>Management Strategy: Cross-Titration Indicated.</b> Although {top_name} ranks highest, but the patient experienced intolerable side effects. Consider checking the rule-out box for {top_name} to evaluate second-line alternatives.")
             else:
                 st.info(f"<b>Management Strategy: Maintain Current Regimen.</b> {top_name} matches the target profile and is currently active.")
         else:
@@ -348,7 +346,7 @@ if not df_filtered.empty:
             elif prior_response == "Adequate Response (Symptom Control)":
                 st.info(f"<b>Management Strategy: Maintain Current Regimen.</b> Patient has adequate response on <b>{prior_drug}</b>. Switching to {top_name} is not immediately required unless safety concerns arise.")
 
-    st.warning(f"⚠️ **Clinical Cautions & Warnings for {top_name}:**\n\n{BLACK_BOX_WARNINGS.get(top_name, 'No specific black box warning listed.')}")
+    st.warning(f"⚠️ **Clinical Cautions for {top_name}:**\n\n{BLACK_BOX_WARNINGS.get(top_name, 'No specific black box warning listed.')}")
     
     rule_out_check = st.checkbox(
         f"🚫 **Rule out {top_name} for this patient** (Check if patient has contraindications, high risks for exact medication, intolerance or allergy)",
@@ -368,7 +366,7 @@ if st.session_state.excluded_drugs:
         st.session_state.excluded_drugs = []
         st.rerun()
 
-st.markdown("### Complete Comparative Drug Matrix")
+st.markdown("### Comparative Drugs Table")
 
 def apply_traffic_lights(val):
     val_float = float(val)
@@ -401,7 +399,7 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
         
         $$M_j = U_{\\text{thera}} - U_{\\text{risk}} - P_{\\text{ACB}}$$
         
-        #### 11-NPI Neuroreceptor Mapping Framework
+        #### 11-NPI Neuroreceptor Mapping
         * **Delusions / Hallucinations:** Mapped to $5\\text{-HT}_{2\\text{A}}$ inverse agonism and $D_2$ antagonism.
         * **Agitation / Aggression:** Mapped to $5\\text{-HT}_{2\\text{A}}$ blockade and $\\alpha_{2\\text{A}}$ autoreceptor agonism.
         * **Depression / Dysphoria:** Mapped to $\\text{SERT}$ inhibition and $5\\text{-HT}_{1\\text{A}}$ partial agonism.
@@ -413,13 +411,13 @@ with st.expander("🔍 Background Rationale & Expanded Pharmacodynamic Details")
 with st.expander("🔍 Core References & Algorithmic Citations"):
     st.markdown(
         """
-        1. **Roth, B. L., et al.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. UNC Chapel Hill / NIMH.
-        2. **Magierski, R., et al. (2020).** *Pharmacotherapy of Behavioral and Psychological Symptoms of Dementia: State of the Art and Future Progress*. Front. Psychiatry. PMID: 32848775.
-        3. **Tampi, R. R., et al. (2022).** *Brexpiprazole for the Treatment of Agitation in Dementia*. Drugs Aging. PMID: 35904712.
-        4. **Lee, D., et al. (2023).** *Brexpiprazole for the Treatment of Agitation Associated with Dementia Due to Alzheimer's Disease*. Am J Psychiatry. PMID: 37143168.
-        5. **Davies, S. J., et al. (2018).** *Sequential drug treatment algorithm for agitation and aggression in Alzheimer's and mixed dementia*. J Psychopharmacol. PMID: 29338602.
-        6. **Kales, H. C., et al. (2015).** *Assessment and management of behavioral and psychological symptoms of dementia*. BMJ. PMID: 25731898.
-        7. **Cummings, J., et al. (2022).** *Alzheimer's disease drug development pipeline: 2022*. Alzheimers Dement (NY). PMID: 35510134.
+        1. **Roth B. L., et al.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. UNC Chapel Hill / NIMH.
+        2. **Magierski R., et al. (2020).** *Pharmacotherapy of Behavioral and Psychological Symptoms of Dementia: State of the Art and Future Progress*. Front. Psychiatry. PMID: 32848775.
+        3. **Tampi R. R., et al. (2022).** *Brexpiprazole for the Treatment of Agitation in Dementia*. Drugs Aging. PMID: 35904712.
+        4. **Lee D., et al. (2023).** *Brexpiprazole for the Treatment of Agitation Associated with Dementia Due to Alzheimer's Disease*. Am J Psychiatry. PMID: 37143168.
+        5. **Davies S. J., et al. (2018).** *Sequential drug treatment algorithm for agitation and aggression in Alzheimer's and mixed dementia*. J Psychopharmacol. PMID: 29338602.
+        6. **Kales H. C., et al. (2015).** *Assessment and management of behavioral and psychological symptoms of dementia*. BMJ. PMID: 25731898.
+        7. **Cummings J., et al. (2022).** *Alzheimer's disease drug development pipeline: 2022*. Alzheimers Dement (NY). PMID: 35510134.
         8. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
         """
     )
