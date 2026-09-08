@@ -178,7 +178,7 @@ def calculate_match_score(drug_name, drug_data, weights, lambda_risks, TMSE_scor
         "Therapeutic Gain": round(u_thera, 1),
         "Risk Deductions": round(u_risk, 1),
         "ACB Penalty": round(pacb, 1),
-        "M1 Potency (pKi)": round(pk["M1"], 1)
+        "M1 Potency": round(pk["M1"], 1)
     }
 
 
