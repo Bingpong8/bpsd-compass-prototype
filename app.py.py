@@ -425,4 +425,3 @@ with st.expander("🔍 References & Citations"):
         8. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
         """
 	)
-		+
