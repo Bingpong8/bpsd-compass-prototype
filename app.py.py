@@ -169,7 +169,6 @@ DRUG_DATABASE = {
         "Fr_renal": 0.28, "Fr_hepatic": 0.72, "Risk_QTc": 0.30,
         "warnings": "Aplastic anemia, agranulocytosis, and severe dermatologic reactions (SJS/TEN); potent CYP3A4 enzyme auto-inducer."
     }
-
 # -----------------------------------------------------------------------------
 # 2. CONTINUOUS SIGMOIDAL SCALING FUNCTIONS
 # -----------------------------------------------------------------------------
