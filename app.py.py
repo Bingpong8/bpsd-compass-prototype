@@ -512,8 +512,7 @@ with st.expander("🔄 Cross-Titration & Switching Protocol", expanded=False):
     * **Week 2:** Maintain taper. Monitor for cholinergic rebound or withdrawal psychosis.
     * **Week 3:** Discontinue prior agent completely. Titrate target agent to optimal therapeutic dosage.
     """)
-Here is a ready-to-integrate Streamlit st.expander module that breaks down the rationale, mathematical formulas, and algorithmic thinking process for every layer of the decision engine.
-You can drop this code directly into your Streamlit frontend script (e.g., right before or after the references section).
+	
 # -----------------------------------------------------------------------------
 # EXPANDABLE RATIONALE, FORMULAS & ALGORITHMIC THINKING
 # -----------------------------------------------------------------------------
