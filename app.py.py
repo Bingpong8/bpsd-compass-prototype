@@ -2,9 +2,9 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-st.set_page_config(page_title="BPSD Compass Prototype (P4)", layout="wide")
-st.title("BPSD Compass Prototype (P4)")
-st.caption("Parameter-driven neurotransmitters affinity based decision-support tool")
+st.set_page_config(page_title="BPSD Compass Prototype (P3.5)", layout="wide")
+st.title("BPSD Compass Prototype (P3.5)")
+st.caption("Parameter-driven neurotransmitter affinity decision-support tool")
 
 ascii_header = r"""
 								THE DEATH OF PEACE OF MIND
@@ -264,10 +264,10 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         
     p_sedation = min(95, int(sigmoid(pk["H1"] * lambdas["H1"], 0.5, 3.5) * 100))
     p_orthostasis = min(95, int(sigmoid(pk["α1"] * lambdas["α1"], 0.5, 3.5) * 100))
-    p_eps = min(95, int(sigmoid(pk["D2"] * lambdas["D2_full"], 0.5, 4.0) * 100)) if ar["D2"] < 0 else 5
+    p_eps = min(95, int(sigmoid(pk["D2"] * lambdas["D2"], 0.5, 4.0) * 100)) if ar["D2"] < 0 else 5
     
     return {
-        "Drug": drug_name,
+        "Drug": drug,
         "Category": drug_data["category"],
         "Net Score (Mj)": round(m_j, 1) if not hard_locked else -999.0,
         "Raw_Mj": m_j,
@@ -294,6 +294,18 @@ NPI_MAPPING = {
     "3 - Severe (8-12)": 1.0
 }
 
+HEPATIC_MAPPING = {
+    "Normal / Unimpaired": 0.0,
+    "Abnormal LFTs / Mild Impairment": 0.4,
+    "Liver Cirrhosis / Moderate-Severe Impairment": 0.8
+}
+
+CAREGIVER_CONCERN_MAPPING = {
+    "0 - None (No concern)": 0.5,
+    "1 - Low Concern": 1.0,
+    "2 - High Concern": 1.5
+}
+
 st.subheader("📋 Patient Clinical Parameters")
 
 c_etiology, c_bio1, c_bio2 = st.columns(3)
@@ -313,32 +325,66 @@ with c_bio1:
 with c_bio2:
     qtc_ms = st.number_input("Baseline QTc Interval (ms)", 300, 600, 430)
     egfr_val = st.number_input("eGFR (mL/min)", 5, 120, 55)
-    lft_val = st.slider("Hepatic Impairment (0 = Normal, 1 = Severe)", 0.0, 1.0, 0.2)
+    hepatic_status = st.selectbox("Hepatic Function Status", list(HEPATIC_MAPPING.keys()), index=0)
+    lft_val = HEPATIC_MAPPING[hepatic_status]
 
 st.markdown("---")
-st.subheader("🎯 Target Symptom Severity (NPI Categorical)")
+st.subheader("🎯 Target Symptom Severity (All 12 NPI Subscales)")
 
-# Two-column layout for NPI dropdowns to prevent visual overload
-col_npi1, col_npi2 = st.columns(2)
+# 3-Column Layout for full 12 NPI Index Dropdowns
+col_npi1, col_npi2, col_npi3 = st.columns(3)
 
 with col_npi1:
-    s_agitation_str = st.selectbox("Agitation / Physical Aggression (D2 / α-2A Target)", list(NPI_MAPPING.keys()), index=2)
-    s_psychosis_str = st.selectbox("Psychosis - Delusions & Hallucinations (5-HT2A Target)", list(NPI_MAPPING.keys()), index=1)
-    s_apathy_str = st.selectbox("Apathy / Executive Deficit (NET / NMDA Target)", list(NPI_MAPPING.keys()), index=1)
+    s_delusions_str = st.selectbox("Delusions (5-HT2A / D2 Target)", list(NPI_MAPPING.keys()), index=1)
+    s_hallucinations_str = st.selectbox("Hallucinations (5-HT2A Target)", list(NPI_MAPPING.keys()), index=1)
+    s_agitation_str = st.selectbox("Agitation / Aggression (D2 / α2A Target)", list(NPI_MAPPING.keys()), index=2)
+    s_depression_str = st.selectbox("Depression / Dysphoria (NET / 5-HT Target)", list(NPI_MAPPING.keys()), index=1)
 
 with col_npi2:
-    s_affective_str = st.selectbox("Affective Lability / Mood Instability (GABA-A Target)", list(NPI_MAPPING.keys()), index=2)
-    pref_sedation = st.slider("Caregiver Avoid-Sedation Weight", 0.5, 1.5, 1.0)
-    pref_falls = st.slider("Caregiver Avoid-Fall Weight", 0.5, 1.5, 1.0)
+    s_anxiety_str = st.selectbox("Anxiety (GABA-A / 5-HT Target)", list(NPI_MAPPING.keys()), index=1)
+    s_euphoria_str = st.selectbox("Euphoria / Elation (GABA-A Target)", list(NPI_MAPPING.keys()), index=0)
+    s_apathy_str = st.selectbox("Apathy / Indifference (NET / NMDA Target)", list(NPI_MAPPING.keys()), index=1)
+    s_disinhibition_str = st.selectbox("Disinhibition (GABA-A / 5-HT Target)", list(NPI_MAPPING.keys()), index=0)
 
-# Map string dropdown choices to numeric values
+with col_npi3:
+    s_irritability_str = st.selectbox("Irritability / Lability (GABA-A / α2A Target)", list(NPI_MAPPING.keys()), index=1)
+    s_motor_str = st.selectbox("Aberrant Motor Behavior (D2 / 5-HT2A Target)", list(NPI_MAPPING.keys()), index=0)
+    s_sleep_str = st.selectbox("Sleep / Night-time Disturbances (5-HT2A Target)", list(NPI_MAPPING.keys()), index=1)
+    s_appetite_str = st.selectbox("Appetite / Eating Changes (5-HT2A Target)", list(NPI_MAPPING.keys()), index=0)
+
+st.markdown("---")
+st.subheader("⚙️ Caregiver Priorities & Risk Concerns")
+col_pref1, col_pref2 = st.columns(2)
+
+with col_pref1:
+    pref_sedation_str = st.selectbox("Caregiver Avoid-Sedation Concern Weight", list(CAREGIVER_CONCERN_MAPPING.keys()), index=1)
+    pref_sedation = CAREGIVER_CONCERN_MAPPING[pref_sedation_str]
+
+with col_pref2:
+    pref_falls_str = st.selectbox("Caregiver Avoid-Fall Concern Weight", list(CAREGIVER_CONCERN_MAPPING.keys()), index=1)
+    pref_falls = CAREGIVER_CONCERN_MAPPING[pref_falls_str]
+
+# Map 12 NPI Symptom severity choices into receptor affinity target weights
+v_delusions = NPI_MAPPING[s_delusions_str]
+v_hallucinations = NPI_MAPPING[s_hallucinations_str]
+v_agitation = NPI_MAPPING[s_agitation_str]
+v_depression = NPI_MAPPING[s_depression_str]
+v_anxiety = NPI_MAPPING[s_anxiety_str]
+v_euphoria = NPI_MAPPING[s_euphoria_str]
+v_apathy = NPI_MAPPING[s_apathy_str]
+v_disinhibition = NPI_MAPPING[s_disinhibition_str]
+v_irritability = NPI_MAPPING[s_irritability_str]
+v_motor = NPI_MAPPING[s_motor_str]
+v_sleep = NPI_MAPPING[s_sleep_str]
+v_appetite = NPI_MAPPING[s_appetite_str]
+
 weights = {
-    "5HT2A": NPI_MAPPING[s_psychosis_str],
-    "D2": NPI_MAPPING[s_agitation_str],
-    "NET": NPI_MAPPING[s_apathy_str],
-    "α2A": NPI_MAPPING[s_agitation_str] * 0.5,
-    "NMDA": NPI_MAPPING[s_apathy_str] * 0.5,
-    "GABA-A": NPI_MAPPING[s_affective_str]
+    "5HT2A": min(1.0, max(v_delusions * 0.7, v_hallucinations * 0.8, v_agitation * 0.5, v_disinhibition * 0.5, v_sleep * 0.6, v_motor * 0.5, v_appetite * 0.4)),
+    "D2": min(1.0, max(v_agitation * 0.6, v_delusions * 0.5, v_hallucinations * 0.4, v_apathy * 0.3, v_motor * 0.5)),
+    "NET": min(1.0, max(v_apathy * 0.8, v_depression * 0.7)),
+    "α2A": min(1.0, max(v_agitation * 0.5, v_irritability * 0.4)),
+    "NMDA": min(1.0, max(v_apathy * 0.4)),
+    "GABA-A": min(1.0, max(v_anxiety * 0.7, v_irritability * 0.6, v_euphoria * 0.5, v_disinhibition * 0.5))
 }
 
 # -----------------------------------------------------------------------------
@@ -354,9 +400,12 @@ lambdas = calculate_sigmoidal_lambdas(
     dementia_subtype=dementia_subtype
 )
 
+# Apply caregiver sedation preference weight directly to H1 risk multiplier
+lambdas["H1"] = min(1.0, lambdas["H1"] * pref_sedation)
+
 results = [
     calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms)
-    for name, data in DRUG_DATABASE.items()
+    for drug, drug_data in DRUG_DATABASE.items()
 ]
 
 results = sorted(results, key=lambda x: x["Raw_Mj"], reverse=True)
@@ -456,16 +505,16 @@ with st.expander("⚙️ Calculated Sigmoidal Risk(λ)", expanded=False):
 
 with st.expander("🔄 Cross-Titration & Switching Protocol", expanded=False):
     st.markdown("""
-    **Patient Transition Protocol*
+    **Patient Transition Protocol**
     When transitioning from a high-affinity D2 antagonist (e.g. Risperidone) to a D2 partial agonist or non-dopaminergic agent:
     
-    * **Week 1:** Reduce prior agent dose by 50%. Initiate target agent at 0.5 mg/day baseline.
+    * **Week 1:** Reduce prior agent dose by 50%. Initiate target agent at baseline low dose.
     * **Week 2:** Maintain taper. Monitor for cholinergic rebound or withdrawal psychosis.
     * **Week 3:** Discontinue prior agent completely. Titrate target agent to optimal therapeutic dosage.
     """)
 
 # -----------------------------------------------------------------------------
-# 8. CITATIONS & ALGORITHMIC REFERENCES
+# 6. CITATIONS & ALGORITHMIC REFERENCES
 # -----------------------------------------------------------------------------
 with st.expander("🔍 References & Citations"):
     st.markdown(
@@ -479,4 +528,4 @@ with st.expander("🔍 References & Citations"):
         7. **Cummings, J., et al. (2022).** *Alzheimer's disease drug development pipeline: 2022*. Alzheimers Dement (NY). PMID: 35510134.
         8. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
         """
-	)
+    )
