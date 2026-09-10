@@ -34,7 +34,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 8.7, "D2": 9.5, "NET": 5.0, "α2A": 7.4, "NMDA": 0.0, "GABA-A": 0.0, "H1": 7.1, "α1": 8.0, "M1": 5.0},
         "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.14, "Fr_hepatic": 0.86, "Risk_QTc": 0.20,
-        "dosage": "Start 0.5 mg once daily; target 1.0 - 2.0 mg/day max for agitation in dementia.",
+        "dosage": "Start 0.5 mg PO OD; max 2 mg/day for agitation in dementia.",
         "warnings": "Exercise extreme caution for akathisia and impulse-control disorders. Monitor elderly closely."
     },
     "Pimavanserin": {
@@ -42,7 +42,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 9.3, "D2": 5.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.06, "Fr_hepatic": 0.94, "Risk_QTc": 0.40,
-        "dosage": "Standard dose: 34 mg once daily (or 10 mg daily in CYP3A4 inhibitor co-administration).",
+        "dosage": "Standard dose: 34 mg PO OD (or 10 mg PO OD in CYP3A4 inhibitor co-administration).",
         "warnings": "QTc prolongation risk. Indicated primarily for Parkinson's Disease Psychosis."
     },
     "Risperidone": {
@@ -58,7 +58,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 6.8, "D2": 5.8, "NET": 5.0, "α2A": 5.5, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.0, "α1": 7.1, "M1": 6.0},
         "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.40,
-        "dosage": "Start 12.5 mg - 25 mg hs; target 50 mg - 150 mg/day in divided doses.",
+        "dosage": "Start 12.5 mg - 25 mg PO hs",
         "warnings": "QTc prolongation, severe orthostatic hypotension, sedation, and metabolic dysregulation."
     },
     "Olanzapine": {
@@ -66,7 +66,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 8.5, "D2": 7.8, "NET": 5.0, "α2A": 6.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.8, "α1": 7.7, "M1": 7.7},
         "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.07, "Fr_hepatic": 0.93, "Risk_QTc": 0.30,
-        "dosage": "Start 2.5 mg hs; target 5.0 mg - 10 mg/day max in elderly.",
+        "dosage": "Start 2.5 mg PO hs; target 5.0 mg/day, max 10 mg/day.",
         "warnings": "High risk of severe metabolic syndrome, weight gain, sedation, and anticholinergic cognitive impairment."
     },
     "Haloperidol": {
@@ -74,7 +74,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 7.2, "D2": 9.2, "NET": 5.0, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 6.0, "α1": 7.3, "M1": 5.0},
         "Ar": {"5HT2A": 0.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.15, "Fr_hepatic": 0.85, "Risk_QTc": 0.85,
-        "dosage": "Start 0.25 mg - 0.5 mg daily/PRN; target 0.5 mg - 2.0 mg/day maximum.",
+        "dosage": "Start as low as possible, 0.25-0.5 mg PO OD or PRN - 2.0 mg/day maximum.",
         "warnings": "HIGH RISK: Torsades de Pointes, severe Extrapyramidal Symptoms (EPS), and Tardive Dyskinesia."
     },
     "Escitalopram": {
@@ -82,7 +82,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 5.2, "D2": 5.0, "NET": 5.0, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 6.3, "α1": 5.0, "M1": 5.0},
         "Ar": {"5HT2A": 0.5, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.20, "Fr_hepatic": 0.80, "Risk_QTc": 0.75,
-        "dosage": "Start 5.0 mg daily; maximum 10 mg/day recommended in elderly due to QTc risk.",
+        "dosage": "Start 5 mg/day; max 10 mg/day.",
         "warnings": "Dose-dependent QTc prolongation risk; hyponatremia and bleeding precautions."
     },
     "Sertraline": {
@@ -90,19 +90,19 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 6.2, "D2": 6.6, "NET": 5.5, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0},
         "Ar": {"5HT2A": 0.5, "D2": 0.5, "NET": 0.5, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.12, "Fr_hepatic": 0.88, "Risk_QTc": 0.25,
-        "dosage": "Start 25 mg daily; target 50 mg - 100 mg daily.",
+        "dosage": "Start 25 mg/day; target 50 mg - 100 mg/day.",
         "warnings": "Hyponatremia/SIADH, serotonin syndrome, and mild GI distress. Well-tolerated cardiac profile."
     },
     "Valproic Acid": {
-        "category": "Mood Stabilizer",
+        "category": "Mood Stabilizer Anticonvulsant",
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 7.2, "H1": 5.0, "α1": 5.0, "M1": 5.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.10,
-        "dosage": "Start 125 mg - 250 mg bid; target serum concentration 50-80 mcg/mL.",
+        "dosage": "Start 125 mg - 250 mg PO bid; target serum concentration 50-80 mcg/ml.",
         "warnings": "Hepatotoxicity, pancreatitis, thrombocytopenia; monitor LFTs, CBC, and plasma levels."
     },
     "Gabapentin": {
-        "category": "Mood Stabilizer / Anticonvulsant",
+        "category": "GABA analogue Anticonvulsant",
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 6.8, "H1": 5.0, "α1": 5.0, "M1": 5.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 1.00, "Fr_hepatic": 0.00, "Risk_QTc": 0.05,
@@ -134,7 +134,7 @@ DRUG_DATABASE = {
         "warnings": "Dose-dependent blood pressure elevation and sharp withdrawal discontinuation syndrome."
     },
     "Vortioxetine": {
-        "category": "Multimodal Antidepressant",
+        "category": "Multimodal Serotonin Modulator Antidepressant",
         "pKi": {"5HT2A": 7.60, "D2": 5.00, "NET": 5.00, "α2A": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.59, "Fr_hepatic": 0.41, "Risk_QTc": 0.15,
@@ -158,7 +158,7 @@ DRUG_DATABASE = {
         "warnings": "Orthostatic hypotension, priapism, and marked daytime sedation."
     },
     "Mirtazapine": {
-        "category": "Antidepressant (NaSSA)",
+        "category": "Pyridine Tetracyclic Antidepressant (NaSSA)",
         "pKi": {"5HT2A": 8.1, "D2": 5.0, "NET": 5.0, "α2A": 7.3, "NMDA": 0.0, "GABA-A": 0.0, "H1": 9.3, "α1": 6.0, "M1": 5.0},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.75, "Fr_hepatic": 0.25, "Risk_QTc": 0.30,
@@ -166,7 +166,7 @@ DRUG_DATABASE = {
         "warnings": "Marked low-dose sedation and hyperphagia/weight gain; limited efficacy in primary agitation (SYMBAD trial)."
     },
     "Mianserin": {
-        "category": "Tetracyclic Antidepressant (NaSSA)",
+        "category": "Benzene Tetracyclic Antidepressant (NaSSA)",
         "pKi": {"5HT2A": 8.0, "D2": 5.5, "NET": 6.0, "α2A": 7.2, "NMDA": 0.0, "GABA-A": 0.0, "H1": 9.0, "α1": 7.3, "M1": 5.0},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.5, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.35,
@@ -174,7 +174,7 @@ DRUG_DATABASE = {
         "warnings": "Agranulocytosis/bone marrow depression (requires regular FBC), high sedation, and orthostasis."
     },
     "Lamotrigine": {
-        "category": "Mood Stabilizer / Anticonvulsant",
+        "category": "Mood Stabilizer Anticonvulsant",
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.5, "GABA-A": 6.0, "H1": 0.0, "α1": 0.0, "M1": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.5, "GABA-A": 0.5},
         "Fr_renal": 0.94, "Fr_hepatic": 0.06, "Risk_QTc": 0.10,
@@ -182,7 +182,7 @@ DRUG_DATABASE = {
         "warnings": "CRITICAL: Stevens-Johnson Syndrome (SJS) and Toxic Epidermal Necrolysis (TEN). Discontinue at first sign of rash."
     },
     "Carbamazepine": {
-        "category": "Mood Stabilizer / Anticonvulsant",
+        "category": "Mood Stabilizer Anticonvulsant",
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.0, "GABA-A": 6.8, "H1": 0.0, "α1": 0.0, "M1": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 0.28, "Fr_hepatic": 0.72, "Risk_QTc": 0.30,
@@ -393,7 +393,7 @@ else:
     st.markdown(
         f"""
         <div style="background-color: #e2f0d9; border-left: 6px solid #385723; color: #274411; padding: 12px 18px; border-radius: 6px; margin-bottom: 15px; font-size: 15px;">
-            <strong>💊 Recommended / Standard BPSD Dosage Spectrum:</strong> {top_drug['Dosage']}
+            <strong>💊 Recommended / Standard Dosage Spectrum:</strong> {top_drug['Dosage']}
         </div>
         """,
         unsafe_allow_html=True
@@ -443,21 +443,21 @@ with st.expander("🚦 Complete Candidate Traffic Light Dashboard", expanded=Fal
         use_container_width=True
     )
     
-    st.info("🚦 **Traffic Light Legend:** Green = Optimal Match ($M_j > 1.0$) | Yellow = Proceed with Caution ($-2.0 \\le M_j \\le 1.0$) | Red = High Risk / Contraindicated ($M_j < -2.0$)")
+    st.info("🚦 **Traffic Light:** Green = Optimal Match ($M_j > 1.0$) | Yellow = Proceed with Caution ($-2.0 \\le M_j \\le 1.0$) | Red = High Risk / Contraindicated ($M_j < -2.0$)")
 
-with st.expander("⚙️ Calculated Sigmoidal Risk Scalars (λ)", expanded=False):
+with st.expander("⚙️ Calculated Sigmoidal Risk(λ)", expanded=False):
     col_s1, col_s2, col_s3 = st.columns(3)
-    col_s1.write(f"- **Fall Risk (λ_H1):** `{lambdas['H1']:.2f}`")
-    col_s1.write(f"- **Orthostasis Risk (λ_α1):** `{lambdas['α1']:.2f}`")
-    col_s2.write(f"- **Motor EPS Risk (λ_D2):** `{lambdas['D2_full']:.2f}`")
-    col_s2.write(f"- **Cardiac QTc Risk (λ_QTc):** `{lambdas['QTc']:.2f}`")
-    col_s3.write(f"- **Renal Penalty (λ_renal):** `{lambdas['renal']:.2f}`")
-    col_s3.write(f"- **Hepatic Penalty (λ_hepatic):** `{lambdas['hepatic']:.2f}`")
+    col_s1.write(f"- **Fall Risk (λH1):** `{lambdas['H1']:.2f}`")
+    col_s1.write(f"- **Orthostasis Risk (λα1):** `{lambdas['α1']:.2f}`")
+    col_s2.write(f"- **Motor EPS Risk (λD2):** `{lambdas['D2_full']:.2f}`")
+    col_s2.write(f"- **Cardiac QTc Risk (λQTc):** `{lambdas['QTc']:.2f}`")
+    col_s3.write(f"- **Renal Penalty (λrenal):** `{lambdas['renal']:.2f}`")
+    col_s3.write(f"- **Hepatic Penalty (λhepatic):** `{lambdas['hepatic']:.2f}`")
 
-with st.expander("🔄 Cross-Titration & Switching Protocol Generator", expanded=False):
+with st.expander("🔄 Cross-Titration & Switching Protocol", expanded=False):
     st.markdown("""
-    **Patient Transition Protocol Generator**
-    When transitioning from a high-affinity D2 antagonist (e.g. Risperidone) to a D2 partial agonist (e.g. Brexpiprazole) or non-dopaminergic agent (e.g. Pimavanserin):
+    **Patient Transition Protocol*
+    When transitioning from a high-affinity D2 antagonist (e.g. Risperidone) to a D2 partial agonist or non-dopaminergic agent:
     
     * **Week 1:** Reduce prior agent dose by 50%. Initiate target agent at 0.5 mg/day baseline.
     * **Week 2:** Maintain taper. Monitor for cholinergic rebound or withdrawal psychosis.
