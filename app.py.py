@@ -215,7 +215,7 @@ def calculate_sigmoidal_lambdas(morse, sbp_drop, sas, qtc, egfr, lft_factor, dem
     return {
         "H1": lambda_H1,
         "α1": lambda_α1,
-        "D2_full": lambda_D2_full,
+        "D2": lambda_D2_full,
         "QTc": lambda_QTc,
         "renal": lambda_renal,
         "hepatic": lambda_hepatic
