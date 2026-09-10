@@ -512,18 +512,20 @@ with st.expander("🔄 Cross-Titration & Switching Protocol", expanded=False):
     * **Week 2:** Maintain taper. Monitor for cholinergic rebound or withdrawal psychosis.
     * **Week 3:** Discontinue prior agent completely. Titrate target agent to optimal therapeutic dosage.
     """)
+Here is a ready-to-integrate Streamlit st.expander module that breaks down the rationale, mathematical formulas, and algorithmic thinking process for every layer of the decision engine.
+You can drop this code directly into your Streamlit frontend script (e.g., right before or after the references section).
 # -----------------------------------------------------------------------------
 # EXPANDABLE RATIONALE, FORMULAS & ALGORITHMIC THINKING
 # -----------------------------------------------------------------------------
-with st.expander("🧮 Formulas & Clinical Rationale", expanded=False):
+with st.expander("🧮 Algorithmic Architecture, Formulas & Clinical Rationale", expanded=False):
     st.markdown("""
-    This decision-support tool based on balancing therapeutic receptor targeting against patient-specific physiological vulnerability factors.
+    This decision-support engine employs a **Multi-Criteria Utility Optimization Model** that balances therapeutic receptor targeting against patient-specific physiological vulnerability factors.
 
     ---
 
     ### 1. Neurochemical Pathogenetic Coupling ($v_s \rightarrow w_r$)
     **Algorithmic Concept:**
-    Rather than treating symptoms as isolated clinical categories, the tool aiming all 12 NPI subscales ($v_s \in [0.0, 1.0]$) to their underlying neurochemical drivers. To prevent scaling distortion, the target weight ($w_r$) for any receptor ($r$) uses a non-linear maximum-affinity coupling function:
+    Rather than treating symptoms as isolated clinical categories, the engine maps all 12 NPI subscales ($v_s \in [0.0, 1.0]$) to their underlying neurochemical drivers. To prevent scaling distortion, the target weight ($w_r$) for any receptor ($r$) uses a non-linear maximum-affinity coupling function:
 
     $$w_r = \min\left(1.0, \max_{s}\left(v_s \cdot \kappa_{s,r}\right)\right)$$
 
@@ -584,6 +586,8 @@ with st.expander("🧮 Formulas & Clinical Rationale", expanded=False):
 
     $$P_{\text{event}} = \min\left(95\%, \text{int}\left( \frac{100}{1 + e^{-0.5(pK_i \cdot \lambda - 3.5)}} \right)\right)$$
     """)
+
+
 
 # -----------------------------------------------------------------------------
 # 6. CITATIONS & ALGORITHMIC REFERENCES
