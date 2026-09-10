@@ -221,7 +221,7 @@ def calculate_sigmoidal_lambdas(morse, sbp_drop, sas, qtc, egfr, lft_factor, dem
         "hepatic": lambda_hepatic
     }
 
-def calculate_p3_match_score(drug_name, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms):
+def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms):
     pk = drug_data["pKi"]
     ar = drug_data["Ar"]
     
@@ -355,7 +355,7 @@ lambdas = calculate_sigmoidal_lambdas(
 )
 
 results = [
-    calculate_p3_match_score(drug_name, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms)
+    calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms)
     for name, data in DRUG_DATABASE.items()
 ]
 
