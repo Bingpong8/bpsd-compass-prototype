@@ -383,7 +383,7 @@ weights = {
     "D2": min(1.0, max(v_agitation * 0.6, v_delusions * 0.5, v_hallucinations * 0.4, v_apathy * 0.3, v_motor * 0.5)),
     "NET": min(1.0, max(v_apathy * 0.8, v_depression * 0.7)),
     "α2A": min(1.0, max(v_agitation * 0.5, v_irritability * 0.4)),
-    "NMDA": min(1.0, max(v_apathy * 0.2)),
+    "NMDA": min(1.0, v_apathy * 0.4),
     "GABA-A": min(1.0, max(v_anxiety * 0.7, v_irritability * 0.6, v_euphoria * 0.5, v_disinhibition * 0.5))
 }
 
