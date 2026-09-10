@@ -244,7 +244,7 @@ def calculate_p3_match_score(drug_name, drug_data, weights, lambdas, mmse_score,
         (weights["GABA-A"] * pk["GABA-A"] * ar["GABA-A"])
     )
     
-    d2_risk = (lambdas["D2_full"] * pk["D2"]) if ar["D2"] < 0 else 0.0
+    d2_risk = (lambdas["D2"] * pk["D2"]) if ar["D2"] < 0 else 0.0
     qtc_risk_deduction = lambdas["QTc"] * drug_data["Risk_QTc"] * 5.0
     
     u_risk = (
@@ -294,7 +294,7 @@ NPI_MAPPING = {
     "3 - Severe (8-12)": 1.0
 }
 
-st.subheader("📋 Patient Clinical Parameters & Etiology")
+st.subheader("📋 Patient Clinical Parameters")
 
 c_etiology, c_bio1, c_bio2 = st.columns(3)
 
@@ -316,7 +316,7 @@ with c_bio2:
     lft_val = st.slider("Hepatic Impairment (0 = Normal, 1 = Severe)", 0.0, 1.0, 0.2)
 
 st.markdown("---")
-st.subheader("🎯 Target Symptom Severity (NPI Categorical Anchors)")
+st.subheader("🎯 Target Symptom Severity (NPI Categorical)")
 
 # Two-column layout for NPI dropdowns to prevent visual overload
 col_npi1, col_npi2 = st.columns(2)
@@ -355,7 +355,7 @@ lambdas = calculate_sigmoidal_lambdas(
 )
 
 results = [
-    calculate_p3_match_score(name, data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms)
+    calculate_p3_match_score(drug_name, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms)
     for name, data in DRUG_DATABASE.items()
 ]
 
@@ -372,7 +372,7 @@ else:
         f"""
         <div style="background-color: #d1e7dd; border-left: 8px solid #0f5132; padding: 22px; border-radius: 8px; margin-bottom: 15px;">
             <span style="font-size: 13px; color: #0f5132; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;">
-                🏆 Primary Recommended Candidate Option
+                🏆 Recommended Candidate Option
             </span>
             <h1 style="color: #0f5132; margin: 6px 0 0 0; font-size: 36px; font-weight: 800;">
                 {top_drug['Drug']} <span style="font-size: 18px; font-weight: normal;">({top_drug['Category']})</span>
@@ -404,7 +404,7 @@ else:
         f"""
         <div style="background-color: #fff3cd; border: 1px solid #ffebaa; border-left: 8px solid #ffc107; color: #856404; padding: 18px; border-radius: 6px; margin-bottom: 20px;">
             <h4 style="margin: 0 0 6px 0; color: #856404; font-weight: 800; font-size: 17px;">
-                ⚠️ Clinical Warnings & Key Precautions for {top_drug['Drug']}
+                ⚠️ Clinical Warnings for {top_drug['Drug']}
             </h4>
             <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #533f03;">
                 {top_drug['Warnings']}
@@ -417,7 +417,7 @@ else:
 # -----------------------------------------------------------------------------
 # 5. EXPANDABLE TRAFFIC LIGHT DASHBOARD & METRICS
 # -----------------------------------------------------------------------------
-with st.expander("🚦 Complete Candidate Traffic Light Dashboard", expanded=False):
+with st.expander("🚦 Candidate Dashboard", expanded=False):
     df_results = pd.DataFrame(results)
     
     df_results_display = df_results[[
@@ -449,7 +449,7 @@ with st.expander("⚙️ Calculated Sigmoidal Risk(λ)", expanded=False):
     col_s1, col_s2, col_s3 = st.columns(3)
     col_s1.write(f"- **Fall Risk (λH1):** `{lambdas['H1']:.2f}`")
     col_s1.write(f"- **Orthostasis Risk (λα1):** `{lambdas['α1']:.2f}`")
-    col_s2.write(f"- **Motor EPS Risk (λD2):** `{lambdas['D2_full']:.2f}`")
+    col_s2.write(f"- **Motor EPS Risk (λD2):** `{lambdas['D2']:.2f}`")
     col_s2.write(f"- **Cardiac QTc Risk (λQTc):** `{lambdas['QTc']:.2f}`")
     col_s3.write(f"- **Renal Penalty (λrenal):** `{lambdas['renal']:.2f}`")
     col_s3.write(f"- **Hepatic Penalty (λhepatic):** `{lambdas['hepatic']:.2f}`")
