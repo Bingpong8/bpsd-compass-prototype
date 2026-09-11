@@ -4,8 +4,8 @@ import pandas as pd
 
 # Page Configuration & Header Setup
 st.set_page_config(page_title="BPSD Compass Prototype (P5 - Clinical Integration)", layout="wide")
-st.title("BPSD Compass Prototype (P5 - Clinical Integration)")
-st.caption("Parameter-driven neurochemical decision-support engine integrating CCSMH/HQBC clinical workflow logic and PETRUSHKA decision tools")
+st.title("BPSD Compass Prototype (P5)")
+st.caption("Parameter-driven decision-support tool")
 
 ascii_header = r"""
 								THE DEATH OF PEACE OF MIND
