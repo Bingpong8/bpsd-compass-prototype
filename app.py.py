@@ -2,9 +2,10 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-st.set_page_config(page_title="BPSD Compass Prototype (P5)", layout="wide")
-st.title("BPSD Compass Prototype (P5)")
-st.caption("Parameter-driven neurotransmitter affinity decision-support tool with dynamic prior regimen correlation")
+# Page Configuration & Header Setup
+st.set_page_config(page_title="BPSD Compass Prototype (P5 - Clinical Integration)", layout="wide")
+st.title("BPSD Compass Prototype (P5 - Clinical Integration)")
+st.caption("Parameter-driven neurochemical decision-support engine integrating CCSMH/HQBC clinical workflow logic and PETRUSHKA decision tools")
 
 ascii_header = r"""
 								THE DEATH OF PEACE OF MIND
@@ -22,11 +23,10 @@ ascii_header = r"""
 																	 
 							     Dolor et Astra, Nihil est Veritas
 """
-
 st.code(ascii_header, language=None)
 
 # -----------------------------------------------------------------------------
-# 1. PHARMACODYNAMIC DATABASE WITH DOSAGE SPECTRA
+# 1. PHARMACODYNAMIC DATABASE WITH DOSAGE & RECEPTOR SPECTRA
 # -----------------------------------------------------------------------------
 DRUG_DATABASE = {
     "Brexpiprazole": {
@@ -192,7 +192,7 @@ DRUG_DATABASE = {
 }
 
 # -----------------------------------------------------------------------------
-# 2. CONTINUOUS SIGMOIDAL MATH & ALGORITHMIC ENGINE
+# 2. COMPUTATIONAL FUNCTIONS & SIGMOIDAL SCALING ENGINE
 # -----------------------------------------------------------------------------
 def sigmoid(x, k, x0):
     return 1.0 / (1.0 + np.exp(-k * (x - x0)))
@@ -230,19 +230,20 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
     history_penalty = 0.0
     clinical_note = ""
     
-    # Analyze Prior History & NPI Correlation
+    # Prior History Correlation Logic
     if drug in prior_history:
         outcome = prior_history[drug]["outcome"]
         dose = prior_history[drug]["dosage"]
         if outcome == "Treatment Failure / Ineffective":
             history_penalty += 5.0
-            clinical_note = f"Prior trial at {dose} resulted in treatment failure. Higher dose or mechanism switch advised."
+            clinical_note = f"Prior trial at {dose} resulted in failure. Higher dose or mechanism switch advised."
         elif outcome == "Severe Adverse Effects / Intolerant":
             hard_locked = True
             hard_lock_reason = f"Historical Intolerance: Discontinued due to severe adverse effects ({dose})."
         elif outcome == "Partial Response / Tolerated":
             clinical_note = f"Prior partial benefit noted at {dose}. Consider optimizing dose before class switch."
 
+    # Etiology & QTc Safety Hard-Locks
     if dementia_subtype in ["Dementia with Lewy Bodies (DLB)", "Parkinson's Disease Dementia (PDD)"] and ar["D2"] < 0:
         hard_locked = True
         hard_lock_reason = "Contraindicated: Full D2 antagonist in DLB/PDD etiology"
@@ -291,9 +292,9 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         "ACB Penalty": round(p_acb, 1),
         "Organ Penalty": round(p_organ, 1),
         "History Penalty": round(history_penalty, 1),
-        "Est. Sedation %": f"{p_sedation}%",
-        "Est. Orthostasis %": f"{p_orthostasis}%",
-        "Est. EPS %": f"{p_eps}%",
+        "Est. Sedation %": p_sedation,
+        "Est. Orthostasis %": p_orthostasis,
+        "Est. EPS %": p_eps,
         "Hard Locked": hard_locked,
         "Lock Reason": hard_lock_reason,
         "Clinical Correlation Note": clinical_note,
@@ -301,8 +302,19 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         "Warnings": drug_data["warnings"]
     }
 
+# Dynamic Cross-Titration Matrix Generator
+def generate_cross_titration_schedule(prior_drug, target_drug):
+    if not prior_drug or prior_drug == target_drug:
+        return None
+    return pd.DataFrame([
+        {"Phase": "Days 1–3", "Prior Agent Action": f"Reduce {prior_drug} to 75% dose", "New Agent Action": f"Initiate {target_drug} at starting dose", "Monitoring": "Vital signs, orthostasis"},
+        {"Phase": "Days 4–7", "Prior Agent Action": f"Taper {prior_drug} to 50% dose", "New Agent Action": f"Maintain {target_drug} starting dose", "Monitoring": "Sedation & fall precautions"},
+        {"Phase": "Days 8–11", "Prior Agent Action": f"Taper {prior_drug} to 25% dose", "New Agent Action": f"Titrate {target_drug} toward target dose", "Monitoring": "NPI symptom trajectory"},
+        {"Phase": "Day 12+", "Prior Agent Action": f"Discontinue {prior_drug}", "New Agent Action": f"Optimize {target_drug} target dose", "Monitoring": "Full CGI-I / NPI-Q re-assessment"}
+    ])
+
 # -----------------------------------------------------------------------------
-# 3. SINGLE-PAGE FRONTEND INPUTS (NO SIDEBAR)
+# 3. CLINICAL INPUTS (CCSMH/HQBC & PETRUSHKA ENHANCED)
 # -----------------------------------------------------------------------------
 NPI_MAPPING = {
     "0 - Absent (0)": 0.0,
@@ -323,7 +335,7 @@ CAREGIVER_CONCERN_MAPPING = {
     "2 - High Concern": 1.5
 }
 
-st.subheader("📋 Patient Clinical Parameters")
+st.subheader("📋 Patient Clinical Parameters & Subtype Stratification")
 
 c_etiology, c_bio1, c_bio2 = st.columns(3)
 
@@ -346,13 +358,13 @@ with c_bio2:
     lft_val = HEPATIC_MAPPING[hepatic_status]
 
 st.markdown("---")
-st.subheader("💊 Prior Psychotropic Exposure & Treatment Response History")
+st.subheader("💊 Prior Psychotropic Exposure & Active Regimen")
 
 col_prior1, col_prior2 = st.columns(2)
 
 with col_prior1:
     prior_drugs = st.multiselect(
-        "Select Prior / Current Psychotropic Medications",
+        "Select Active / Prior Psychotropic Medications",
         options=list(DRUG_DATABASE.keys())
     )
 
@@ -372,9 +384,8 @@ if prior_drugs:
             prior_history[drug] = {"dosage": dosage, "outcome": outcome}
 
 st.markdown("---")
-st.subheader("🎯 Target Symptom Severity (All 12 NPI Subscales - Present Regimen Response)")
+st.subheader("🎯 Target Symptom Severity (All 12 NPI Subscales)")
 
-# 3-Column Layout for full 12 NPI Index Dropdowns
 col_npi1, col_npi2, col_npi3 = st.columns(3)
 
 with col_npi1:
@@ -396,18 +407,18 @@ with col_npi3:
     s_appetite_str = st.selectbox("Appetite / Eating Changes (5-HT2A Target)", list(NPI_MAPPING.keys()), index=0)
 
 st.markdown("---")
-st.subheader("⚙️ Caregiver Priorities & Risk Concerns")
+st.subheader("⚙️ Caregiver Priorities & Shared Decision Sliders (PETRUSHKA Model)")
 col_pref1, col_pref2 = st.columns(2)
 
 with col_pref1:
-    pref_sedation_str = st.selectbox("Caregiver Avoid-Sedation Concern Weight", list(CAREGIVER_CONCERN_MAPPING.keys()), index=1)
+    pref_sedation_str = st.selectbox("Caregiver Avoid-Sedation Weight", list(CAREGIVER_CONCERN_MAPPING.keys()), index=1)
     pref_sedation = CAREGIVER_CONCERN_MAPPING[pref_sedation_str]
 
 with col_pref2:
     pref_falls_str = st.selectbox("Caregiver Avoid-Fall Concern Weight", list(CAREGIVER_CONCERN_MAPPING.keys()), index=1)
     pref_falls = CAREGIVER_CONCERN_MAPPING[pref_falls_str]
 
-# Map 12 NPI Symptom severity choices into receptor affinity target weights
+# Receptor Weight Computation
 v_delusions = NPI_MAPPING[s_delusions_str]
 v_hallucinations = NPI_MAPPING[s_hallucinations_str]
 v_agitation = NPI_MAPPING[s_agitation_str]
@@ -431,7 +442,7 @@ weights = {
 }
 
 # -----------------------------------------------------------------------------
-# 4. RUN COMPUTATIONS & SPOTLIGHT DISPLAY
+# 4. RUN CALCULATIONS & HERO SPOTLIGHT
 # -----------------------------------------------------------------------------
 lambdas = calculate_sigmoidal_lambdas(
     morse=morse_score * pref_falls,
@@ -443,7 +454,6 @@ lambdas = calculate_sigmoidal_lambdas(
     dementia_subtype=dementia_subtype
 )
 
-# Apply caregiver sedation preference weight directly to H1 risk multiplier
 lambdas["H1"] = min(1.0, lambdas["H1"] * pref_sedation)
 
 results = [
@@ -454,9 +464,20 @@ results = [
 results = sorted(results, key=lambda x: x["Raw_Mj"], reverse=True)
 top_drug = results[0]
 
+# Multi-Symptom Phenotype Clustering Display
+st.markdown("---")
+st.subheader("📊 Multi-Symptom Phenotype Cluster Analysis (CCSMH Model)")
+p_agitation_psychosis = (v_agitation + v_delusions + v_hallucinations) / 3.0
+p_affective = (v_depression + v_anxiety + v_irritability) / 3.0
+p_apathy_executive = (v_apathy + v_disinhibition) / 2.0
+
+col_ph1, col_ph2, col_ph3 = st.columns(3)
+col_ph1.metric("Agitation-Psychosis Cluster", f"{p_agitation_psychosis*100:.0f}%")
+col_ph2.metric("Affective-Lability Cluster", f"{p_affective*100:.0f}%")
+col_ph3.metric("Apathy-Executive Cluster", f"{p_apathy_executive*100:.0f}%")
+
 st.markdown("---")
 
-# HIGH SPOTLIGHT HERO CARD FOR TOP CANDIDATE
 if top_drug["Hard Locked"]:
     st.error("🚨 No suitable candidate found. All eligible agents triggered critical clinical safety hard-locks.")
 else:
@@ -482,17 +503,15 @@ else:
         unsafe_allow_html=True
     )
     
-    # DOSAGE SPECTRUM INFORMATION
     st.markdown(
         f"""
         <div style="background-color: #e2f0d9; border-left: 6px solid #385723; color: #274411; padding: 12px 18px; border-radius: 6px; margin-bottom: 15px; font-size: 15px;">
-            <strong>💊 Recommended / Standard Dosage Spectrum:</strong> {top_drug['Dosage']}
+            <strong>💊 Recommended Dosage Spectrum:</strong> {top_drug['Dosage']}
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    # HIGH-CONTRAST EASY-TO-READ YELLOW CAUTION BOX
     st.markdown(
         f"""
         <div style="background-color: #fff3cd; border: 1px solid #ffebaa; border-left: 8px solid #ffc107; color: #856404; padding: 18px; border-radius: 6px; margin-bottom: 20px;">
@@ -508,15 +527,44 @@ else:
     )
 
 # -----------------------------------------------------------------------------
-# 5. EXPANDABLE TRAFFIC LIGHT DASHBOARD & METRICS
+# 5. EXPANDED CLINICAL DASHBOARD & CROSS-TITRATION ENGINE
 # -----------------------------------------------------------------------------
-with st.expander("🚦 Candidate Dashboard", expanded=False):
+with st.expander("📊 Estimated Side-Effect Probabilities (PETRUSHKA Visualizer)", expanded=True):
+    st.markdown("#### Patient-Specific Risk Likelihood Output")
+    col_vis1, col_vis2, col_vis3 = st.columns(3)
+    
+    with col_vis1:
+        st.write(**Estimated Sedation Risk:**)
+        st.progress(top_drug["Est. Sedation %"])
+        st.caption(f"Likelihood: {top_drug['Est. Sedation %']}%")
+        
+    with col_vis2:
+        st.write(**Estimated Orthostasis Risk:**)
+        st.progress(top_drug["Est. Orthostasis %"])
+        st.caption(f"Likelihood: {top_drug['Est. Orthostasis %']}%")
+
+    with col_vis3:
+        st.write(**Estimated EPS Risk:**)
+        st.progress(top_drug["Est. EPS %"])
+        st.caption(f"Likelihood: {top_drug['Est. EPS %']}%")
+
+with st.expander("🔄 Sequential Cross-Titration & Washout Schedule", expanded=True):
+    if prior_drugs:
+        prior_selected = prior_drugs[0]
+        st.markdown(f"### Cross-Titration Matrix: Taper **{prior_selected}** $\\rightarrow$ Initiate **{top_drug['Drug']}**")
+        tt_df = generate_cross_titration_schedule(prior_selected, top_drug["Drug"])
+        if tt_df is not None:
+            st.table(tt_df)
+    else:
+        st.info("Treatment Naive Workflow: Initiate top candidate at starting dose without cross-tapering.")
+
+with st.expander("🚦 Full Candidate Dashboard & Ranking", expanded=False):
     df_results = pd.DataFrame(results)
     
     df_results_display = df_results[[
         "Drug", "Category", "Net Score (Mj)", "Therapeutic Gain", 
         "Risk Deductions", "ACB Penalty", "Organ Penalty", "History Penalty",
-        "Est. Sedation %", "Est. Orthostasis %", "Est. EPS %", "Dosage", "Lock Reason"
+        "Dosage", "Lock Reason"
     ]].copy()
 
     def apply_traffic_lights(val):
@@ -535,80 +583,9 @@ with st.expander("🚦 Candidate Dashboard", expanded=False):
         df_results_display.style.map(apply_traffic_lights, subset=['Net Score (Mj)']),
         use_container_width=True
     )
-    
-    st.info("🚦 **Traffic Light:** Green = Optimal Match ($M_j > 1.0$) | Yellow = Proceed with Caution ($-2.0 \\le M_j \\le 1.0$) | Red = High Risk / Contraindicated ($M_j < -2.0$)")
-
-with st.expander("⚙️ Calculated Sigmoidal Risk(λ)", expanded=False):
-    col_s1, col_s2, col_s3 = st.columns(3)
-    col_s1.write(f"- **Fall Risk (λH1):** `{lambdas['H1']:.2f}`")
-    col_s1.write(f"- **Orthostasis Risk (λα1):** `{lambdas['α1']:.2f}`")
-    col_s2.write(f"- **Motor EPS Risk (λD2):** `{lambdas['D2']:.2f}`")
-    col_s2.write(f"- **Cardiac QTc Risk (λQTc):** `{lambdas['QTc']:.2f}`")
-    col_s3.write(f"- **Renal Penalty (λrenal):** `{lambdas['renal']:.2f}`")
-    col_s3.write(f"- **Hepatic Penalty (λhepatic):** `{lambdas['hepatic']:.2f}`")
-
-with st.expander("🔍 Regimen Adjustment Strategy & Clinical Correlation", expanded=True):
-    st.markdown("### Regimen Adjustment Strategy & Prior History Correlation")
-    
-    if prior_history:
-        st.write("**Prior Medication Profile Evaluated:**")
-        for d, data in prior_history.items():
-            st.write(f"- **{d}** ({data['dosage']}): *{data['outcome']}*")
-            
-        st.markdown("---")
-        st.markdown("#### Clinical Interpretation & Sequential Next Steps:")
-        
-        # Scenario 1: Top drug is the active/prior drug with Partial Response
-        if top_drug["Drug"] in prior_history and prior_history[top_drug["Drug"]]["outcome"] == "Partial Response / Tolerated":
-            st.info(f"💡 **Optimization Strategy:** Patient demonstrated partial response to **{top_drug['Drug']}**. Prior to switching to a novel mechanism, consider optimizing the dosage up to the recommended spectrum ({top_drug['Dosage']}) while monitoring QTc and organ clearance.")
-
-        # Scenario 2: Top drug is a novel agent following prior failure
-        elif any(data["outcome"] == "Treatment Failure / Ineffective" for data in prior_history.values()):
-            failed_drugs = [d for d, data in prior_history.items() if data["outcome"] == "Treatment Failure / Ineffective"]
-            st.success(f"🔄 **Mechanism Switching Strategy:** Given treatment failure on prior regimen ({', '.join(failed_drugs)}), the algorithm prioritizes **{top_drug['Drug']}** due to its distinct receptor binding affinity ($pK_i$) profile.")
-
-        # Scenario 3: Cross-titration recommendations
-        st.markdown(f"""
-        **Recommended Transition Protocol:**
-        When cross-tapering from prior psychotropics to **{top_drug['Drug']}**:
-        * **Step 1 (Days 1–7):** Reduce prior agent dose by 50%. Initiate {top_drug['Drug']} at lowest starting spectrum.
-        * **Step 2 (Days 8–14):** Complete washout/taper of prior agent while maintaining target observation.
-        * **Step 3 (Day 21 Evaluation):** Evaluate CGI-I/NPI-Q score response before escalating {top_drug['Drug']} dosage.
-        """)
-    else:
-        st.write("No prior psychotropic history entered. Recommendation represents baseline treatment initiation.")
 
 # -----------------------------------------------------------------------------
-# 6. EXPANDABLE RATIONALE, FORMULAS & ALGORITHMIC THINKING
-# -----------------------------------------------------------------------------
-with st.expander("🧮 Algorithmic Architecture, Formulas & Clinical Rationale", expanded=False):
-    st.markdown("""
-    This decision-support engine employs a **Multi-Criteria Utility Optimization Model** that balances therapeutic receptor targeting against patient-specific physiological vulnerability factors.
-
-    ---
-
-    ### 1. Neurochemical Pathogenetic Coupling ($v_s \\rightarrow w_r$)
-    **Algorithmic Concept:**
-    Rather than treating symptoms as isolated clinical categories, the engine maps all 12 NPI subscales ($v_s \\in [0.0, 1.0]$) to their underlying neurochemical drivers. To prevent scaling distortion, the target weight ($w_r$) for any receptor ($r$) uses a non-linear maximum-affinity coupling function:
-
-    $$w_r = \\min\\left(1.0, \\max_{s}\\left(v_s \\cdot \\kappa_{s,r}\\right)\\right)$$
-
-    ---
-
-    ### 2. Prior History Penalty Integration
-    **Algorithmic Concept:**
-    Current NPI severity represents the residual behavioral burden *after* accounting for response to prior or active medications.
-    *   **Treatment Failure Penalty:** Subtracts $5.0$ utility points from $M_j$ if an agent previously failed at standard doses.
-    *   **Adverse Effect Hard-Lock:** Forces $M_j = -999.0$ if the drug was discontinued due to severe intolerance.
-
-    ---
-
-    ### 3. Net Utility Match Score Computation ($M_j$)
-    $$M_j = U_{\\text{thera}} - U_{\\text{risk}} - P_{\\text{ACB}} - P_{\\text{organ}} - P_{\\text{history}}$$
-    """)
-
-# -----------------------------------------------------------------------------
-# 7. CITATIONS & ALGORITHMIC REFERENCES
+# 6. CITATIONS & REFERENCES
 # -----------------------------------------------------------------------------
 with st.expander("🔍 References & Citations"):
     st.markdown(
@@ -618,7 +595,7 @@ with st.expander("🔍 References & Citations"):
         3. **Tampi, R. R., et al. (2022).** *Brexpiprazole for the Treatment of Agitation in Dementia*. Drugs Aging. PMID: 35904712.
         4. **Lee, D., et al. (2023).** *Brexpiprazole for the Treatment of Agitation Associated with Dementia Due to Alzheimer's Disease*. Am J Psychiatry. PMID: 37143168.
         5. **Davies, S. J., et al. (2018).** *Sequential drug treatment algorithm for agitation and aggression in Alzheimer's and mixed dementia*. J Psychopharmacol. PMID: 29338602.
-        6. **Kales, H. C., et al. (2015).** *Assessment and management of behavioral and psychological symptoms of dementia*. BMJ. PMID: 25731898.
-        7. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
+        6. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
         """
     )
+​
