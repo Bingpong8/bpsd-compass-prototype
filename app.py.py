@@ -2,9 +2,9 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-st.set_page_config(page_title="BPSD Compass Prototype (P3.5)", layout="wide")
-st.title("BPSD Compass Prototype (P3.5)")
-st.caption("Parameter-driven neurotransmitter affinity decision-support tool")
+st.set_page_config(page_title="BPSD Compass Prototype (P5)", layout="wide")
+st.title("BPSD Compass Prototype (P5)")
+st.caption("Parameter-driven neurotransmitter affinity decision-support tool with dynamic prior regimen correlation")
 
 ascii_header = r"""
 								THE DEATH OF PEACE OF MIND
@@ -221,13 +221,28 @@ def calculate_sigmoidal_lambdas(morse, sbp_drop, sas, qtc, egfr, lft_factor, dem
         "hepatic": lambda_hepatic
     }
 
-def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms):
+def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms, prior_history):
     pk = drug_data["pKi"]
     ar = drug_data["Ar"]
     
     hard_locked = False
     hard_lock_reason = ""
+    history_penalty = 0.0
+    clinical_note = ""
     
+    # Analyze Prior History & NPI Correlation
+    if drug in prior_history:
+        outcome = prior_history[drug]["outcome"]
+        dose = prior_history[drug]["dosage"]
+        if outcome == "Treatment Failure / Ineffective":
+            history_penalty += 5.0
+            clinical_note = f"Prior trial at {dose} resulted in treatment failure. Higher dose or mechanism switch advised."
+        elif outcome == "Severe Adverse Effects / Intolerant":
+            hard_locked = True
+            hard_lock_reason = f"Historical Intolerance: Discontinued due to severe adverse effects ({dose})."
+        elif outcome == "Partial Response / Tolerated":
+            clinical_note = f"Prior partial benefit noted at {dose}. Consider optimizing dose before class switch."
+
     if dementia_subtype in ["Dementia with Lewy Bodies (DLB)", "Parkinson's Disease Dementia (PDD)"] and ar["D2"] < 0:
         hard_locked = True
         hard_lock_reason = "Contraindicated: Full D2 antagonist in DLB/PDD etiology"
@@ -258,7 +273,7 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
     p_acb = (c_patient * 2.0) if pk["M1"] >= 7.0 else 0.0
     p_organ = (lambdas["renal"] * drug_data["Fr_renal"] * 4.0) + (lambdas["hepatic"] * drug_data["Fr_hepatic"] * 4.0)
     
-    m_j = u_thera - u_risk - p_acb - p_organ
+    m_j = u_thera - u_risk - p_acb - p_organ - history_penalty
     if hard_locked:
         m_j = -999.0
         
@@ -275,11 +290,13 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         "Risk Deductions": round(u_risk, 1),
         "ACB Penalty": round(p_acb, 1),
         "Organ Penalty": round(p_organ, 1),
+        "History Penalty": round(history_penalty, 1),
         "Est. Sedation %": f"{p_sedation}%",
         "Est. Orthostasis %": f"{p_orthostasis}%",
         "Est. EPS %": f"{p_eps}%",
         "Hard Locked": hard_locked,
         "Lock Reason": hard_lock_reason,
+        "Clinical Correlation Note": clinical_note,
         "Dosage": drug_data["dosage"],
         "Warnings": drug_data["warnings"]
     }
@@ -329,7 +346,33 @@ with c_bio2:
     lft_val = HEPATIC_MAPPING[hepatic_status]
 
 st.markdown("---")
-st.subheader("🎯 Target Symptom Severity (All 12 NPI Subscales)")
+st.subheader("💊 Prior Psychotropic Exposure & Treatment Response History")
+
+col_prior1, col_prior2 = st.columns(2)
+
+with col_prior1:
+    prior_drugs = st.multiselect(
+        "Select Prior / Current Psychotropic Medications",
+        options=list(DRUG_DATABASE.keys())
+    )
+
+prior_history = {}
+if prior_drugs:
+    with col_prior2:
+        for drug in prior_drugs:
+            c_d1, c_d2 = st.columns(2)
+            with c_d1:
+                dosage = st.text_input(f"Dose for {drug}", value="Standard", key=f"dose_{drug}")
+            with c_d2:
+                outcome = st.selectbox(
+                    f"Outcome for {drug}",
+                    ["Partial Response / Tolerated", "Treatment Failure / Ineffective", "Severe Adverse Effects / Intolerant"],
+                    key=f"outcome_{drug}"
+                )
+            prior_history[drug] = {"dosage": dosage, "outcome": outcome}
+
+st.markdown("---")
+st.subheader("🎯 Target Symptom Severity (All 12 NPI Subscales - Present Regimen Response)")
 
 # 3-Column Layout for full 12 NPI Index Dropdowns
 col_npi1, col_npi2, col_npi3 = st.columns(3)
@@ -404,7 +447,7 @@ lambdas = calculate_sigmoidal_lambdas(
 lambdas["H1"] = min(1.0, lambdas["H1"] * pref_sedation)
 
 results = [
-    calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms)
+    calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms, prior_history)
     for drug, drug_data in DRUG_DATABASE.items()
 ]
 
@@ -431,7 +474,8 @@ else:
                 Gain: <strong>+{top_drug['Therapeutic Gain']}</strong> &nbsp;|&nbsp; 
                 Deductions: <strong>-{top_drug['Risk Deductions']}</strong> &nbsp;|&nbsp; 
                 ACB Penalty: <strong>-{top_drug['ACB Penalty']}</strong> &nbsp;|&nbsp;
-                Organ Penalty: <strong>-{top_drug['Organ Penalty']}</strong>
+                Organ Penalty: <strong>-{top_drug['Organ Penalty']}</strong> &nbsp;|&nbsp;
+                History Penalty: <strong>-{top_drug['History Penalty']}</strong>
             </p>
         </div>
         """,
@@ -471,7 +515,7 @@ with st.expander("🚦 Candidate Dashboard", expanded=False):
     
     df_results_display = df_results[[
         "Drug", "Category", "Net Score (Mj)", "Therapeutic Gain", 
-        "Risk Deductions", "ACB Penalty", "Organ Penalty", 
+        "Risk Deductions", "ACB Penalty", "Organ Penalty", "History Penalty",
         "Est. Sedation %", "Est. Orthostasis %", "Est. EPS %", "Dosage", "Lock Reason"
     ]].copy()
 
@@ -503,18 +547,39 @@ with st.expander("⚙️ Calculated Sigmoidal Risk(λ)", expanded=False):
     col_s3.write(f"- **Renal Penalty (λrenal):** `{lambdas['renal']:.2f}`")
     col_s3.write(f"- **Hepatic Penalty (λhepatic):** `{lambdas['hepatic']:.2f}`")
 
-with st.expander("🔄 Cross-Titration & Switching Protocol", expanded=False):
-    st.markdown("""
-    **Patient Transition Protocol**
-    When transitioning from a high-affinity D2 antagonist (e.g. Risperidone) to a D2 partial agonist or non-dopaminergic agent:
+with st.expander("🔍 Regimen Adjustment Strategy & Clinical Correlation", expanded=True):
+    st.markdown("### Regimen Adjustment Strategy & Prior History Correlation")
     
-    * **Week 1:** Reduce prior agent dose by 50%. Initiate target agent at baseline low dose.
-    * **Week 2:** Maintain taper. Monitor for cholinergic rebound or withdrawal psychosis.
-    * **Week 3:** Discontinue prior agent completely. Titrate target agent to optimal therapeutic dosage.
-    """)
-	
+    if prior_history:
+        st.write("**Prior Medication Profile Evaluated:**")
+        for d, data in prior_history.items():
+            st.write(f"- **{d}** ({data['dosage']}): *{data['outcome']}*")
+            
+        st.markdown("---")
+        st.markdown("#### Clinical Interpretation & Sequential Next Steps:")
+        
+        # Scenario 1: Top drug is the active/prior drug with Partial Response
+        if top_drug["Drug"] in prior_history and prior_history[top_drug["Drug"]]["outcome"] == "Partial Response / Tolerated":
+            st.info(f"💡 **Optimization Strategy:** Patient demonstrated partial response to **{top_drug['Drug']}**. Prior to switching to a novel mechanism, consider optimizing the dosage up to the recommended spectrum ({top_drug['Dosage']}) while monitoring QTc and organ clearance.")
+
+        # Scenario 2: Top drug is a novel agent following prior failure
+        elif any(data["outcome"] == "Treatment Failure / Ineffective" for data in prior_history.values()):
+            failed_drugs = [d for d, data in prior_history.items() if data["outcome"] == "Treatment Failure / Ineffective"]
+            st.success(f"🔄 **Mechanism Switching Strategy:** Given treatment failure on prior regimen ({', '.join(failed_drugs)}), the algorithm prioritizes **{top_drug['Drug']}** due to its distinct receptor binding affinity ($pK_i$) profile.")
+
+        # Scenario 3: Cross-titration recommendations
+        st.markdown(f"""
+        **Recommended Transition Protocol:**
+        When cross-tapering from prior psychotropics to **{top_drug['Drug']}**:
+        * **Step 1 (Days 1–7):** Reduce prior agent dose by 50%. Initiate {top_drug['Drug']} at lowest starting spectrum.
+        * **Step 2 (Days 8–14):** Complete washout/taper of prior agent while maintaining target observation.
+        * **Step 3 (Day 21 Evaluation):** Evaluate CGI-I/NPI-Q score response before escalating {top_drug['Drug']} dosage.
+        """)
+    else:
+        st.write("No prior psychotropic history entered. Recommendation represents baseline treatment initiation.")
+
 # -----------------------------------------------------------------------------
-# EXPANDABLE RATIONALE, FORMULAS & ALGORITHMIC THINKING
+# 6. EXPANDABLE RATIONALE, FORMULAS & ALGORITHMIC THINKING
 # -----------------------------------------------------------------------------
 with st.expander("🧮 Algorithmic Architecture, Formulas & Clinical Rationale", expanded=False):
     st.markdown("""
@@ -522,66 +587,38 @@ with st.expander("🧮 Algorithmic Architecture, Formulas & Clinical Rationale",
 
     ---
 
-    ### 1. Neurochemical Pathogenetic Coupling ($v_s \rightarrow w_r$)
+    ### 1. Neurochemical Pathogenetic Coupling ($v_s \\rightarrow w_r$)
     **Algorithmic Concept:**
-    Rather than treating symptoms as isolated clinical categories, the engine maps all 12 NPI subscales ($v_s \in [0.0, 1.0]$) to their underlying neurochemical drivers. To prevent scaling distortion, the target weight ($w_r$) for any receptor ($r$) uses a non-linear maximum-affinity coupling function:
+    Rather than treating symptoms as isolated clinical categories, the engine maps all 12 NPI subscales ($v_s \\in [0.0, 1.0]$) to their underlying neurochemical drivers. To prevent scaling distortion, the target weight ($w_r$) for any receptor ($r$) uses a non-linear maximum-affinity coupling function:
 
-    $$w_r = \min\left(1.0, \max_{s}\left(v_s \cdot \kappa_{s,r}\right)\right)$$
-
-    *   **Coupling Coefficients ($\kappa_{s,r}$):** Represent the relative pathogenetic contribution of receptor system $r$ to symptom $s$. For example, hallucinations rely heavily on cortical $5\text{-HT}_{2\text{A}}$ hyperfunction ($\kappa = 0.8$), whereas apathy is primarily mediated via noradrenergic ($\kappa = 0.8$) and glutamatergic pathways ($\kappa = 0.4$).
+    $$w_r = \\min\\left(1.0, \\max_{s}\\left(v_s \\cdot \\kappa_{s,r}\\right)\\right)$$
 
     ---
 
-    ### 2. Sigmoidal Patient Vulnerability Scaling ($\lambda_r$)
+    ### 2. Prior History Penalty Integration
     **Algorithmic Concept:**
-    Static drug contraindications fail to capture continuous patient physiological decline. The tool transforms continuous clinical biomarkers ($x$) into normalized risk scalars ($\lambda_r \in [0.0, 1.0]$) using sigmoidal functions:
-
-    $$\lambda(x) = \frac{1}{1 + e^{-k(x - x_0)}}$$
-
-    *   **Fall & Sedation Risk ($\lambda_{\text{H1}}$):** Driven by Morse Fall Scale score ($x_0 = 35.0, k = 0.08$) and scaled by caregiver concerns.
-    *   **Orthostasis Risk ($\lambda_{\alpha1}$):** Driven by standing Systolic BP drop in mmHg ($x_0 = 15.0, k = 0.25$).
-    *   **Extrapyramidal Risk ($\lambda_{\text{D2}}$):** Driven by Simpson-Angus Scale (SAS) motor score ($x_0 = 8.0, k = 0.30$), with $\lambda_{\text{D2}} = 1.0$ hard-coded for DLB/PDD etiologies due to extreme neuroleptic sensitivity.
-    *   **Cardiotoxicity Risk ($\lambda_{\text{QTc}}$):** Driven by baseline QTc interval in ms ($x_0 = 450.0, k = 0.05$).
-    *   **Organ Clearance Penalties:** Inverted sigmoid for eGFR ($\lambda_{\text{renal}}$) and discrete clinical stratification for liver impairment ($\lambda_{\text{hepatic}}$).
+    Current NPI severity represents the residual behavioral burden *after* accounting for response to prior or active medications.
+    *   **Treatment Failure Penalty:** Subtracts $5.0$ utility points from $M_j$ if an agent previously failed at standard doses.
+    *   **Adverse Effect Hard-Lock:** Forces $M_j = -999.0$ if the drug was discontinued due to severe intolerance.
 
     ---
 
     ### 3. Net Utility Match Score Computation ($M_j$)
-    **Algorithmic Concept:**
-    For each candidate drug ($j$), the overall match score ($M_j$) combines therapeutic gain ($U_{\text{thera}}$), dynamic risk deductions ($U_{\text{risk}}$), anticholinergic burden ($P_{\text{ACB}}$), and clearance organ impairment penalties ($P_{\text{organ}}$):
+    $$M_j = U_{\\text{thera}} - U_{\\text{risk}} - P_{\\text{ACB}} - P_{\\text{organ}} - P_{\\text{history}}$$
+    """)
 
-    $$M_j = U_{\text{thera}} - U_{\text{risk}} - P_{\text{ACB}} - P_{\text{organ}}$$
-
-    #### Mathematical Breakdown:
-    1. **Therapeutic Gain ($U_{\text{thera}}$):**
-       $$U_{\text{thera}} = \sum_{r} \left( w_r \cdot pK_{i,r} \cdot A_r \right)$$
-       *Where $pK_{i,r}$ is binding affinity ($-\log_{10} K_i$) and $A_r \in \{-1.0, 0.0, 0.5, 1.0\}$ represents intrinsic efficacy (antagonist, neutral, partial agonist, full agonist)*.
-
-    2. **Risk Deductions ($U_{\text{risk}}$):**
-       $$U_{\text{risk}} = (\lambda_{\text{H1}} \cdot pK_{i,\text{H1}}) + (\lambda_{\alpha1} \cdot pK_{i,\alpha1}) + (\lambda_{\text{D2}} \cdot pK_{i,\text{D2}} \cdot \mathbb{I}_{\text{Antagonist}}) + 5.0(\lambda_{\text{QTc}} \cdot \text{Risk}_{\text{QTc}})$$
-       *Dopaminergic risk applies exclusively to full $D_2$ antagonists ($A_{\text{D2}} < 0$)*.
-
-    3. **Anticholinergic Cognitive Burden Penalty ($P_{\text{ACB}}$):**
-       $$P_{\text{ACB}} = C_{\text{patient}} \times 2.0 \quad \text{if } pK_{i,\text{M1}} \ge 7.0 \text{ else } 0.0$$
-       *Where cognitive vulnerability coefficient $C_{\text{patient}} = 3.0$ if MMSE < 10, $2.0$ if MMSE 10–20, and $1.0$ if MMSE > 20*.
-
-    4. **Organ Clearance Penalty ($P_{\text{organ}}$):**
-       $$P_{\text{organ}} = 4.0 \left( \lambda_{\text{renal}} \cdot \text{Fr}_{\text{renal}} + \lambda_{\text{hepatic}} \cdot \text{Fr}_{\text{hepatic}} \right)$$
-       *Penalizes drugs heavily reliant on impaired elimination pathways based on renal/hepatic elimination fractions ($\text{Fr}$)*.
-
-    ---
-
-    ### 4. Safety Hard-Lock Protocol
-    **Algorithmic Concept:**
-    Regardless of a drug's therapeutic score, absolute clinical contraindications trigger an unconditional lock ($M_j = -999.0$):
-    *   **Etiology Hard-Lock:** Full $D_2$ antagonists in DLB or PDD patients.
-    *   **Cardiac Hard-Lock:** High QTc-risk agents ($\text{Risk}_{\text{QTc}} > 0.60$) when baseline QTc $> 500\text{ ms}$.
-
-    ---
-
-    ### 5. Adverse Event Probability Heuristics
-    **Algorithmic Concept:**
-    Estimated side-effect probabilities ($P_{\text{event}}$) translate receptor occupancy and baseline vulnerability into clinically readable percentages using a bounded logistic function:
-
-    $$P_{\text{event}} = \min\left(95\%, \text{int}\left( \frac{100}{1 + e^{-0.5(pK_i \cdot \lambda - 3.5)}} \right)\right)$$
-    """)​
+# -----------------------------------------------------------------------------
+# 7. CITATIONS & ALGORITHMIC REFERENCES
+# -----------------------------------------------------------------------------
+with st.expander("🔍 References & Citations"):
+    st.markdown(
+        """
+        1. **Roth, B. L., et al.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. UNC Chapel Hill / NIMH.
+        2. **Magierski, R., et al. (2020).** *Pharmacotherapy of Behavioral and Psychological Symptoms of Dementia: State of the Art and Future Progress*. Front. Psychiatry. PMID: 32848775.
+        3. **Tampi, R. R., et al. (2022).** *Brexpiprazole for the Treatment of Agitation in Dementia*. Drugs Aging. PMID: 35904712.
+        4. **Lee, D., et al. (2023).** *Brexpiprazole for the Treatment of Agitation Associated with Dementia Due to Alzheimer's Disease*. Am J Psychiatry. PMID: 37143168.
+        5. **Davies, S. J., et al. (2018).** *Sequential drug treatment algorithm for agitation and aggression in Alzheimer's and mixed dementia*. J Psychopharmacol. PMID: 29338602.
+        6. **Kales, H. C., et al. (2015).** *Assessment and management of behavioral and psychological symptoms of dementia*. BMJ. PMID: 25731898.
+        7. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
+        """
+    )
