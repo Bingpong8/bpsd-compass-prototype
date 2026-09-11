@@ -322,7 +322,7 @@ def generate_cross_titration_schedule(prior_drug, target_drug):
     ])
 
 # -----------------------------------------------------------------------------
-# 3. CLINICAL INPUTS (CCSMH/HQBC & PETRUSHKA ENHANCED)
+# 3. CLINICAL INPUTS
 # -----------------------------------------------------------------------------
 NPI_MAPPING = {
     "0 - Absent": 0.0,
@@ -343,7 +343,7 @@ CAREGIVER_CONCERN_MAPPING = {
     "2 - High Concern": 1.5
 }
 
-st.subheader("📋 Patient Clinical Parameters & Subtype Stratification")
+st.subheader("📋 Patient Clinical Parameters")
 
 c_etiology, c_bio1, c_bio2 = st.columns(3)
 
