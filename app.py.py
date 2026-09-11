@@ -2,355 +2,603 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-st.set_page_config(page_title="BPSD Compass Prototype (P5)", layout="wide")
-st.title("BPSD Compass Prototype (P5)")
-st.caption("Parameter-driven neurotransmitter affinity decision-support tool with dynamic regimen tracking")
+st.set_page_config(page_title="BPSD Compass Prototype (P3.5)", layout="wide")
+st.title("BPSD Compass Prototype (P3.5)")
+st.caption("Parameter-driven neurotransmitter affinity decision-support tool")
 
-ascii_header = r""" THE DEATH OF PEACE OF MIND
-
----(-.
-{        )   )
-,   ) -~~- ( ,-' )
-(   -,\_..., )-- ',)
-( \_)  (  -\~( -\_,  }
-(-  _  _-~~~~,  ,' )  -^(    _;-,((()))
-~~~~ { -_(())
-`\  }
-{ }
-Dolor et Astra, Nihil est Veritas
+ascii_header = r"""
+								THE DEATH OF PEACE OF MIND
+													
+								      _---~~(~~-_.
+								    _{        )   )
+								  ,   ) -~~- ( ,-' )_
+								 (   `-,\_..`., )-- '_,)
+								( `\_)  (  -\~( -\_`,  }
+								(_-  _  ~_-~~~~`,  ,' )
+								  `~ -^(    __;-,((()))
+								        ~~~~ {_ -_(())
+								               `\  }
+								                 { }
+																	 
+							     Dolor et Astra, Nihil est Veritas
 """
+
 st.code(ascii_header, language=None)
 
-### -----------------------------------------------------------------------------
-### 1. FULL PHARMACODYNAMIC DATABASE (RESTORED P4 & DRAFT SPECTRUM)
-### -----------------------------------------------------------------------------
-# pKi values (-log10(Ki)) & Intrinsic Activity (Ar: +1 = agonist/target, -1 = inverse/antagonist toxicity, 0 = neutral)
+# -----------------------------------------------------------------------------
+# 1. PHARMACODYNAMIC DATABASE WITH DOSAGE SPECTRA
+# -----------------------------------------------------------------------------
 DRUG_DATABASE = {
     "Brexpiprazole": {
-        "pKi": {"5HT2A": 9.33, "D2": 9.52, "NET": 5.00, "a2a": 8.00, "NMDA": 5.00, "GABA_A": 5.00, "H1": 7.72, "a1": 8.42, "M1": 5.50},
-        "Ar":  {"5HT2A": 1.0,  "D2": 1.0,  "NET": 0.0,  "a2a": 1.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "Atypical Antipsychotic", "start_dose": "0.5 mg/day", "max_dose": "2.0 mg/day"
-    },
-    "Aripiprazole": {
-        "pKi": {"5HT2A": 8.40, "D2": 8.80, "NET": 5.00, "a2a": 6.80, "NMDA": 5.00, "GABA_A": 5.00, "H1": 7.50, "a1": 7.30, "M1": 5.00},
-        "Ar":  {"5HT2A": 1.0,  "D2": 1.0,  "NET": 0.0,  "a2a": 0.5,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "Atypical Antipsychotic", "start_dose": "2.0 mg/day", "max_dose": "15.0 mg/day"
+        "category": "Atypical Antipsychotic",
+        "pKi": {"5HT2A": 8.7, "D2": 9.5, "NET": 5.0, "α2A": 7.4, "NMDA": 0.0, "GABA-A": 0.0, "H1": 7.1, "α1": 8.0, "M1": 5.0},
+        "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.14, "Fr_hepatic": 0.86, "Risk_QTc": 0.20,
+        "dosage": "Start 0.5 mg PO OD; max 2 mg/day for agitation in dementia.",
+        "warnings": "Exercise extreme caution for akathisia and impulse-control disorders. Monitor elderly closely."
     },
     "Pimavanserin": {
-        "pKi": {"5HT2A": 9.05, "D2": 5.00, "NET": 5.00, "a2a": 5.00, "NMDA": 5.00, "GABA_A": 5.00, "H1": 5.00, "a1": 5.00, "M1": 5.00},
-        "Ar":  {"5HT2A": 1.0,  "D2": 0.0,  "NET": 0.0,  "a2a": 0.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "Selective 5-HT2A Inverse Agonist", "start_dose": "34 mg/day", "max_dose": "34 mg/day"
+        "category": "Atypical Antipsychotic",
+        "pKi": {"5HT2A": 9.3, "D2": 5.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.06, "Fr_hepatic": 0.94, "Risk_QTc": 0.40,
+        "dosage": "Standard dose: 34 mg PO OD (or 10 mg PO OD in CYP3A4 inhibitor co-administration).",
+        "warnings": "QTc prolongation risk. Indicated primarily for Parkinson's Disease Psychosis."
     },
     "Risperidone": {
-        "pKi": {"5HT2A": 9.30, "D2": 8.43, "NET": 5.00, "a2a": 7.20, "NMDA": 5.00, "GABA_A": 5.00, "H1": 7.70, "a1": 8.15, "M1": 5.00},
-        "Ar":  {"5HT2A": 1.0,  "D2": 1.0,  "NET": 0.0,  "a2a": 0.5,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "Atypical Antipsychotic", "start_dose": "0.25 mg/day", "max_dose": "2.0 mg/day"
+        "category": "Atypical Antipsychotic",
+        "pKi": {"5HT2A": 9.7, "D2": 8.9, "NET": 5.0, "α2A": 6.8, "NMDA": 0.0, "GABA-A": 0.0, "H1": 7.3, "α1": 9.0, "M1": 5.0},
+        "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.50,
+        "dosage": "Start 0.25 mg - 0.5 mg/day; target 0.5 mg - 1.5 mg/day (max 2.0 mg/day in elderly).",
+        "warnings": "QTc prolongation, dose-dependent extrapyramidal symptoms (EPS), hyperprolactinemia, and cerebrovascular risk."
     },
     "Quetiapine": {
-        "pKi": {"5HT2A": 6.70, "D2": 5.80, "NET": 6.60, "a2a": 6.10, "NMDA": 5.00, "GABA_A": 5.00, "H1": 8.00, "a1": 7.00, "M1": 6.00},
-        "Ar":  {"5HT2A": 1.0,  "D2": 1.0,  "NET": 1.0,  "a2a": 0.5,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "Atypical Antipsychotic", "start_dose": "12.5 mg/day", "max_dose": "150.0 mg/day"
+        "category": "Atypical Antipsychotic",
+        "pKi": {"5HT2A": 6.8, "D2": 5.8, "NET": 5.0, "α2A": 5.5, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.0, "α1": 7.1, "M1": 6.0},
+        "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.40,
+        "dosage": "Start 12.5 mg - 25 mg PO hs",
+        "warnings": "QTc prolongation, severe orthostatic hypotension, sedation, and metabolic dysregulation."
     },
     "Olanzapine": {
-        "pKi": {"5HT2A": 8.40, "D2": 7.96, "NET": 5.00, "a2a": 6.20, "NMDA": 5.00, "GABA_A": 5.00, "H1": 8.15, "a1": 7.72, "M1": 7.59},
-        "Ar":  {"5HT2A": 1.0,  "D2": 1.0,  "NET": 0.0,  "a2a": 0.5,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "Atypical Antipsychotic", "start_dose": "2.5 mg/day", "max_dose": "10.0 mg/day"
+        "category": "Atypical Antipsychotic",
+        "pKi": {"5HT2A": 8.5, "D2": 7.8, "NET": 5.0, "α2A": 6.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.8, "α1": 7.7, "M1": 7.7},
+        "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.07, "Fr_hepatic": 0.93, "Risk_QTc": 0.30,
+        "dosage": "Start 2.5 mg PO hs; target 5.0 mg/day, max 10 mg/day.",
+        "warnings": "High risk of severe metabolic syndrome, weight gain, sedation, and anticholinergic cognitive impairment."
     },
     "Haloperidol": {
-        "pKi": {"5HT2A": 7.10, "D2": 8.70, "NET": 5.00, "a2a": 5.00, "NMDA": 5.00, "GABA_A": 5.00, "H1": 6.00, "a1": 7.20, "M1": 5.00},
-        "Ar":  {"5HT2A": 1.0,  "D2": -1.0, "NET": 0.0,  "a2a": 0.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "Typical Antipsychotic", "start_dose": "0.5 mg/day", "max_dose": "2.0 mg/day"
-    },
-    "Mirtazapine": {
-        "pKi": {"5HT2A": 8.10, "D2": 5.00, "NET": 5.00, "a2a": 7.80, "NMDA": 5.00, "GABA_A": 5.00, "H1": 9.00, "a1": 7.20, "M1": 5.00},
-        "Ar":  {"5HT2A": 1.0,  "D2": 0.0,  "NET": 0.0,  "a2a": 1.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "NaSSA Antidepressant", "start_dose": "7.5 mg/day", "max_dose": "30.0 mg/day"
-    },
-    "Memantine": {
-        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "a2a": 5.00, "NMDA": 6.30, "GABA_A": 5.00, "H1": 5.00, "a1": 5.00, "M1": 5.00},
-        "Ar":  {"5HT2A": 0.0,  "D2": 0.0,  "NET": 0.0,  "a2a": 0.0,  "NMDA": 1.0,  "GABA_A": 0.0},
-        "class": "NMDA Antagonist", "start_dose": "5.0 mg/day", "max_dose": "20.0 mg/day"
-    },
-    "Clonidine": {
-        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "a2a": 7.50, "NMDA": 5.00, "GABA_A": 5.00, "H1": 5.00, "a1": 6.20, "M1": 5.00},
-        "Ar":  {"5HT2A": 0.0,  "D2": 0.0,  "NET": 0.0,  "a2a": 1.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "Alpha-2 Agonist", "start_dose": "0.05 mg/day", "max_dose": "0.3 mg/day"
-    },
-    "Lorazepam": {
-        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "a2a": 5.00, "NMDA": 5.00, "GABA_A": 7.80, "H1": 5.00, "a1": 5.00, "M1": 5.00},
-        "Ar":  {"5HT2A": 0.0,  "D2": 0.0,  "NET": 0.0,  "a2a": 0.0,  "NMDA": 0.0,  "GABA_A": 1.0},
-        "class": "Benzodiazepine", "start_dose": "0.25 mg/day", "max_dose": "2.0 mg/day"
+        "category": "Typical Antipsychotic",
+        "pKi": {"5HT2A": 7.2, "D2": 9.2, "NET": 5.0, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 6.0, "α1": 7.3, "M1": 5.0},
+        "Ar": {"5HT2A": 0.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.15, "Fr_hepatic": 0.85, "Risk_QTc": 0.85,
+        "dosage": "Start as low as possible, 0.25-0.5 mg PO OD or PRN - 2.0 mg/day maximum.",
+        "warnings": "HIGH RISK: Torsades de Pointes, severe Extrapyramidal Symptoms (EPS), and Tardive Dyskinesia."
     },
     "Escitalopram": {
-        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "a2a": 5.00, "NMDA": 5.00, "GABA_A": 5.00, "H1": 5.00, "a1": 5.00, "M1": 5.00},
-        "Ar":  {"5HT2A": 0.0,  "D2": 0.0,  "NET": 0.0,  "a2a": 0.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "SSRI Antidepressant", "start_dose": "5.0 mg/day", "max_dose": "10.0 mg/day"
+        "category": "Antidepressant (SSRI)",
+        "pKi": {"5HT2A": 5.2, "D2": 5.0, "NET": 5.0, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 6.3, "α1": 5.0, "M1": 5.0},
+        "Ar": {"5HT2A": 0.5, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.20, "Fr_hepatic": 0.80, "Risk_QTc": 0.75,
+        "dosage": "Start 5 mg/day; max 10 mg/day.",
+        "warnings": "Dose-dependent QTc prolongation risk; hyponatremia and bleeding precautions."
     },
     "Sertraline": {
-        "pKi": {"5HT2A": 5.00, "D2": 6.60, "NET": 5.00, "a2a": 5.00, "NMDA": 5.00, "GABA_A": 5.00, "H1": 5.00, "a1": 5.00, "M1": 5.00},
-        "Ar":  {"5HT2A": 0.0,  "D2": 0.5,  "NET": 0.0,  "a2a": 0.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "SSRI Antidepressant", "start_dose": "25.0 mg/day", "max_dose": "100.0 mg/day"
+        "category": "Antidepressant (SSRI)",
+        "pKi": {"5HT2A": 6.2, "D2": 6.6, "NET": 5.5, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0},
+        "Ar": {"5HT2A": 0.5, "D2": 0.5, "NET": 0.5, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.12, "Fr_hepatic": 0.88, "Risk_QTc": 0.25,
+        "dosage": "Start 25 mg/day; target 50 mg - 100 mg/day.",
+        "warnings": "Hyponatremia/SIADH, serotonin syndrome, and mild GI distress. Well-tolerated cardiac profile."
     },
-    "Fluoxetine": {
-        "pKi": {"5HT2A": 6.70, "D2": 5.00, "NET": 5.00, "a2a": 5.00, "NMDA": 5.00, "GABA_A": 5.00, "H1": 5.00, "a1": 5.00, "M1": 5.00},
-        "Ar":  {"5HT2A": 0.5,  "D2": 0.0,  "NET": 0.0,  "a2a": 0.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "SSRI Antidepressant", "start_dose": "10.0 mg/day", "max_dose": "20.0 mg/day"
+    "Valproic Acid": {
+        "category": "Mood Stabilizer Anticonvulsant",
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 7.2, "H1": 5.0, "α1": 5.0, "M1": 5.0},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
+        "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.10,
+        "dosage": "Start 125 mg - 250 mg PO bid; target serum concentration 50-80 mcg/ml.",
+        "warnings": "Hepatotoxicity, pancreatitis, thrombocytopenia; monitor LFTs, CBC, and plasma levels."
     },
-    "Nortriptyline": {
-        "pKi": {"5HT2A": 7.50, "D2": 5.00, "NET": 7.90, "a2a": 6.30, "NMDA": 5.00, "GABA_A": 5.00, "H1": 8.00, "a1": 7.20, "M1": 6.70},
-        "Ar":  {"5HT2A": 1.0,  "D2": 0.0,  "NET": 1.0,  "a2a": 0.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "TCA Antidepressant", "start_dose": "10.0 mg/day", "max_dose": "50.0 mg/day"
+    "Gabapentin": {
+        "category": "GABA analogue Anticonvulsant",
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 6.8, "H1": 5.0, "α1": 5.0, "M1": 5.0},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
+        "Fr_renal": 1.00, "Fr_hepatic": 0.00, "Risk_QTc": 0.05,
+        "dosage": "Start 100 mg tid; slow titrations up to 300 mg - 600 mg tid based on renal clearance.",
+        "warnings": "Respiratory depression risk with CNS depressants/opioids; strict renal dose reduction required."
+    },
+    "Memantine": {
+        "category": "Cognitive Enhancer",
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 7.5, "GABA-A": 0.0, "H1": 0.0, "α1": 0.0, "M1": 0.0},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 1.0, "GABA-A": 0.0},
+        "Fr_renal": 0.80, "Fr_hepatic": 0.20, "Risk_QTc": 0.05,
+        "dosage": "Start 5 mg daily; titrate by 5 mg weekly to target 10 mg bid (max 10 mg daily if eGFR < 30).",
+        "warnings": "Dose adjustment necessary in severe renal impairment (eGFR < 30 mL/min)."
     },
     "Amitriptyline": {
-        "pKi": {"5HT2A": 7.80, "D2": 5.00, "NET": 7.40, "a2a": 6.10, "NMDA": 5.00, "GABA_A": 5.00, "H1": 8.90, "a1": 7.60, "M1": 8.00},
-        "Ar":  {"5HT2A": 1.0,  "D2": 0.0,  "NET": 1.0,  "a2a": 0.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "TCA Antidepressant", "start_dose": "10.0 mg/day", "max_dose": "50.0 mg/day"
+        "category": "Tricyclic Antidepressant (TCA)",
+        "pKi": {"5HT2A": 8.1, "D2": 5.5, "NET": 7.7, "α2A": 6.8, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.9, "α1": 8.0, "M1": 8.8},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.70,
+        "dosage": "Generally avoid in dementia. (10 mg hs start if strictly indicated).",
+        "warnings": "CRITICAL RISK: Severe anticholinergic toxicity, fall risk, cognitive decline, and cardiotoxicity."
     },
     "Venlafaxine": {
-        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.60, "a2a": 5.00, "NMDA": 5.00, "GABA_A": 5.00, "H1": 5.00, "a1": 5.00, "M1": 5.00},
-        "Ar":  {"5HT2A": 0.0,  "D2": 0.0,  "NET": 1.0,  "a2a": 0.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "SNRI Antidepressant", "start_dose": "37.5 mg/day", "max_dose": "150.0 mg/day"
+        "category": "Antidepressant (SNRI)",
+        "pKi": {"5HT2A": 5.0, "D2": 5.0, "NET": 6.4, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.85, "Fr_hepatic": 0.15, "Risk_QTc": 0.35,
+        "dosage": "Start 37.5 mg daily XR; target 75 mg - 150 mg daily.",
+        "warnings": "Dose-dependent blood pressure elevation and sharp withdrawal discontinuation syndrome."
     },
-    "Duloxetine": {
-        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 7.70, "a2a": 5.00, "NMDA": 5.00, "GABA_A": 5.00, "H1": 5.00, "a1": 5.00, "M1": 5.00},
-        "Ar":  {"5HT2A": 0.0,  "D2": 0.0,  "NET": 1.0,  "a2a": 0.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "SNRI Antidepressant", "start_dose": "20.0 mg/day", "max_dose": "60.0 mg/day"
+    "Vortioxetine": {
+        "category": "Multimodal Serotonin Modulator Antidepressant",
+        "pKi": {"5HT2A": 7.60, "D2": 5.00, "NET": 5.00, "α2A": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.59, "Fr_hepatic": 0.41, "Risk_QTc": 0.15,
+        "dosage": "Start 5.0 mg daily; target 5.0 mg - 10 mg daily in elderly.",
+        "warnings": "Nausea risk; low anticholinergic burden and favorable cognitive safety profile."
     },
-    "Donepezil": {
-        "pKi": {"5HT2A": 5.00, "D2": 5.00, "NET": 5.00, "a2a": 5.00, "NMDA": 5.00, "GABA_A": 5.00, "H1": 5.00, "a1": 5.00, "M1": 5.00},
-        "Ar":  {"5HT2A": 0.0,  "D2": 0.0,  "NET": 0.0,  "a2a": 0.0,  "NMDA": 0.0,  "GABA_A": 0.0},
-        "class": "AChE Inhibitor", "start_dose": "5.0 mg/day", "max_dose": "10.0 mg/day"
+    "Bupropion": {
+        "category": "Antidepressant (NDRI)",
+        "pKi": {"5HT2A": 5.00, "D2": 5.20, "NET": 5.20, "α2A": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "Ar": {"5HT2A": 0.0, "D2": 0.5, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.87, "Fr_hepatic": 0.13, "Risk_QTc": 0.20,
+        "dosage": "Start 100 mg SR or 150 mg XL daily; max 150 mg daily in elderly.",
+        "warnings": "Dose-dependent seizure risk; contraindications in seizure disorders, eating disorders, or sedative withdrawal."
+    },
+    "Trazodone": {
+        "category": "Antidepressant (SARI)",
+        "pKi": {"5HT2A": 7.80, "D2": 5.00, "NET": 5.00, "α2A": 6.40, "NMDA": 5.00, "GABA-A": 5.00, "H1": 7.50, "α1": 7.80, "M1": 5.00},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.45,
+        "dosage": "Start 12.5 mg - 25 mg hs / PRN; target 25 mg - 100 mg daily for nighttime agitation.",
+        "warnings": "Orthostatic hypotension, priapism, and marked daytime sedation."
+    },
+    "Mirtazapine": {
+        "category": "Pyridine Tetracyclic Antidepressant (NaSSA)",
+        "pKi": {"5HT2A": 8.1, "D2": 5.0, "NET": 5.0, "α2A": 7.3, "NMDA": 0.0, "GABA-A": 0.0, "H1": 9.3, "α1": 6.0, "M1": 5.0},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.75, "Fr_hepatic": 0.25, "Risk_QTc": 0.30,
+        "dosage": "Start 7.5 mg hs; target 15 mg - 30 mg hs (higher doses decrease sedating H1 effect).",
+        "warnings": "Marked low-dose sedation and hyperphagia/weight gain; limited efficacy in primary agitation (SYMBAD trial)."
+    },
+    "Mianserin": {
+        "category": "Benzene Tetracyclic Antidepressant (NaSSA)",
+        "pKi": {"5HT2A": 8.0, "D2": 5.5, "NET": 6.0, "α2A": 7.2, "NMDA": 0.0, "GABA-A": 0.0, "H1": 9.0, "α1": 7.3, "M1": 5.0},
+        "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.5, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
+        "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.35,
+        "dosage": "Start 10 mg hs; titrate up to 30 mg - 60 mg hs.",
+        "warnings": "Agranulocytosis/bone marrow depression (requires regular FBC), high sedation, and orthostasis."
+    },
+    "Lamotrigine": {
+        "category": "Mood Stabilizer Anticonvulsant",
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.5, "GABA-A": 6.0, "H1": 0.0, "α1": 0.0, "M1": 0.0},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.5, "GABA-A": 0.5},
+        "Fr_renal": 0.94, "Fr_hepatic": 0.06, "Risk_QTc": 0.10,
+        "dosage": "Start 25 mg daily; slow bi-weekly titration to target 100 mg - 200 mg daily.",
+        "warnings": "CRITICAL: Stevens-Johnson Syndrome (SJS) and Toxic Epidermal Necrolysis (TEN). Discontinue at first sign of rash."
+    },
+    "Carbamazepine": {
+        "category": "Mood Stabilizer Anticonvulsant",
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.0, "GABA-A": 6.8, "H1": 0.0, "α1": 0.0, "M1": 0.0},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
+        "Fr_renal": 0.28, "Fr_hepatic": 0.72, "Risk_QTc": 0.30,
+        "dosage": "Start 100 mg bid; target 200 mg - 600 mg daily in divided doses.",
+        "warnings": "Aplastic anemia, agranulocytosis, severe dermatologic reactions, and potent CYP3A4 auto-induction."
     }
 }
 
-### -----------------------------------------------------------------------------
-### 2. RISK ENGINE & REGIMEN EVALUATION FUNCTIONS
-### -----------------------------------------------------------------------------
-def sigmoid(x, x0, k):
-    return 1 / (1 + np.exp(-k * (x - x0)))
+# -----------------------------------------------------------------------------
+# 2. CONTINUOUS SIGMOIDAL MATH & ALGORITHMIC ENGINE
+# -----------------------------------------------------------------------------
+def sigmoid(x, k, x0):
+    return 1.0 / (1.0 + np.exp(-k * (x - x0)))
 
-def calculate_risks(fall_risk, orthostasis, eps, qtc):
-    lambda_H1 = sigmoid(fall_risk, 45, 0.1) 
-    lambda_a1 = sigmoid(orthostasis, 20, 0.2)
-    lambda_D2 = sigmoid(eps, 3, 1.0)
-    qtc_lock = True if qtc > 500 else False
-    return lambda_H1, lambda_a1, lambda_D2, qtc_lock
+def inverted_sigmoid(x, k, x0):
+    return 1.0 / (1.0 + np.exp(k * (x - x0)))
 
-def evaluate_regimen_adjustment(drug, history_data):
-    duration = history_data["duration"]
-    outcome = history_data["outcome"]
+def calculate_sigmoidal_lambdas(morse, sbp_drop, sas, qtc, egfr, lft_factor, dementia_subtype):
+    lambda_H1 = sigmoid(morse, 0.08, 35.0)
+    lambda_α1 = sigmoid(sbp_drop, 0.25, 15.0)
+    lambda_D2_full = min(1.0, sigmoid(sas, 0.30, 8.0))
     
-    note = ""
-    history_penalty = 0.0
-    hard_lock = False
-    is_failed = False
+    if dementia_subtype in ["Dementia with Lewy Bodies (DLB)", "Parkinson's Disease Dementia (PDD)"]:
+        lambda_D2_full = 1.0
+        
+    lambda_QTc = sigmoid(qtc, 0.05, 450.0)
+    lambda_renal = inverted_sigmoid(egfr, 0.08, 45.0)
+    lambda_hepatic = lft_factor
+    
+    return {
+        "H1": lambda_H1,
+        "α1": lambda_α1,
+        "D2": lambda_D2_full,
+        "QTc": lambda_QTc,
+        "renal": lambda_renal,
+        "hepatic": lambda_hepatic
+    }
 
-    if outcome == "Severe Adverse Effects":
-        hard_lock = True
-        is_failed = True
-        note = f"Severe toxicity/intolerance at {history_data['dosage']}. Discontinue immediately and initiate a 10-day washout/taper period."
-        return history_penalty, note, hard_lock, is_failed
+def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms):
+    pk = drug_data["pKi"]
+    ar = drug_data["Ar"]
+    
+    hard_locked = False
+    hard_lock_reason = ""
+    
+    if dementia_subtype in ["Dementia with Lewy Bodies (DLB)", "Parkinson's Disease Dementia (PDD)"] and ar["D2"] < 0:
+        hard_locked = True
+        hard_lock_reason = "Contraindicated: Full D2 antagonist in DLB/PDD etiology"
+    elif qtc_ms > 500.0 and drug_data["Risk_QTc"] > 0.60:
+        hard_locked = True
+        hard_lock_reason = "Contraindicated: Severe baseline QTc (>500ms) with high QTc-risk agent"
 
-    if outcome in ["Minimal Improvement (CGI-I 3) / NPI Unresolved", "No Improvement / Worsening"]:
-        if drug in ["Risperidone", "Quetiapine"]:
-            if duration <= 21:
-                note = f"Trial underway ({duration} days). Extend trial up to 21-28 days before final decision."
-            elif duration >= 42:
-                history_penalty += 20.0
-                is_failed = True
-                note = f"Trial failed at day {duration} (≥42 days extension limit reached). Initiate cross-titration to alternative target."
-            else:
-                note = f"In extension window (day {duration}). Re-evaluate response closely before day 42 limit."
-        else:
-            if duration >= 21:
-                history_penalty += 20.0
-                is_failed = True
-                note = f"Trial failed at day {duration} (≥21 days limit). Initiate cross-titration switch."
-            else:
-                note = f"Early trial phase ({duration} days). Optimize dose toward target range; re-evaluate at day 21."
-    elif outcome == "Good Response / Stabilized":
-        note = f"Maintenance Phase: Patient stabilized on {history_data['dosage']}. Re-evaluate every 4-6 weeks; consider tapering after 3-4 months of stability."
-        history_penalty -= 5.0 # Suited/Bonus score
+    u_thera = (
+        (weights["5HT2A"] * pk["5HT2A"] * ar["5HT2A"]) +
+        (weights["D2"] * pk["D2"] * ar["D2"]) +
+        (weights["NET"] * pk["NET"] * ar["NET"]) +
+        (weights["α2A"] * pk["α2A"] * ar["α2A"]) +
+        (weights["NMDA"] * pk["NMDA"] * ar["NMDA"]) +
+        (weights["GABA-A"] * pk["GABA-A"] * ar["GABA-A"])
+    )
+    
+    d2_risk = (lambdas["D2"] * pk["D2"]) if ar["D2"] < 0 else 0.0
+    qtc_risk_deduction = lambdas["QTc"] * drug_data["Risk_QTc"] * 5.0
+    
+    u_risk = (
+        (lambdas["H1"] * pk["H1"]) +
+        (lambdas["α1"] * pk["α1"]) +
+        d2_risk +
+        qtc_risk_deduction
+    )
+    
+    c_patient = 3.0 if mmse_score < 10 else (2.0 if mmse_score <= 20 else 1.0)
+    p_acb = (c_patient * 2.0) if pk["M1"] >= 7.0 else 0.0
+    p_organ = (lambdas["renal"] * drug_data["Fr_renal"] * 4.0) + (lambdas["hepatic"] * drug_data["Fr_hepatic"] * 4.0)
+    
+    m_j = u_thera - u_risk - p_acb - p_organ
+    if hard_locked:
+        m_j = -999.0
+        
+    p_sedation = min(95, int(sigmoid(pk["H1"] * lambdas["H1"], 0.5, 3.5) * 100))
+    p_orthostasis = min(95, int(sigmoid(pk["α1"] * lambdas["α1"], 0.5, 3.5) * 100))
+    p_eps = min(95, int(sigmoid(pk["D2"] * lambdas["D2"], 0.5, 4.0) * 100)) if ar["D2"] < 0 else 5
+    
+    return {
+        "Drug": drug,
+        "Category": drug_data["category"],
+        "Net Score (Mj)": round(m_j, 1) if not hard_locked else -999.0,
+        "Raw_Mj": m_j,
+        "Therapeutic Gain": round(u_thera, 1),
+        "Risk Deductions": round(u_risk, 1),
+        "ACB Penalty": round(p_acb, 1),
+        "Organ Penalty": round(p_organ, 1),
+        "Est. Sedation %": f"{p_sedation}%",
+        "Est. Orthostasis %": f"{p_orthostasis}%",
+        "Est. EPS %": f"{p_eps}%",
+        "Hard Locked": hard_locked,
+        "Lock Reason": hard_lock_reason,
+        "Dosage": drug_data["dosage"],
+        "Warnings": drug_data["warnings"]
+    }
 
-    return history_penalty, note, hard_lock, is_failed
+# -----------------------------------------------------------------------------
+# 3. SINGLE-PAGE FRONTEND INPUTS (NO SIDEBAR)
+# -----------------------------------------------------------------------------
+NPI_MAPPING = {
+    "0 - Absent (0)": 0.0,
+    "1 - Mild (1-3)": 0.3,
+    "2 - Moderate (4-7)": 0.7,
+    "3 - Severe (8-12)": 1.0
+}
 
-### -----------------------------------------------------------------------------
-### 3. USER INTERFACE & BEDSIDE INPUTS
-### -----------------------------------------------------------------------------
-st.sidebar.header("1. Symptom Targets (NPI Equivalent)")
-npi_agitation = st.sidebar.slider("Agitation/Psychosis (w_5HT2A, w_D2)", 0.0, 1.0, 0.8)
-npi_apathy = st.sidebar.slider("Apathy/Executive (w_NET, w_NMDA)", 0.0, 1.0, 0.2)
-npi_affective = st.sidebar.slider("Affective/Anxiety/Sleep (w_GABA, w_a2a)", 0.0, 1.0, 0.4)
+HEPATIC_MAPPING = {
+    "Normal / Unimpaired": 0.0,
+    "Abnormal LFTs / Mild Impairment": 0.4,
+    "Liver Cirrhosis / Moderate-Severe Impairment": 0.8
+}
 
-st.sidebar.header("2. Risk Vulnerabilities")
-fall_risk = st.sidebar.number_input("Morse Fall Scale Score", 0, 100, 50)
-orthostasis = st.sidebar.number_input("Orthostatic SBP Drop (mmHg)", 0, 50, 15)
-eps = st.sidebar.number_input("Simpson-Angus Scale (SAS)", 0, 10, 1)
-qtc = st.sidebar.number_input("Baseline QTc (ms)", 350, 600, 440)
+CAREGIVER_CONCERN_MAPPING = {
+    "0 - None (No concern)": 0.5,
+    "1 - Low Concern": 1.0,
+    "2 - High Concern": 1.5
+}
 
-st.sidebar.header("3. Caregiver/Clinician Directives")
-cg_preference = st.sidebar.selectbox("Treatment Priority", ["Balanced Profile", "Minimize Sedation", "Fastest Onset"])
+st.subheader("📋 Patient Clinical Parameters")
 
-# Main UI Area: Medical Regimen Tracking
-st.subheader("💊 Active & Prior Medical Profile / Regimen Trial Status")
-st.caption("Document active or previous trials to compute current status, re-evaluate skipped drugs, and schedule cross-titration.")
+c_etiology, c_bio1, c_bio2 = st.columns(3)
 
-prior_drugs = st.multiselect(
-    "Select Current or Prior Psychotropic Regimens",
-    options=list(DRUG_DATABASE.keys()),
-    default=[]
+with c_etiology:
+    dementia_subtype = st.selectbox(
+        "Dementia Subtype / Etiology",
+        ["Alzheimer's Disease (AD)", "Dementia with Lewy Bodies (DLB)", "Parkinson's Disease Dementia (PDD)", "Vascular Dementia (VaD)", "Frontotemporal Dementia (FTD)"]
+    )
+    mmse_score = st.number_input("MMSE / MoCA Score (0-30)", 0, 30, 14)
+
+with c_bio1:
+    morse_score = st.number_input("Morse Fall Scale (0-125)", 0, 125, 40)
+    sbp_drop = st.number_input("Standing SBP Drop (mmHg)", 0, 60, 12)
+    sas_score = st.number_input("SAS Motor / EPS Score (0-40)", 0, 40, 4)
+
+with c_bio2:
+    qtc_ms = st.number_input("Baseline QTc Interval (ms)", 300, 600, 430)
+    egfr_val = st.number_input("eGFR (mL/min)", 5, 120, 55)
+    hepatic_status = st.selectbox("Hepatic Function Status", list(HEPATIC_MAPPING.keys()), index=0)
+    lft_val = HEPATIC_MAPPING[hepatic_status]
+
+st.markdown("---")
+st.subheader("🎯 Target Symptom Severity (All 12 NPI Subscales)")
+
+# 3-Column Layout for full 12 NPI Index Dropdowns
+col_npi1, col_npi2, col_npi3 = st.columns(3)
+
+with col_npi1:
+    s_delusions_str = st.selectbox("Delusions (5-HT2A / D2 Target)", list(NPI_MAPPING.keys()), index=1)
+    s_hallucinations_str = st.selectbox("Hallucinations (5-HT2A Target)", list(NPI_MAPPING.keys()), index=1)
+    s_agitation_str = st.selectbox("Agitation / Aggression (D2 / α2A Target)", list(NPI_MAPPING.keys()), index=2)
+    s_depression_str = st.selectbox("Depression / Dysphoria (NET / 5-HT Target)", list(NPI_MAPPING.keys()), index=1)
+
+with col_npi2:
+    s_anxiety_str = st.selectbox("Anxiety (GABA-A / 5-HT Target)", list(NPI_MAPPING.keys()), index=1)
+    s_euphoria_str = st.selectbox("Euphoria / Elation (GABA-A Target)", list(NPI_MAPPING.keys()), index=0)
+    s_apathy_str = st.selectbox("Apathy / Indifference (NET / NMDA Target)", list(NPI_MAPPING.keys()), index=1)
+    s_disinhibition_str = st.selectbox("Disinhibition (GABA-A / 5-HT Target)", list(NPI_MAPPING.keys()), index=0)
+
+with col_npi3:
+    s_irritability_str = st.selectbox("Irritability / Lability (GABA-A / α2A Target)", list(NPI_MAPPING.keys()), index=1)
+    s_motor_str = st.selectbox("Aberrant Motor Behavior (D2 / 5-HT2A Target)", list(NPI_MAPPING.keys()), index=0)
+    s_sleep_str = st.selectbox("Sleep / Night-time Disturbances (5-HT2A Target)", list(NPI_MAPPING.keys()), index=1)
+    s_appetite_str = st.selectbox("Appetite / Eating Changes (5-HT2A Target)", list(NPI_MAPPING.keys()), index=0)
+
+st.markdown("---")
+st.subheader("⚙️ Caregiver Priorities & Risk Concerns")
+col_pref1, col_pref2 = st.columns(2)
+
+with col_pref1:
+    pref_sedation_str = st.selectbox("Caregiver Avoid-Sedation Concern Weight", list(CAREGIVER_CONCERN_MAPPING.keys()), index=1)
+    pref_sedation = CAREGIVER_CONCERN_MAPPING[pref_sedation_str]
+
+with col_pref2:
+    pref_falls_str = st.selectbox("Caregiver Avoid-Fall Concern Weight", list(CAREGIVER_CONCERN_MAPPING.keys()), index=1)
+    pref_falls = CAREGIVER_CONCERN_MAPPING[pref_falls_str]
+
+# Map 12 NPI Symptom severity choices into receptor affinity target weights
+v_delusions = NPI_MAPPING[s_delusions_str]
+v_hallucinations = NPI_MAPPING[s_hallucinations_str]
+v_agitation = NPI_MAPPING[s_agitation_str]
+v_depression = NPI_MAPPING[s_depression_str]
+v_anxiety = NPI_MAPPING[s_anxiety_str]
+v_euphoria = NPI_MAPPING[s_euphoria_str]
+v_apathy = NPI_MAPPING[s_apathy_str]
+v_disinhibition = NPI_MAPPING[s_disinhibition_str]
+v_irritability = NPI_MAPPING[s_irritability_str]
+v_motor = NPI_MAPPING[s_motor_str]
+v_sleep = NPI_MAPPING[s_sleep_str]
+v_appetite = NPI_MAPPING[s_appetite_str]
+
+weights = {
+    "5HT2A": min(1.0, max(v_delusions * 0.7, v_hallucinations * 0.8, v_agitation * 0.5, v_disinhibition * 0.5, v_sleep * 0.6, v_motor * 0.5, v_appetite * 0.4)),
+    "D2": min(1.0, max(v_agitation * 0.6, v_delusions * 0.5, v_hallucinations * 0.4, v_apathy * 0.3, v_motor * 0.5)),
+    "NET": min(1.0, max(v_apathy * 0.8, v_depression * 0.7)),
+    "α2A": min(1.0, max(v_agitation * 0.5, v_irritability * 0.4)),
+    "NMDA": min(1.0, v_apathy * 0.4),
+    "GABA-A": min(1.0, max(v_anxiety * 0.7, v_irritability * 0.6, v_euphoria * 0.5, v_disinhibition * 0.5))
+}
+
+# -----------------------------------------------------------------------------
+# 4. RUN COMPUTATIONS & SPOTLIGHT DISPLAY
+# -----------------------------------------------------------------------------
+lambdas = calculate_sigmoidal_lambdas(
+    morse=morse_score * pref_falls,
+    sbp_drop=sbp_drop,
+    sas=sas_score,
+    qtc=qtc_ms,
+    egfr=egfr_val,
+    lft_factor=lft_val,
+    dementia_subtype=dementia_subtype
 )
 
-patient_history = {}
-if prior_drugs:
-    for drug in prior_drugs:
-        c_d1, c_d2, c_d3 = st.columns([1, 1, 2])
-        with c_d1:
-            dosage = st.text_input(f"Dose ({drug})", value=DRUG_DATABASE[drug]['start_dose'], key=f"dose_{drug}")
-        with c_d2:
-            duration = st.number_input(f"Days on {drug}", min_value=1, max_value=365, value=21, key=f"dur_{drug}")
-        with c_d3:
-            outcome = st.selectbox(
-                f"Response to {drug}",
-                ["Minimal Improvement (CGI-I 3) / NPI Unresolved", "No Improvement / Worsening", "Good Response / Stabilized", "Severe Adverse Effects"],
-                key=f"out_{drug}"
-            )
-        patient_history[drug] = {"dosage": dosage, "duration": duration, "outcome": outcome}
+# Apply caregiver sedation preference weight directly to H1 risk multiplier
+lambdas["H1"] = min(1.0, lambdas["H1"] * pref_sedation)
+
+results = [
+    calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms)
+    for drug, drug_data in DRUG_DATABASE.items()
+]
+
+results = sorted(results, key=lambda x: x["Raw_Mj"], reverse=True)
+top_drug = results[0]
 
 st.markdown("---")
 
-### -----------------------------------------------------------------------------
-### 4. CALCULATION ENGINE
-### -----------------------------------------------------------------------------
-lambda_H1, lambda_a1, lambda_D2, qtc_lock = calculate_risks(fall_risk, orthostasis, eps, qtc)
-
-results = []
-failed_or_locked_drugs = []
-clinical_notes = {}
-
-for drug, data in DRUG_DATABASE.items():
-    pKi = data["pKi"]
-    Ar = data["Ar"]
+# HIGH SPOTLIGHT HERO CARD FOR TOP CANDIDATE
+if top_drug["Hard Locked"]:
+    st.error("🚨 No suitable candidate found. All eligible agents triggered critical clinical safety hard-locks.")
+else:
+    st.markdown(
+        f"""
+        <div style="background-color: #d1e7dd; border-left: 8px solid #0f5132; padding: 22px; border-radius: 8px; margin-bottom: 15px;">
+            <span style="font-size: 13px; color: #0f5132; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;">
+                🏆 Recommended Candidate Option
+            </span>
+            <h1 style="color: #0f5132; margin: 6px 0 0 0; font-size: 36px; font-weight: 800;">
+                {top_drug['Drug']} <span style="font-size: 18px; font-weight: normal;">({top_drug['Category']})</span>
+            </h1>
+            <p style="color: #0f5132; font-size: 18px; margin: 10px 0 0 0;">
+                Net Match Score (Mj): <strong>{top_drug['Net Score (Mj)']}</strong> &nbsp;|&nbsp; 
+                Gain: <strong>+{top_drug['Therapeutic Gain']}</strong> &nbsp;|&nbsp; 
+                Deductions: <strong>-{top_drug['Risk Deductions']}</strong> &nbsp;|&nbsp; 
+                ACB Penalty: <strong>-{top_drug['ACB Penalty']}</strong> &nbsp;|&nbsp;
+                Organ Penalty: <strong>-{top_drug['Organ Penalty']}</strong>
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     
-    # Therapeutic Match Score
-    thera_score = (npi_agitation * pKi["5HT2A"] * Ar.get("5HT2A", 0.0)) + \
-                  (npi_agitation * pKi["D2"] * Ar.get("D2", 0.0)) + \
-                  (npi_apathy * pKi["NET"] * Ar.get("NET", 0.0)) + \
-                  (npi_apathy * pKi["NMDA"] * Ar.get("NMDA", 0.0)) + \
-                  (npi_affective * pKi["GABA_A"] * Ar.get("GABA_A", 0.0)) + \
-                  (npi_affective * pKi["a2a"] * Ar.get("a2a", 0.0))
-                  
-    # Off-Target Risk Penalty
-    risk_score = (lambda_H1 * pKi["H1"]) + \
-                 (lambda_a1 * pKi["a1"]) + \
-                 (lambda_D2 * pKi["D2"])
-                 
-    # Anticholinergic Cognitive Burden (ACB) Penalty based on M1 affinity
-    P_ACB = 3.0 if pKi["M1"] >= 7.0 else (1.5 if pKi["M1"] >= 6.0 else 0.0)
+    # DOSAGE SPECTRUM INFORMATION
+    st.markdown(
+        f"""
+        <div style="background-color: #e2f0d9; border-left: 6px solid #385723; color: #274411; padding: 12px 18px; border-radius: 6px; margin-bottom: 15px; font-size: 15px;">
+            <strong>💊 Recommended / Standard Dosage Spectrum:</strong> {top_drug['Dosage']}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # HIGH-CONTRAST EASY-TO-READ YELLOW CAUTION BOX
+    st.markdown(
+        f"""
+        <div style="background-color: #fff3cd; border: 1px solid #ffebaa; border-left: 8px solid #ffc107; color: #856404; padding: 18px; border-radius: 6px; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 6px 0; color: #856404; font-weight: 800; font-size: 17px;">
+                ⚠️ Clinical Warnings for {top_drug['Drug']}
+            </h4>
+            <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #533f03;">
+                {top_drug['Warnings']}
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# -----------------------------------------------------------------------------
+# 5. EXPANDABLE TRAFFIC LIGHT DASHBOARD & METRICS
+# -----------------------------------------------------------------------------
+with st.expander("🚦 Candidate Dashboard", expanded=False):
+    df_results = pd.DataFrame(results)
     
-    # Net Match Score Calculation
-    net_score = thera_score - risk_score - P_ACB
+    df_results_display = df_results[[
+        "Drug", "Category", "Net Score (Mj)", "Therapeutic Gain", 
+        "Risk Deductions", "ACB Penalty", "Organ Penalty", 
+        "Est. Sedation %", "Est. Orthostasis %", "Est. EPS %", "Dosage", "Lock Reason"
+    ]].copy()
+
+    def apply_traffic_lights(val):
+        try:
+            val_float = float(val)
+            if val_float > 1.0:
+                return 'background-color: #d4edda; color: #155724; font-weight: bold;'
+            elif val_float >= -2.0:
+                return 'background-color: #fff3cd; color: #856404;'
+            else:
+                return 'background-color: #f8d7da; color: #721c24;'
+        except (ValueError, TypeError):
+            return 'background-color: #f8d7da; color: #721c24; font-weight: bold;'
+
+    st.dataframe(
+        df_results_display.style.map(apply_traffic_lights, subset=['Net Score (Mj)']),
+        use_container_width=True
+    )
     
-    # Evaluate Prior History Adjustments
-    hard_locked = False
-    if drug in patient_history:
-        history_penalty, note, h_lock, is_failed = evaluate_regimen_adjustment(drug, patient_history[drug])
-        net_score -= history_penalty
-        clinical_notes[drug] = note
-        hard_locked = h_lock
-        if is_failed or hard_locked:
-            failed_or_locked_drugs.append(drug)
-            
-    # QTc Hard Lock Constraint
-    if qtc_lock and drug in ["Haloperidol", "Quetiapine", "Amitriptyline", "Nortriptyline"]:
-        net_score = -999.0
-        clinical_notes[drug] = "CONTRAINDICATED: Baseline QTc > 500 ms."
-        hard_locked = True
-        
-    if hard_locked:
-        net_score = -999.0
+    st.info("🚦 **Traffic Light:** Green = Optimal Match ($M_j > 1.0$) | Yellow = Proceed with Caution ($-2.0 \\le M_j \\le 1.0$) | Red = High Risk / Contraindicated ($M_j < -2.0$)")
 
-    results.append({
-        "Medication": drug,
-        "Class": data["class"],
-        "Net Match Score": round(net_score, 2),
-        "Therapeutic Score": round(thera_score, 2),
-        "Risk Penalty": round(risk_score, 2),
-        "ACB Penalty": P_ACB,
-        "Start Dose": data["start_dose"],
-        "Max Dose": data["max_dose"],
-        "Status": "Locked/Failed" if net_score <= -500.0 else "Viable"
-    })
+with st.expander("⚙️ Calculated Sigmoidal Risk(λ)", expanded=False):
+    col_s1, col_s2, col_s3 = st.columns(3)
+    col_s1.write(f"- **Fall Risk (λH1):** `{lambdas['H1']:.2f}`")
+    col_s1.write(f"- **Orthostasis Risk (λα1):** `{lambdas['α1']:.2f}`")
+    col_s2.write(f"- **Motor EPS Risk (λD2):** `{lambdas['D2']:.2f}`")
+    col_s2.write(f"- **Cardiac QTc Risk (λQTc):** `{lambdas['QTc']:.2f}`")
+    col_s3.write(f"- **Renal Penalty (λrenal):** `{lambdas['renal']:.2f}`")
+    col_s3.write(f"- **Hepatic Penalty (λhepatic):** `{lambdas['hepatic']:.2f}`")
 
-df_results = pd.DataFrame(results).sort_values(by="Net Match Score", ascending=False)
-
-### -----------------------------------------------------------------------------
-### 5. RECOMMENDATIONS & CLINICAL DECISION OUTPUTS
-### -----------------------------------------------------------------------------
-top_drug = df_results.iloc[0]
-
-st.header(f"🏆 Primary Recommendation: {top_drug['Medication']}")
-st.write(f"**Drug Class:** {top_drug['Class']} | **Net Match Score:** {top_drug['Net Match Score']} | **Recommended Starting Dose:** {top_drug['Start Dose']} (Max: {top_drug['Max Dose']})")
-
-# Skipped First-Line & Regimen Action Alerts
-if failed_or_locked_drugs or prior_drugs:
-    st.markdown("### ⚠️ Active Regimen Action & Skipped First-Line Alerts")
-    
-    # Current active drug status notes
-    for p_drug in prior_drugs:
-        note_text = clinical_notes.get(p_drug, "Continue monitoring as indicated.")
-        if p_drug in failed_or_locked_drugs:
-            st.error(f"**{p_drug} Action Notice:** {note_text}")
-        else:
-            st.info(f"**{p_drug} Status Notice:** {note_text}")
-            
-    # Reconsideration of Skipped Medications Logic
-    skipped_candidates = df_results[(df_results["Net Match Score"] > 0) & (~df_results["Medication"].isin(prior_drugs))]
-    if not skipped_candidates.empty and failed_or_locked_drugs:
-        st.warning("💡 **Reconsider Skipped Medications:** The following non-trialed options demonstrate superior net receptor suitability. Consider cross-titrating to one of these primary targets:")
-        for idx, row in skipped_candidates.head(3).iterrows():
-            st.write(f"- **{row['Medication']}** ({row['Class']}) — Net Score: **{row['Net Match Score']}** | Start Dose: {row['Start Dose']}")
-
-st.markdown("### 📊 Comprehensive Receptor Suitability Matrix")
-st.dataframe(
-    df_results.style.map(lambda x: 'background-color: #ffcccc' if x == 'Locked/Failed' else 'background-color: #ccffcc', subset=['Status']),
-    use_container_width=True
-)
-
-### -----------------------------------------------------------------------------
-### 6. EXPANDERS (RESTORED CLINICAL GUIDELINES & MATHEMATICAL ARCHITECTURE)
-### -----------------------------------------------------------------------------
-with st.expander("📐 Mathematical Engine & Algorithmic Equations"):
+with st.expander("🔄 Cross-Titration & Switching Protocol", expanded=False):
     st.markdown("""
-    #### 1. Net Match Score Equation ($M_j$)
-    The Net Suitability Match Score ($M_j$) for a candidate psychotropic drug $j$ is calculated as:
-    $$M_j = T_j - R_j - P_{\text{ACB}} - P_{\text{History}}$$
+    **Patient Transition Protocol**
+    When transitioning from a high-affinity D2 antagonist (e.g. Risperidone) to a D2 partial agonist or non-dopaminergic agent:
     
-    Where:
-    *   **Therapeutic Target Score ($T_j$):**
-        $$T_j = \sum_{r} w_r \cdot pK_{i,j,r} \cdot A_{r,j}$$
-        Calculated over target receptors $r \in \{5\text{-HT}_{2\text{A}}, D_2, \text{NET}, \text{NMDA}, \text{GABA}_{\text{A}}, \alpha_{2\text{a}}\}$ using clinical symptom weights $w_r$ derived from NPI sub-scores[span_8](start_span)[span_8](end_span)[span_9](start_span)[span_9](end_span).
-    *   **Risk Vulnerability Penalty ($R_j$):**
-        $$R_j = \lambda_{H1} \cdot pK_{i,j,H1} + \lambda_{\alpha1} \cdot pK_{i,j,\alpha1} + \lambda_{D2} \cdot pK_{i,j,D2}$$
-        Where risk weights ($\lambda$) are non-linearly scaled via Sigmoid curves from physiological bedside metrics (Morse Fall Scale, Orthostatic Blood Pressure drop, SAS score)[span_10](start_span)[span_10](end_span).
-    *   **Anticholinergic Cognitive Burden ($P_{\text{ACB}}$):**
-        Dose-independent penalty based on $M_1$ muscarinic receptor affinity ($pK_{i,M1} \ge 7.0 \Rightarrow 3.0$; $pK_{i,M1} \ge 6.0 \Rightarrow 1.5$)[span_11](start_span)[span_11](end_span).
-    *   **Prior History Penalty ($P_{\text{History}}$):**
-        Penalty applied to previously failed regimens (15.0 to 20.0 pts) or hard-lock score ($-999.0$) upon severe adverse events[span_12](start_span)[span_12](end_span).
+    * **Week 1:** Reduce prior agent dose by 50%. Initiate target agent at baseline low dose.
+    * **Week 2:** Maintain taper. Monitor for cholinergic rebound or withdrawal psychosis.
+    * **Week 3:** Discontinue prior agent completely. Titrate target agent to optimal therapeutic dosage.
+    """)
+	
+# -----------------------------------------------------------------------------
+# EXPANDABLE RATIONALE, FORMULAS & ALGORITHMIC THINKING
+# -----------------------------------------------------------------------------
+with st.expander("🧮 Algorithmic Architecture, Formulas & Clinical Rationale", expanded=False):
+    st.markdown("""
+    This decision-support engine employs a **Multi-Criteria Utility Optimization Model** that balances therapeutic receptor targeting against patient-specific physiological vulnerability factors.
+
+    ---
+
+    ### 1. Neurochemical Pathogenetic Coupling ($v_s \rightarrow w_r$)
+    **Algorithmic Concept:**
+    Rather than treating symptoms as isolated clinical categories, the engine maps all 12 NPI subscales ($v_s \in [0.0, 1.0]$) to their underlying neurochemical drivers. To prevent scaling distortion, the target weight ($w_r$) for any receptor ($r$) uses a non-linear maximum-affinity coupling function:
+
+    $$w_r = \min\left(1.0, \max_{s}\left(v_s \cdot \kappa_{s,r}\right)\right)$$
+
+    *   **Coupling Coefficients ($\kappa_{s,r}$):** Represent the relative pathogenetic contribution of receptor system $r$ to symptom $s$. For example, hallucinations rely heavily on cortical $5\text{-HT}_{2\text{A}}$ hyperfunction ($\kappa = 0.8$), whereas apathy is primarily mediated via noradrenergic ($\kappa = 0.8$) and glutamatergic pathways ($\kappa = 0.4$).
+
+    ---
+
+    ### 2. Sigmoidal Patient Vulnerability Scaling ($\lambda_r$)
+    **Algorithmic Concept:**
+    Static drug contraindications fail to capture continuous patient physiological decline. The tool transforms continuous clinical biomarkers ($x$) into normalized risk scalars ($\lambda_r \in [0.0, 1.0]$) using sigmoidal functions:
+
+    $$\lambda(x) = \frac{1}{1 + e^{-k(x - x_0)}}$$
+
+    *   **Fall & Sedation Risk ($\lambda_{\text{H1}}$):** Driven by Morse Fall Scale score ($x_0 = 35.0, k = 0.08$) and scaled by caregiver concerns.
+    *   **Orthostasis Risk ($\lambda_{\alpha1}$):** Driven by standing Systolic BP drop in mmHg ($x_0 = 15.0, k = 0.25$).
+    *   **Extrapyramidal Risk ($\lambda_{\text{D2}}$):** Driven by Simpson-Angus Scale (SAS) motor score ($x_0 = 8.0, k = 0.30$), with $\lambda_{\text{D2}} = 1.0$ hard-coded for DLB/PDD etiologies due to extreme neuroleptic sensitivity.
+    *   **Cardiotoxicity Risk ($\lambda_{\text{QTc}}$):** Driven by baseline QTc interval in ms ($x_0 = 450.0, k = 0.05$).
+    *   **Organ Clearance Penalties:** Inverted sigmoid for eGFR ($\lambda_{\text{renal}}$) and discrete clinical stratification for liver impairment ($\lambda_{\text{hepatic}}$).
+
+    ---
+
+    ### 3. Net Utility Match Score Computation ($M_j$)
+    **Algorithmic Concept:**
+    For each candidate drug ($j$), the overall match score ($M_j$) combines therapeutic gain ($U_{\text{thera}}$), dynamic risk deductions ($U_{\text{risk}}$), anticholinergic burden ($P_{\text{ACB}}$), and clearance organ impairment penalties ($P_{\text{organ}}$):
+
+    $$M_j = U_{\text{thera}} - U_{\text{risk}} - P_{\text{ACB}} - P_{\text{organ}}$$
+
+    #### Mathematical Breakdown:
+    1. **Therapeutic Gain ($U_{\text{thera}}$):**
+       $$U_{\text{thera}} = \sum_{r} \left( w_r \cdot pK_{i,r} \cdot A_r \right)$$
+       *Where $pK_{i,r}$ is binding affinity ($-\log_{10} K_i$) and $A_r \in \{-1.0, 0.0, 0.5, 1.0\}$ represents intrinsic efficacy (antagonist, neutral, partial agonist, full agonist)*.
+
+    2. **Risk Deductions ($U_{\text{risk}}$):**
+       $$U_{\text{risk}} = (\lambda_{\text{H1}} \cdot pK_{i,\text{H1}}) + (\lambda_{\alpha1} \cdot pK_{i,\alpha1}) + (\lambda_{\text{D2}} \cdot pK_{i,\text{D2}} \cdot \mathbb{I}_{\text{Antagonist}}) + 5.0(\lambda_{\text{QTc}} \cdot \text{Risk}_{\text{QTc}})$$
+       *Dopaminergic risk applies exclusively to full $D_2$ antagonists ($A_{\text{D2}} < 0$)*.
+
+    3. **Anticholinergic Cognitive Burden Penalty ($P_{\text{ACB}}$):**
+       $$P_{\text{ACB}} = C_{\text{patient}} \times 2.0 \quad \text{if } pK_{i,\text{M1}} \ge 7.0 \text{ else } 0.0$$
+       *Where cognitive vulnerability coefficient $C_{\text{patient}} = 3.0$ if MMSE < 10, $2.0$ if MMSE 10–20, and $1.0$ if MMSE > 20*.
+
+    4. **Organ Clearance Penalty ($P_{\text{organ}}$):**
+       $$P_{\text{organ}} = 4.0 \left( \lambda_{\text{renal}} \cdot \text{Fr}_{\text{renal}} + \lambda_{\text{hepatic}} \cdot \text{Fr}_{\text{hepatic}} \right)$$
+       *Penalizes drugs heavily reliant on impaired elimination pathways based on renal/hepatic elimination fractions ($\text{Fr}$)*.
+
+    ---
+
+    ### 4. Safety Hard-Lock Protocol
+    **Algorithmic Concept:**
+    Regardless of a drug's therapeutic score, absolute clinical contraindications trigger an unconditional lock ($M_j = -999.0$):
+    *   **Etiology Hard-Lock:** Full $D_2$ antagonists in DLB or PDD patients.
+    *   **Cardiac Hard-Lock:** High QTc-risk agents ($\text{Risk}_{\text{QTc}} > 0.60$) when baseline QTc $> 500\text{ ms}$.
+
+    ---
+
+    ### 5. Adverse Event Probability Heuristics
+    **Algorithmic Concept:**
+    Estimated side-effect probabilities ($P_{\text{event}}$) translate receptor occupancy and baseline vulnerability into clinically readable percentages using a bounded logistic function:
+
+    $$P_{\text{event}} = \min\left(95\%, \text{int}\left( \frac{100}{1 + e^{-0.5(pK_i \cdot \lambda - 3.5)}} \right)\right)$$
     """)
 
-with st.expander("🔄 Cross-Titration & Washout Protocol Timelines"):
-    st.markdown("""
-    #### Standardized Discontinuation & Switching Matrix
-    When switching from an ineffective or poorly tolerated regimen to a newly recommended primary agent:
-    1. **10-Day Tapering Schedule:** Reduce active drug dose by 50% on Day 1, and further to 25% on Day 5 prior to complete discontinuation on Day 10[span_13](start_span)[span_13](end_span).
-    2. **Cross-Titration Overlap:** Introduce the new agent at its minimum starting dose (e.g., Brexpiprazole 0.5 mg/day or Risperidone 0.25 mg/day) when the primary drug has been reduced to 50%[span_14](start_span)[span_14](end_span).
-    3. **Monitoring Window:** Perform symptom re-evaluations using NPI or CGI-I every 1–2 weeks during titration, and maintain post-withdrawal evaluation for at least 4 months to monitor for recurrence[span_15](start_span)[span_15](end_span).
-    """)
 
-with st.expander("📚 Pharmacological & Guideline Citations"):
-    st.markdown("""
-    1. **Dynamic Target Algorithms:** Maps BPSD clinical phenotypes directly to monoaminergic, cholinergic, and GABAergic receptor profiles using binding potencies ($pK_i$)[span_16](start_span)[span_16](end_span)[span_17](start_span)[span_17](end_span).
-    2. **Treatment Duration Rules:** Standard antipsychotic trials require 21 days for efficacy decision-making. Risperidone and quetiapine protocol allows extension up to 42 days before deeming a trial completely failed[span_18](start_span)[span_18](end_span)[span_19](start_span)[span_19](end_span).
-    3. **Guideline Consensus:** Incorporates principles from APA (2015), NICE (2018), and CANADA guidelines (2018) regarding regular reassessment, tapering considerations after 3–4 months of stability, and avoidance of unnecessary long-term antipsychotics[span_20](start_span)[span_20](end_span).
-    """)
+# -----------------------------------------------------------------------------
+# 6. CITATIONS & ALGORITHMIC REFERENCES
+# -----------------------------------------------------------------------------
+with st.expander("🔍 References & Citations"):
+    st.markdown(
+        """
+        1. **Roth, B. L., et al.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. UNC Chapel Hill / NIMH.
+        2. **Magierski, R., et al. (2020).** *Pharmacotherapy of Behavioral and Psychological Symptoms of Dementia: State of the Art and Future Progress*. Front. Psychiatry. PMID: 32848775.
+        3. **Tampi, R. R., et al. (2022).** *Brexpiprazole for the Treatment of Agitation in Dementia*. Drugs Aging. PMID: 35904712.
+        4. **Lee, D., et al. (2023).** *Brexpiprazole for the Treatment of Agitation Associated with Dementia Due to Alzheimer's Disease*. Am J Psychiatry. PMID: 37143168.
+        5. **Davies, S. J., et al. (2018).** *Sequential drug treatment algorithm for agitation and aggression in Alzheimer's and mixed dementia*. J Psychopharmacol. PMID: 29338602.
+        6. **Kales, H. C., et al. (2015).** *Assessment and management of behavioral and psychological symptoms of dementia*. BMJ. PMID: 25731898.
+        7. **Cummings, J., et al. (2022).** *Alzheimer's disease drug development pipeline: 2022*. Alzheimers Dement (NY). PMID: 35510134.
+        8. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
+        """)​
