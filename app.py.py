@@ -625,6 +625,80 @@ with st.expander("🚦 Dashboard & Ranking", expanded=False):
         df_results_display.style.map(apply_traffic_lights, subset=['Net Score (Mj)']),
         use_container_width=True
     )
+# -----------------------------------------------------------------------------
+# EXPANDABLE RATIONALE, FORMULAS & ALGORITHMIC THINKING MODEL
+# -----------------------------------------------------------------------------
+with st.expander("🧮 Algorithmic Architecture & Clinical Rationale", expanded=False):
+    st.markdown(r"""
+    This decision-support tool employs a **Multi-Criteria Utility Optimization Model** balancing therapeutic receptor targeting against patient-specific vulnerabilities and prior treatment history.
+
+    ---
+
+    **1. Neurological-Treatment Coupling ($v_s \rightarrow w_r$)**
+    
+    Rather than treating symptoms as isolated clinical presentation, this tool aims mapping NPI subscales ($v_s \in [0.0, 1.0]$) to patient's underlying neurological underlying. To prevent scaling bias, target weighting ($w_r$) for each receptors focused ($r$) uses a non-linear coupling function:
+
+    $$w_r = \min\left(1.0, \max_{s}\left(v_s \cdot \kappa_{s,r}\right)\right)$$
+
+    * **Coupling Coefficients ($\kappa_{s,r}$):** Represent relativity of each contributions, e.g. Hallucinations rely heavily on cortical $5\text{-HT}_{2\text{A}}$ hyperfunction ($\kappa = 0.8$), whereas apathy is relied via noradrenergic ($\kappa = 0.8$) and glutamatergic pathways ($\kappa = 0.4$).
+
+    ---
+
+    **2. Sigmoidal Patient Vulnerability Scaling ($\lambda_r$)**
+    
+    Static contraindications fail to represent continuous physiological decline. Continuous biomarkers ($x$) are used to normalized risk scalars ($\lambda_r \in [0.0, 1.0]$) using sigmoidal transfer functions:
+
+    $$\lambda(x) = \frac{1}{1 + e^{-k(x - x_0)}}$$
+
+    * **Fall & Sedation Risk ($\lambda_{\text{H1}}$):** Analyed via Morse Fall Scale score ($x_0 = 35.0, k = 0.08$) and scaled by caregiver concern preference weights.
+    * **Orthostatic Risk ($\lambda_{\alpha1}$):** Implied by standing Systolic BP drop in mmHg ($x_0 = 15.0, k = 0.25$).
+    * **Extrapyramidal Risk ($\lambda_{\text{D2}}$):** Based on Simpson-Angus Scale (SAS) score ($x_0 = 8.0, k = 0.30$), with $\lambda_{\text{D2}} = 1.0$ hard-locked for DLB/PDD etiologies.
+    * **Cardiotoxicity Risk ($\lambda_{\text{QTc}}$):** Evaluation of baseline QTc interval ($x_0 = 450.0\text{ ms}, k = 0.05$).
+    * **Organ Clearance Penalties:** Inverted sigmoid for eGFR ($\lambda_{\text{renal}}$) and discrete mapping for hepatic impairment ($\lambda_{\text{hepatic}}$).
+
+    ---
+
+    **3. Net Utility Match Score Calculation ($M_j$)**
+    
+    For each candidate agent ($j$), the match score ($M_j$) combines therapeutic gain ($U_{\text{thera}}$), dynamic risk deductions ($U_{\text{risk}}$), anticholinergic burden ($P_{\text{ACB}}$), clearance organ penalties ($P_{\text{organ}}$), and prior treatment history penalties ($P_{\text{history}}$):
+
+    $$M_j = U_{\text{thera}} - U_{\text{risk}} - P_{\text{ACB}} - P_{\text{organ}} - P_{\text{history}}$$
+
+    * **Therapeutic Gain ($U_{\text{thera}}$):**
+      $$U_{\text{thera}} = \sum_{r} \left( w_r \cdot pK_{i,r} \cdot A_r \right)$$
+      *Where $pK_{i,r}$ is binding affinity ($-\log_{10} K_i$) and $A_r \in \{-1.0, 0.0, 0.5, 1.0\}$ represents intrinsic efficacy (antagonist, neutral, partial agonist, full agonist).*
+
+    * **Dynamic Risk Deductions ($U_{\text{risk}}$):**
+      $$U_{\text{risk}} = (\lambda_{\text{H1}} \cdot pK_{i,\text{H1}}) + (\lambda_{\alpha1} \cdot pK_{i,\alpha1}) + (\lambda_{\text{D2}} \cdot pK_{i,\text{D2}} \cdot \mathbb{I}_{\text{Antagonist}}) + 5.0(\lambda_{\text{QTc}} \cdot \text{Risk}_{\text{QTc}})$$
+      *Dopaminergic risk deduction applies to full $D_2$ antagonists ($A_{\text{D2}} < 0$).*
+
+    * **Anticholinergic Cognitive Burden Penalty ($P_{\text{ACB}}$):**
+      $$P_{\text{ACB}} = C_{\text{patient}} \times 2.0 \quad \text{if } pK_{i,\text{M1}} \ge 7.0 \text{ else } 0.0$$
+      *Where cognitive vulnerability constants $C_{\text{patient}} = 3.0$ if MMSE < 10, $2.0$ if MMSE 10–20, and $1.0$ if MMSE > 20.*
+
+    * **Organ Clearance Penalty ($P_{\text{organ}}$):**
+      $$P_{\text{organ}} = 4.0 \left( \lambda_{\text{renal}} \cdot \text{Fr}_{\text{renal}} + \lambda_{\text{hepatic}} \cdot \text{Fr}_{\text{hepatic}} \right)$$
+
+    * **Prior Response Penalty ($P_{\text{history}}$):**
+      Applies a $-5.0$ penalty for documented prior treatment failure at standard doses, forces a hard-lock for prior severe adverse reactions/intolerance, or highlights dose optimization when partial benefit was previously observed.
+
+    ---
+
+    **4. Clinical Safety Hard-Lock Protocol**
+    
+    Absolute clinical contraindications override scoring and force an unconditional lock ($M_j = -999.0$):
+    * **Etiology Hard-Lock:** Full $D_2$ antagonists in DLB or PDD etiologies.
+    * **Cardiac Hard-Lock:** High QTc-risk agents ($\text{Risk}_{\text{QTc}} > 0.60$) when baseline QTc $> 500\text{ ms}$.
+    * **Clinician Rule-Out:** Direct UI override via session-state toggle.
+
+    ---
+
+    **5. Side-Effect Probability**
+    
+    Estimates receptor occupancy and baseline vulnerability into clinically risk likelihood percentages ($P_{\text{event}} \in [0\%, 95\%]$) via a bounded logistic function:
+
+    $$P_{\text{event}} = \min\left(95\%, \text{int}\left( \frac{100}{1 + e^{-0.5(pK_i \cdot \lambda - 3.5)}} \right)\right)$$
+    """)
 
 # -----------------------------------------------------------------------------
 # 6. CITATIONS & REFERENCES
