@@ -534,17 +534,17 @@ with st.expander("📊 Estimated Side-Effect Probabilities (PETRUSHKA Visualizer
     col_vis1, col_vis2, col_vis3 = st.columns(3)
     
     with col_vis1:
-        st.write(**Estimated Sedation Risk:**)
+        st.write("**Estimated Sedation Risk:**")
         st.progress(top_drug["Est. Sedation %"])
         st.caption(f"Likelihood: {top_drug['Est. Sedation %']}%")
         
     with col_vis2:
-        st.write(**Estimated Orthostasis Risk:**)
+        st.write("**Estimated Orthostasis Risk:**")
         st.progress(top_drug["Est. Orthostasis %"])
         st.caption(f"Likelihood: {top_drug['Est. Orthostasis %']}%")
 
     with col_vis3:
-        st.write(**Estimated EPS Risk:**)
+        st.write("**Estimated EPS Risk:**")
         st.progress(top_drug["Est. EPS %"])
         st.caption(f"Likelihood: {top_drug['Est. EPS %']}%")
 
@@ -598,4 +598,3 @@ with st.expander("🔍 References & Citations"):
         6. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
         """
     )
-​
