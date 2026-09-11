@@ -601,5 +601,4 @@ with st.expander("🔍 References & Citations"):
         6. **Kales, H. C., et al. (2015).** *Assessment and management of behavioral and psychological symptoms of dementia*. BMJ. PMID: 25731898.
         7. **Cummings, J., et al. (2022).** *Alzheimer's disease drug development pipeline: 2022*. Alzheimers Dement (NY). PMID: 35510134.
         8. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
-        """
-	)​
+        """)​
