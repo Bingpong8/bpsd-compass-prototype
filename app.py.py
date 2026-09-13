@@ -1,8 +1,8 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-import itertools
 
+# Page Configuration & Header Setup
 st.set_page_config(page_title="BPSD Compass Prototype (P5)", layout="wide")
 st.title("BPSD Compass Prototype (P5)")
 st.caption("Parameter-driven decision support tools")
@@ -196,7 +196,7 @@ DRUG_DATABASE = {
 }
 
 # -----------------------------------------------------------------------------
-# 2. FUNCTIONS & SIGMOIDAL SCALING
+# 2. COMPUTATIONAL FUNCTIONS & SIGMOIDAL SCALING
 # -----------------------------------------------------------------------------
 def sigmoid(x, k, x0):
     return 1.0 / (1.0 + np.exp(-k * (x - x0)))
@@ -320,109 +320,7 @@ def generate_cross_titration_schedule(prior_drug, target_drug):
         {"Phase": "Days 8–11", "Prior Agent Action": f"Taper {prior_drug} to 25% dose", "New Agent Action": f"Titrate {target_drug} toward target dose", "Monitoring": "NPI symptom trajectory"},
         {"Phase": "Day 12+", "Prior Agent Action": f"Discontinue {prior_drug}", "New Agent Action": f"Optimize {target_drug} target dose", "Monitoring": "Full CGI-I / NPI-Q re-assessment"}
     ])
-# =============================================================================
-# HELPER FUNCTIONS & SIGMOIDAL SCALARS
-# =============================================================================
 
-def sigmoid(x: float, k: float, x0: float) -> float:
-    """Standard continuous sigmoidal transfer function."""
-    return 1.0 / (1.0 + np.exp(-k * (x - x0)))
-
-def inverted_sigmoid(x: float, k: float, x0: float) -> float:
-    """Inverted sigmoidal function for metrics where higher values reduce risk."""
-    return 1.0 / (1.0 + np.exp(k * (x - x0)))
-
-
-# =============================================================================
-# MODULE 1: SPECIAL CONDITIONS RISK WEIGHTING ENGINE
-# =============================================================================
-
-def calculate_special_condition_penalties(
-    drug: dict,
-    patient_profile: dict
-) -> dict:
-    """
-    Computes dynamic risk penalties for Epilepsy, NCDs, and Extreme Age Groups.
-    
-    patient_profile keys expected:
-      - 'seizure_freq_year': float (seizures/year)
-      - 'active_aeds': list of str (e.g., ['carbamazepine', 'valproate'])
-      - 'hba1c': float (%)
-      - 'bmi': float (kg/m^2)
-      - 'sbp_drop': float (mmHg)
-      - 'has_thyroid_dysfunction': bool
-      - 'age': float (years)
-      - 'frailty_score': float (0.0 to 1.0 scale)
-      - 'acb_score': float
-    """
-    
-    # -------------------------------------------------------------------------
-    # 1. Epilepsy & AED Interaction Penalty (P_epilepsy)
-    # -------------------------------------------------------------------------
-    seizure_freq = patient_profile.get('seizure_freq_year', 0.0)
-    active_aeds = patient_profile.get('active_aeds', [])
-    
-    # Sigmoidal scalar centered at midpoint x0 = 1.0 seizure/year
-    lambda_seizure = sigmoid(seizure_freq, k=0.8, x0=1.0)
-    convulsant_index = drug.get('convulsant_index', 0.0)  # Range 0.0 to 1.0
-    
-    # DDI Penalty matrix lookup against active AEDs (e.g., enzymatic induction/inhibition)
-    ddi_matrix = drug.get('aed_ddi_penalties', {})
-    ddi_penalty_sum = sum([ddi_matrix.get(aed.lower(), 0.0) for aed in active_aeds])
-    
-    P_epilepsy = (lambda_seizure * convulsant_index * 8.0) + ddi_penalty_sum
-
-    # -------------------------------------------------------------------------
-    # 2. Non-Communicable Diseases (NCD) Penalty (P_NCD)
-    # -------------------------------------------------------------------------
-    hba1c = patient_profile.get('hba1c', 5.7)
-    bmi = patient_profile.get('bmi', 22.0)
-    sbp_drop = patient_profile.get('sbp_drop', 0.0)
-    has_thyroid = patient_profile.get('has_thyroid_dysfunction', False)
-    
-    # Metabolic Risk Scalar
-    lambda_hba1c = sigmoid(hba1c, k=1.0, x0=8.0)
-    lambda_bmi = sigmoid(bmi, k=0.15, x0=30.0)
-    lambda_metabolic = 0.5 * (lambda_hba1c + lambda_bmi)
-    
-    # Binding affinities (pK_i) for metabolic risk receptors
-    pKi_H1 = drug.get('pK_i', {}).get('H1', 0.0)
-    pKi_5HT2C = drug.get('pK_i', {}).get('5HT2C', 0.0)
-    P_metabolic = lambda_metabolic * (pKi_H1 + pKi_5HT2C)
-    
-    # Vascular/Hypertension Risk Scalar (alpha-1 blockade mapping)
-    lambda_HT = sigmoid(sbp_drop, k=0.25, x0=15.0)
-    pKi_alpha1 = drug.get('pK_i', {}).get('alpha1', 0.0)
-    P_HT = lambda_HT * pKi_alpha1
-    
-    # Endocrine/Thyroid Risk Scalar (QTc Risk amplification)
-    lambda_thyroid = 1.5 if has_thyroid else 0.0
-    qtc_risk = drug.get('qtc_risk_score', 0.0)  # Range 0.0 to 1.0
-    P_thyroid = lambda_thyroid * qtc_risk * 3.0
-    
-    P_NCD = P_metabolic + P_HT + P_thyroid
-
-    # -------------------------------------------------------------------------
-    # 3. Extreme Age Group Penalty (P_age)
-    # -------------------------------------------------------------------------
-    age = patient_profile.get('age', 65.0)
-    frailty = patient_profile.get('frailty_score', 0.2)
-    acb = patient_profile.get('acb_score', 0.0)
-    gamma = 1.4  # Exponential scaling for advanced age
-    
-    if age > 75.0:
-        age_factor = (age / 80.0) ** gamma
-        P_age = age_factor * ((frailty * acb * 2.0) + (frailty * pKi_H1 * 1.5))
-    else:
-        P_age = 0.0
-
-    return {
-        "P_epilepsy": P_epilepsy,
-        "P_NCD": P_NCD,
-        "P_age": P_age,
-        "P_special_total": P_epilepsy + P_NCD + P_age
-    }
-	
 # -----------------------------------------------------------------------------
 # 3. CLINICAL INPUTS
 # -----------------------------------------------------------------------------
@@ -653,146 +551,7 @@ else:
     if rule_out_flag:
         st.session_state.ruled_out.add(top_drug["Drug"])
         st.rerun()
-# =============================================================================
-# MODULE 2: MULTI-AGENT COMBINATION REGIMEN ENGINE
-# =============================================================================
 
-def evaluate_combination_regimens(
-    candidate_drugs: list,
-    target_weights: dict,
-    patient_profile: dict,
-    M_target_threshold: float = 12.0,
-    polypharmacy_theta: float = 2.5,
-    superiority_delta: float = 1.5
-) -> dict:
-    """
-    Evaluates dual-agent combinations when monotherapy falls below M_target_threshold.
-    
-    Calculates bounded receptor occupancy, compounding non-linear risk overlap,
-    and enforces a strict superiority barrier over single-agent options.
-    """
-    
-    # 1. Compute Monotherapy Scores First
-    monotherapy_results = []
-    for drug in candidate_drugs:
-        # Basic therapeutic gain
-        u_thera = sum([target_weights.get(r, 0.0) * drug.get('pK_i', {}).get(r, 0.0) 
-                       * drug.get('intrinsic_efficacy', {}).get(r, 1.0) 
-                       for r in target_weights])
-        
-        # Risk & Special Penalties
-        special_penalties = calculate_special_condition_penalties(drug, patient_profile)
-        base_risk = drug.get('base_risk_score', 0.0)
-        
-        M_j = u_thera - base_risk - special_penalties['P_special_total']
-        
-        monotherapy_results.append({
-            'drug_name': drug['name'],
-            'M_j': M_j,
-            'u_thera': u_thera,
-            'u_risk': base_risk,
-            'special_penalties': special_penalties,
-            'drug_obj': drug
-        })
-        
-    monotherapy_results.sort(key=lambda x: x['M_j'], reverse=True)
-    best_monotherapy = monotherapy_results[0]
-    
-    # If monotherapy meets treatment target, return monotherapy plan
-    if best_monotherapy['M_j'] >= M_target_threshold:
-        return {
-            "mode": "MONOTHERAPY",
-            "recommended_regimen": [best_monotherapy['drug_name']],
-            "score": best_monotherapy['M_j'],
-            "all_monotherapy_scores": monotherapy_results,
-            "combination_evaluated": False
-        }
-
-    # 2. Trigger Combination Engine (Evaluate Pairs)
-    combination_results = []
-    receptors = list(target_weights.keys())
-    
-    for drug1, drug2 in itertools.combinations(candidate_drugs, 2):
-        # A. Bounded Receptor Occupancy Additivity
-        u_thera_comb = 0.0
-        for r in receptors:
-            w_r = target_weights[r]
-            # Convert pKi to relative occupancy contribution
-            occ1 = drug1.get('occupancy_ratio', {}).get(r, drug1.get('pK_i', {}).get(r, 0.0) / 10.0)
-            occ2 = drug2.get('occupancy_ratio', {}).get(r, drug2.get('pK_i', {}).get(r, 0.0) / 10.0)
-            
-            # Cap maximum occupancy saturation at 1.0
-            bounded_occ = min(1.0, occ1 + occ2)
-            u_thera_comb += w_r * bounded_occ * 10.0  # Normalized scaling factor
-            
-        # B. Compounding Non-Linear Risk Overlap
-        risk1 = drug1.get('base_risk_score', 0.0)
-        risk2 = drug2.get('base_risk_score', 0.0)
-        
-        # Synergistic Toxicity Penalties (Non-Linear Quadratic / Power scaling)
-        qtc1 = drug1.get('qtc_prolongation_ms', 0.0)
-        qtc2 = drug2.get('qtc_prolongation_ms', 0.0)
-        alpha_qtc = 0.05
-        compounded_qtc_risk = alpha_qtc * ((qtc1 + qtc2) ** 2)
-        
-        acb1 = drug1.get('acb_score', 0.0)
-        acb2 = drug2.get('acb_score', 0.0)
-        alpha_acb = 1.2
-        compounded_acb_risk = alpha_acb * ((acb1 + acb2) ** 1.5)
-        
-        u_risk_comb = risk1 + risk2 + compounded_qtc_risk + compounded_acb_risk
-        
-        # C. Combined Special Penalties
-        spec1 = calculate_special_condition_penalties(drug1, patient_profile)
-        spec2 = calculate_special_condition_penalties(drug2, patient_profile)
-        P_special_comb = spec1['P_special_total'] + spec2['P_special_total']
-        
-        # D. Polypharmacy Friction Score Calculation
-        # M(C) = U_thera - U_risk - P_special - theta * (|C| - 1)
-        cardinality_penalty = polypharmacy_theta * (2 - 1)
-        
-        M_comb = u_thera_comb - u_risk_comb - P_special_comb - cardinality_penalty
-        
-        # E. Check Superiority Barrier vs Best Monotherapy Component
-        max_single_score = max(
-            next(item['M_j'] for item in monotherapy_results if item['drug_name'] == drug1['name']),
-            next(item['M_j'] for item in monotherapy_results if item['drug_name'] == drug2['name'])
-        )
-        
-        is_superior = (M_comb - max_single_score) >= superiority_delta
-        
-        combination_results.append({
-            'regimen': [drug1['name'], drug2['name']],
-            'M_combination': M_comb,
-            'u_thera_comb': u_thera_comb,
-            'u_risk_comb': u_risk_comb,
-            'superiority_margin': M_comb - max_single_score,
-            'is_clinically_viable': is_superior
-        })
-
-    # Sort combination regimens by net match score
-    combination_results.sort(key=lambda x: x['M_combination'], reverse=True)
-    best_combination = combination_results[0] if combination_results else None
-
-    # Decision Logic: Recommend combination only if superior, otherwise fallback to top monotherapy
-    if best_combination and best_combination['is_clinically_viable']:
-        return {
-            "mode": "COMBINATION",
-            "recommended_regimen": best_combination['regimen'],
-            "score": best_combination['M_combination'],
-            "superiority_margin": best_combination['superiority_margin'],
-            "top_monotherapy_fallback": best_monotherapy['drug_name'],
-            "all_combinations_evaluated": combination_results
-        }
-    else:
-        return {
-            "mode": "MONOTHERAPY_FALLBACK",
-            "recommended_regimen": [best_monotherapy['drug_name']],
-            "score": best_monotherapy['M_j'],
-            "reason": "Combination options failed to clear superiority margin threshold over monotherapy.",
-            "all_monotherapy_scores": monotherapy_results
-        }
-		
 # -----------------------------------------------------------------------------
 # 5. EXPANDED CLINICAL DASHBOARD & CROSS-TITRATION ENGINE
 # -----------------------------------------------------------------------------
@@ -955,4 +714,3 @@ with st.expander("🔍 References & Citations"):
         6. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
         """
     )
-
