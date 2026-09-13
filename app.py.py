@@ -653,7 +653,146 @@ else:
     if rule_out_flag:
         st.session_state.ruled_out.add(top_drug["Drug"])
         st.rerun()
+# =============================================================================
+# MODULE 2: MULTI-AGENT COMBINATION REGIMEN ENGINE
+# =============================================================================
 
+def evaluate_combination_regimens(
+    candidate_drugs: list,
+    target_weights: dict,
+    patient_profile: dict,
+    M_target_threshold: float = 12.0,
+    polypharmacy_theta: float = 2.5,
+    superiority_delta: float = 1.5
+) -> dict:
+    """
+    Evaluates dual-agent combinations when monotherapy falls below M_target_threshold.
+    
+    Calculates bounded receptor occupancy, compounding non-linear risk overlap,
+    and enforces a strict superiority barrier over single-agent options.
+    """
+    
+    # 1. Compute Monotherapy Scores First
+    monotherapy_results = []
+    for drug in candidate_drugs:
+        # Basic therapeutic gain
+        u_thera = sum([target_weights.get(r, 0.0) * drug.get('pK_i', {}).get(r, 0.0) 
+                       * drug.get('intrinsic_efficacy', {}).get(r, 1.0) 
+                       for r in target_weights])
+        
+        # Risk & Special Penalties
+        special_penalties = calculate_special_condition_penalties(drug, patient_profile)
+        base_risk = drug.get('base_risk_score', 0.0)
+        
+        M_j = u_thera - base_risk - special_penalties['P_special_total']
+        
+        monotherapy_results.append({
+            'drug_name': drug['name'],
+            'M_j': M_j,
+            'u_thera': u_thera,
+            'u_risk': base_risk,
+            'special_penalties': special_penalties,
+            'drug_obj': drug
+        })
+        
+    monotherapy_results.sort(key=lambda x: x['M_j'], reverse=True)
+    best_monotherapy = monotherapy_results[0]
+    
+    # If monotherapy meets treatment target, return monotherapy plan
+    if best_monotherapy['M_j'] >= M_target_threshold:
+        return {
+            "mode": "MONOTHERAPY",
+            "recommended_regimen": [best_monotherapy['drug_name']],
+            "score": best_monotherapy['M_j'],
+            "all_monotherapy_scores": monotherapy_results,
+            "combination_evaluated": False
+        }
+
+    # 2. Trigger Combination Engine (Evaluate Pairs)
+    combination_results = []
+    receptors = list(target_weights.keys())
+    
+    for drug1, drug2 in itertools.combinations(candidate_drugs, 2):
+        # A. Bounded Receptor Occupancy Additivity
+        u_thera_comb = 0.0
+        for r in receptors:
+            w_r = target_weights[r]
+            # Convert pKi to relative occupancy contribution
+            occ1 = drug1.get('occupancy_ratio', {}).get(r, drug1.get('pK_i', {}).get(r, 0.0) / 10.0)
+            occ2 = drug2.get('occupancy_ratio', {}).get(r, drug2.get('pK_i', {}).get(r, 0.0) / 10.0)
+            
+            # Cap maximum occupancy saturation at 1.0
+            bounded_occ = min(1.0, occ1 + occ2)
+            u_thera_comb += w_r * bounded_occ * 10.0  # Normalized scaling factor
+            
+        # B. Compounding Non-Linear Risk Overlap
+        risk1 = drug1.get('base_risk_score', 0.0)
+        risk2 = drug2.get('base_risk_score', 0.0)
+        
+        # Synergistic Toxicity Penalties (Non-Linear Quadratic / Power scaling)
+        qtc1 = drug1.get('qtc_prolongation_ms', 0.0)
+        qtc2 = drug2.get('qtc_prolongation_ms', 0.0)
+        alpha_qtc = 0.05
+        compounded_qtc_risk = alpha_qtc * ((qtc1 + qtc2) ** 2)
+        
+        acb1 = drug1.get('acb_score', 0.0)
+        acb2 = drug2.get('acb_score', 0.0)
+        alpha_acb = 1.2
+        compounded_acb_risk = alpha_acb * ((acb1 + acb2) ** 1.5)
+        
+        u_risk_comb = risk1 + risk2 + compounded_qtc_risk + compounded_acb_risk
+        
+        # C. Combined Special Penalties
+        spec1 = calculate_special_condition_penalties(drug1, patient_profile)
+        spec2 = calculate_special_condition_penalties(drug2, patient_profile)
+        P_special_comb = spec1['P_special_total'] + spec2['P_special_total']
+        
+        # D. Polypharmacy Friction Score Calculation
+        # M(C) = U_thera - U_risk - P_special - theta * (|C| - 1)
+        cardinality_penalty = polypharmacy_theta * (2 - 1)
+        
+        M_comb = u_thera_comb - u_risk_comb - P_special_comb - cardinality_penalty
+        
+        # E. Check Superiority Barrier vs Best Monotherapy Component
+        max_single_score = max(
+            next(item['M_j'] for item in monotherapy_results if item['drug_name'] == drug1['name']),
+            next(item['M_j'] for item in monotherapy_results if item['drug_name'] == drug2['name'])
+        )
+        
+        is_superior = (M_comb - max_single_score) >= superiority_delta
+        
+        combination_results.append({
+            'regimen': [drug1['name'], drug2['name']],
+            'M_combination': M_comb,
+            'u_thera_comb': u_thera_comb,
+            'u_risk_comb': u_risk_comb,
+            'superiority_margin': M_comb - max_single_score,
+            'is_clinically_viable': is_superior
+        })
+
+    # Sort combination regimens by net match score
+    combination_results.sort(key=lambda x: x['M_combination'], reverse=True)
+    best_combination = combination_results[0] if combination_results else None
+
+    # Decision Logic: Recommend combination only if superior, otherwise fallback to top monotherapy
+    if best_combination and best_combination['is_clinically_viable']:
+        return {
+            "mode": "COMBINATION",
+            "recommended_regimen": best_combination['regimen'],
+            "score": best_combination['M_combination'],
+            "superiority_margin": best_combination['superiority_margin'],
+            "top_monotherapy_fallback": best_monotherapy['drug_name'],
+            "all_combinations_evaluated": combination_results
+        }
+    else:
+        return {
+            "mode": "MONOTHERAPY_FALLBACK",
+            "recommended_regimen": [best_monotherapy['drug_name']],
+            "score": best_monotherapy['M_j'],
+            "reason": "Combination options failed to clear superiority margin threshold over monotherapy.",
+            "all_monotherapy_scores": monotherapy_results
+        }
+		
 # -----------------------------------------------------------------------------
 # 5. EXPANDED CLINICAL DASHBOARD & CROSS-TITRATION ENGINE
 # -----------------------------------------------------------------------------
