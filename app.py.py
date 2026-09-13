@@ -1,8 +1,8 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import itertools
 
-# Page Configuration & Header Setup
 st.set_page_config(page_title="BPSD Compass Prototype (P5)", layout="wide")
 st.title("BPSD Compass Prototype (P5)")
 st.caption("Parameter-driven decision support tools")
@@ -196,7 +196,7 @@ DRUG_DATABASE = {
 }
 
 # -----------------------------------------------------------------------------
-# 2. COMPUTATIONAL FUNCTIONS & SIGMOIDAL SCALING
+# 2. FUNCTIONS & SIGMOIDAL SCALING
 # -----------------------------------------------------------------------------
 def sigmoid(x, k, x0):
     return 1.0 / (1.0 + np.exp(-k * (x - x0)))
@@ -320,7 +320,109 @@ def generate_cross_titration_schedule(prior_drug, target_drug):
         {"Phase": "Days 8–11", "Prior Agent Action": f"Taper {prior_drug} to 25% dose", "New Agent Action": f"Titrate {target_drug} toward target dose", "Monitoring": "NPI symptom trajectory"},
         {"Phase": "Day 12+", "Prior Agent Action": f"Discontinue {prior_drug}", "New Agent Action": f"Optimize {target_drug} target dose", "Monitoring": "Full CGI-I / NPI-Q re-assessment"}
     ])
+# =============================================================================
+# HELPER FUNCTIONS & SIGMOIDAL SCALARS
+# =============================================================================
 
+def sigmoid(x: float, k: float, x0: float) -> float:
+    """Standard continuous sigmoidal transfer function."""
+    return 1.0 / (1.0 + np.exp(-k * (x - x0)))
+
+def inverted_sigmoid(x: float, k: float, x0: float) -> float:
+    """Inverted sigmoidal function for metrics where higher values reduce risk."""
+    return 1.0 / (1.0 + np.exp(k * (x - x0)))
+
+
+# =============================================================================
+# MODULE 1: SPECIAL CONDITIONS RISK WEIGHTING ENGINE
+# =============================================================================
+
+def calculate_special_condition_penalties(
+    drug: dict,
+    patient_profile: dict
+) -> dict:
+    """
+    Computes dynamic risk penalties for Epilepsy, NCDs, and Extreme Age Groups.
+    
+    patient_profile keys expected:
+      - 'seizure_freq_year': float (seizures/year)
+      - 'active_aeds': list of str (e.g., ['carbamazepine', 'valproate'])
+      - 'hba1c': float (%)
+      - 'bmi': float (kg/m^2)
+      - 'sbp_drop': float (mmHg)
+      - 'has_thyroid_dysfunction': bool
+      - 'age': float (years)
+      - 'frailty_score': float (0.0 to 1.0 scale)
+      - 'acb_score': float
+    """
+    
+    # -------------------------------------------------------------------------
+    # 1. Epilepsy & AED Interaction Penalty (P_epilepsy)
+    # -------------------------------------------------------------------------
+    seizure_freq = patient_profile.get('seizure_freq_year', 0.0)
+    active_aeds = patient_profile.get('active_aeds', [])
+    
+    # Sigmoidal scalar centered at midpoint x0 = 1.0 seizure/year
+    lambda_seizure = sigmoid(seizure_freq, k=0.8, x0=1.0)
+    convulsant_index = drug.get('convulsant_index', 0.0)  # Range 0.0 to 1.0
+    
+    # DDI Penalty matrix lookup against active AEDs (e.g., enzymatic induction/inhibition)
+    ddi_matrix = drug.get('aed_ddi_penalties', {})
+    ddi_penalty_sum = sum([ddi_matrix.get(aed.lower(), 0.0) for aed in active_aeds])
+    
+    P_epilepsy = (lambda_seizure * convulsant_index * 8.0) + ddi_penalty_sum
+
+    # -------------------------------------------------------------------------
+    # 2. Non-Communicable Diseases (NCD) Penalty (P_NCD)
+    # -------------------------------------------------------------------------
+    hba1c = patient_profile.get('hba1c', 5.7)
+    bmi = patient_profile.get('bmi', 22.0)
+    sbp_drop = patient_profile.get('sbp_drop', 0.0)
+    has_thyroid = patient_profile.get('has_thyroid_dysfunction', False)
+    
+    # Metabolic Risk Scalar
+    lambda_hba1c = sigmoid(hba1c, k=1.0, x0=8.0)
+    lambda_bmi = sigmoid(bmi, k=0.15, x0=30.0)
+    lambda_metabolic = 0.5 * (lambda_hba1c + lambda_bmi)
+    
+    # Binding affinities (pK_i) for metabolic risk receptors
+    pKi_H1 = drug.get('pK_i', {}).get('H1', 0.0)
+    pKi_5HT2C = drug.get('pK_i', {}).get('5HT2C', 0.0)
+    P_metabolic = lambda_metabolic * (pKi_H1 + pKi_5HT2C)
+    
+    # Vascular/Hypertension Risk Scalar (alpha-1 blockade mapping)
+    lambda_HT = sigmoid(sbp_drop, k=0.25, x0=15.0)
+    pKi_alpha1 = drug.get('pK_i', {}).get('alpha1', 0.0)
+    P_HT = lambda_HT * pKi_alpha1
+    
+    # Endocrine/Thyroid Risk Scalar (QTc Risk amplification)
+    lambda_thyroid = 1.5 if has_thyroid else 0.0
+    qtc_risk = drug.get('qtc_risk_score', 0.0)  # Range 0.0 to 1.0
+    P_thyroid = lambda_thyroid * qtc_risk * 3.0
+    
+    P_NCD = P_metabolic + P_HT + P_thyroid
+
+    # -------------------------------------------------------------------------
+    # 3. Extreme Age Group Penalty (P_age)
+    # -------------------------------------------------------------------------
+    age = patient_profile.get('age', 65.0)
+    frailty = patient_profile.get('frailty_score', 0.2)
+    acb = patient_profile.get('acb_score', 0.0)
+    gamma = 1.4  # Exponential scaling for advanced age
+    
+    if age > 75.0:
+        age_factor = (age / 80.0) ** gamma
+        P_age = age_factor * ((frailty * acb * 2.0) + (frailty * pKi_H1 * 1.5))
+    else:
+        P_age = 0.0
+
+    return {
+        "P_epilepsy": P_epilepsy,
+        "P_NCD": P_NCD,
+        "P_age": P_age,
+        "P_special_total": P_epilepsy + P_NCD + P_age
+    }
+	
 # -----------------------------------------------------------------------------
 # 3. CLINICAL INPUTS
 # -----------------------------------------------------------------------------
