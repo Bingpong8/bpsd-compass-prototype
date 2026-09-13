@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import itertools
 
 # Page Configuration & Header Setup
 st.set_page_config(page_title="BPSD Compass Prototype (P5)", layout="wide")
@@ -30,173 +31,176 @@ if "ruled_out" not in st.session_state:
     st.session_state.ruled_out = set()
 
 # -----------------------------------------------------------------------------
-# 1. PHARMACODYNAMIC DATABASE WITH DOSAGE SPECTRUM
+# 1. PHARMACODYNAMIC DATABASE WITH DOSAGE SPECTRUM & SAFETY PARAMETERS
 # -----------------------------------------------------------------------------
 DRUG_DATABASE = {
     "Brexpiprazole": {
         "category": "Atypical Antipsychotic",
-        "pKi": {"5HT2A": 8.7, "D2": 9.5, "NET": 5.0, "α2A": 7.4, "NMDA": 0.0, "GABA-A": 0.0, "H1": 7.1, "α1": 8.0, "M1": 5.0},
+        "pKi": {"5HT2A": 8.7, "D2": 9.5, "NET": 5.0, "α2A": 7.4, "NMDA": 0.0, "GABA-A": 0.0, "H1": 7.1, "α1": 8.0, "M1": 5.0, "5HT2C": 6.2},
         "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.14, "Fr_hepatic": 0.86, "Risk_QTc": 0.20,
+        "Fr_renal": 0.14, "Fr_hepatic": 0.86, "Risk_QTc": 0.20, "convulsant_index": 0.1,
         "dosage": "Start 0.5 mg PO OD, max 2 mg/day for agitation.",
         "warnings": "Akathisia and impulse-control disorders. Monitor elderly closely."
     },
     "Pimavanserin": {
         "category": "Atypical Antipsychotic",
-        "pKi": {"5HT2A": 9.3, "D2": 5.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0},
+        "pKi": {"5HT2A": 9.3, "D2": 5.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.06, "Fr_hepatic": 0.94, "Risk_QTc": 0.40,
+        "Fr_renal": 0.06, "Fr_hepatic": 0.94, "Risk_QTc": 0.40, "convulsant_index": 0.0,
         "dosage": "Standard dose: 34 mg PO OD or 10 mg PO OD in CYP3A4 inhibitor co-administration.",
         "warnings": "QTc prolongation risk. Indicated primarily for Parkinson's Disease Psychosis."
     },
     "Risperidone": {
         "category": "Atypical Antipsychotic",
-        "pKi": {"5HT2A": 9.7, "D2": 8.9, "NET": 5.0, "α2A": 6.8, "NMDA": 0.0, "GABA-A": 0.0, "H1": 7.3, "α1": 9.0, "M1": 5.0},
+        "pKi": {"5HT2A": 9.7, "D2": 8.9, "NET": 5.0, "α2A": 6.8, "NMDA": 0.0, "GABA-A": 0.0, "H1": 7.3, "α1": 9.0, "M1": 5.0, "5HT2C": 7.0},
         "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.50,
+        "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.50, "convulsant_index": 0.2,
+        "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
         "dosage": "Start 0.25 mg - 0.5 mg/day; target 0.5 mg - 1.5 mg/day (max 2.0 mg/day in elderly).",
         "warnings": "QTc prolongation, dose-dependent extrapyramidal symptoms (EPS), hyperprolactinemia, and cerebrovascular risk."
     },
     "Quetiapine": {
         "category": "Atypical Antipsychotic",
-        "pKi": {"5HT2A": 6.8, "D2": 5.8, "NET": 5.0, "α2A": 5.5, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.0, "α1": 7.1, "M1": 6.0},
+        "pKi": {"5HT2A": 6.8, "D2": 5.8, "NET": 5.0, "α2A": 5.5, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.0, "α1": 7.1, "M1": 6.0, "5HT2C": 6.0},
         "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.40,
+        "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.40, "convulsant_index": 0.2,
+        "aed_ddi_penalties": {"carbamazepine": 3.0, "valproate": 0.5},
         "dosage": "Start 12.5 mg - 25 mg PO hs",
         "warnings": "QTc prolongation, severe orthostatic hypotension, sedation, and metabolic dysregulation."
     },
     "Olanzapine": {
         "category": "Atypical Antipsychotic",
-        "pKi": {"5HT2A": 8.5, "D2": 7.8, "NET": 5.0, "α2A": 6.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.8, "α1": 7.7, "M1": 7.7},
+        "pKi": {"5HT2A": 8.5, "D2": 7.8, "NET": 5.0, "α2A": 6.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.8, "α1": 7.7, "M1": 7.7, "5HT2C": 7.8},
         "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.07, "Fr_hepatic": 0.93, "Risk_QTc": 0.30,
+        "Fr_renal": 0.07, "Fr_hepatic": 0.93, "Risk_QTc": 0.30, "convulsant_index": 0.4,
+        "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
         "dosage": "Start 2.5 mg PO hs; target 5.0 mg/day, max 10 mg/day.",
         "warnings": "Severe metabolic syndrome, weight gain, sedation, and anticholinergic cognitive impairment."
     },
     "Haloperidol": {
         "category": "Typical Antipsychotic",
-        "pKi": {"5HT2A": 7.2, "D2": 9.2, "NET": 5.0, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 6.0, "α1": 7.3, "M1": 5.0},
+        "pKi": {"5HT2A": 7.2, "D2": 9.2, "NET": 5.0, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 6.0, "α1": 7.3, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.15, "Fr_hepatic": 0.85, "Risk_QTc": 0.85,
+        "Fr_renal": 0.15, "Fr_hepatic": 0.85, "Risk_QTc": 0.85, "convulsant_index": 0.3,
         "dosage": "Start as low as possible, 0.25-0.5 mg PO OD or PRN - max 2 mg/day.",
         "warnings": "Torsades de Pointes, Extrapyramidal Symptoms (EPS), and Tardive Dyskinesia."
     },
     "Escitalopram": {
         "category": "Antidepressant (SSRI)",
-        "pKi": {"5HT2A": 5.2, "D2": 5.0, "NET": 5.0, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 6.3, "α1": 5.0, "M1": 5.0},
+        "pKi": {"5HT2A": 5.2, "D2": 5.0, "NET": 5.0, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 6.3, "α1": 5.0, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.5, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.20, "Fr_hepatic": 0.80, "Risk_QTc": 0.75,
+        "Fr_renal": 0.20, "Fr_hepatic": 0.80, "Risk_QTc": 0.75, "convulsant_index": 0.1,
         "dosage": "Start 5 mg/day; max 10 mg/day.",
         "warnings": "Dose-dependent QTc prolongation risk; hyponatremia and bleeding precautions."
     },
     "Sertraline": {
         "category": "Antidepressant (SSRI)",
-        "pKi": {"5HT2A": 6.2, "D2": 6.6, "NET": 5.5, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0},
+        "pKi": {"5HT2A": 6.2, "D2": 6.6, "NET": 5.5, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.5, "D2": 0.5, "NET": 0.5, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.12, "Fr_hepatic": 0.88, "Risk_QTc": 0.25,
+        "Fr_renal": 0.12, "Fr_hepatic": 0.88, "Risk_QTc": 0.25, "convulsant_index": 0.1,
         "dosage": "Start 25 mg/day; target 50 mg - 100 mg/day.",
         "warnings": "Hyponatremia/SIADH, serotonin syndrome, and mild GI distress. Well-tolerated cardiac profile."
     },
     "Valproic Acid": {
         "category": "Mood Stabilizer Anticonvulsant",
-        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 7.2, "H1": 5.0, "α1": 5.0, "M1": 5.0},
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 7.2, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
-        "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.10,
+        "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.10, "convulsant_index": 0.0,
         "dosage": "Start 125 mg - 250 mg PO bid; target serum concentration 50-80 mcg/ml.",
         "warnings": "Hepatotoxicity, pancreatitis, thrombocytopenia; monitor LFTs, CBC required."
     },
     "Gabapentin": {
         "category": "GABA analogue Anticonvulsant",
-        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 6.8, "H1": 5.0, "α1": 5.0, "M1": 5.0},
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 6.8, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
-        "Fr_renal": 1.00, "Fr_hepatic": 0.00, "Risk_QTc": 0.05,
+        "Fr_renal": 1.00, "Fr_hepatic": 0.00, "Risk_QTc": 0.05, "convulsant_index": 0.0,
         "dosage": "Start 100 mg tid; slow titrations up to 300 mg - 600 mg tid based on renal clearance.",
         "warnings": "Respiratory depression risk with CNS depressants/opioids; renal dose adjustment required."
     },
     "Memantine": {
         "category": "Cognitive Enhancer",
-        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 7.5, "GABA-A": 0.0, "H1": 0.0, "α1": 0.0, "M1": 0.0},
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 7.5, "GABA-A": 0.0, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 1.0, "GABA-A": 0.0},
-        "Fr_renal": 0.80, "Fr_hepatic": 0.20, "Risk_QTc": 0.05,
+        "Fr_renal": 0.80, "Fr_hepatic": 0.20, "Risk_QTc": 0.05, "convulsant_index": 0.0,
         "dosage": "Start 5 mg daily; titrate by 5 mg weekly to target 10 mg bid (max 10 mg daily if eGFR < 30).",
         "warnings": "Dose adjustment in severe renal impairment (eGFR < 30 ml/min)."
     },
     "Amitriptyline": {
         "category": "Tricyclic Antidepressant (TCA)",
-        "pKi": {"5HT2A": 8.1, "D2": 5.5, "NET": 7.7, "α2A": 6.8, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.9, "α1": 8.0, "M1": 8.8},
+        "pKi": {"5HT2A": 8.1, "D2": 5.5, "NET": 7.7, "α2A": 6.8, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.9, "α1": 8.0, "M1": 8.8, "5HT2C": 7.5},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.70,
+        "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.70, "convulsant_index": 0.5,
         "dosage": "Generally avoid in dementia. 5-10 mg PO hs if strictly indicated).",
         "warnings": "Severe anticholinergic toxicity, fall risk, cognitive decline, and cardiotoxicity."
     },
     "Venlafaxine": {
         "category": "Antidepressant (SNRI)",
-        "pKi": {"5HT2A": 5.0, "D2": 5.0, "NET": 6.4, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0},
+        "pKi": {"5HT2A": 5.0, "D2": 5.0, "NET": 6.4, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.85, "Fr_hepatic": 0.15, "Risk_QTc": 0.35,
+        "Fr_renal": 0.85, "Fr_hepatic": 0.15, "Risk_QTc": 0.35, "convulsant_index": 0.2,
         "dosage": "Start 37.5 mg daily XR; target 75 mg - 150 mg daily.",
         "warnings": "Dose-dependent blood pressure elevation and sharp withdrawal discontinuation syndrome."
     },
     "Vortioxetine": {
         "category": "Multimodal Serotonin Modulator Antidepressant",
-        "pKi": {"5HT2A": 7.60, "D2": 5.00, "NET": 5.00, "α2A": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "pKi": {"5HT2A": 7.60, "D2": 5.00, "NET": 5.00, "α2A": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00, "5HT2C": 5.0},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.59, "Fr_hepatic": 0.41, "Risk_QTc": 0.15,
+        "Fr_renal": 0.59, "Fr_hepatic": 0.41, "Risk_QTc": 0.15, "convulsant_index": 0.1,
         "dosage": "Start 5.0 mg daily; target 5.0 mg - 10 mg daily in elderly.",
         "warnings": "Nausea risk; low anticholinergic burden and favorable cognitive safety profile."
     },
     "Bupropion": {
         "category": "Antidepressant (NDRI)",
-        "pKi": {"5HT2A": 5.00, "D2": 5.20, "NET": 5.20, "α2A": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00},
+        "pKi": {"5HT2A": 5.00, "D2": 5.20, "NET": 5.20, "α2A": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.5, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.87, "Fr_hepatic": 0.13, "Risk_QTc": 0.20,
+        "Fr_renal": 0.87, "Fr_hepatic": 0.13, "Risk_QTc": 0.20, "convulsant_index": 0.8,
         "dosage": "Start 100 mg SR or 150 mg XL daily; max 150 mg daily in elderly.",
         "warnings": "Dose-dependent seizure risk; contraindications in seizure disorders, eating disorders, or sedative withdrawal."
     },
     "Trazodone": {
         "category": "Antidepressant (SARI)",
-        "pKi": {"5HT2A": 7.80, "D2": 5.00, "NET": 5.00, "α2A": 6.40, "NMDA": 5.00, "GABA-A": 5.00, "H1": 7.50, "α1": 7.80, "M1": 5.00},
+        "pKi": {"5HT2A": 7.80, "D2": 5.00, "NET": 5.00, "α2A": 6.40, "NMDA": 5.00, "GABA-A": 5.00, "H1": 7.50, "α1": 7.80, "M1": 5.00, "5HT2C": 6.5},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.45,
+        "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.45, "convulsant_index": 0.1,
         "dosage": "Start 12.5 mg - 25 mg hs / PRN; target 25 mg - 100 mg daily for nighttime agitation.",
         "warnings": "Orthostatic hypotension, priapism, and Daytime sedation."
     },
     "Mirtazapine": {
         "category": "Pyridine Tetracyclic Antidepressant (NaSSA)",
-        "pKi": {"5HT2A": 8.1, "D2": 5.0, "NET": 5.0, "α2A": 7.3, "NMDA": 0.0, "GABA-A": 0.0, "H1": 9.3, "α1": 6.0, "M1": 5.0},
+        "pKi": {"5HT2A": 8.1, "D2": 5.0, "NET": 5.0, "α2A": 7.3, "NMDA": 0.0, "GABA-A": 0.0, "H1": 9.3, "α1": 6.0, "M1": 5.0, "5HT2C": 7.6},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.75, "Fr_hepatic": 0.25, "Risk_QTc": 0.30,
+        "Fr_renal": 0.75, "Fr_hepatic": 0.25, "Risk_QTc": 0.30, "convulsant_index": 0.1,
         "dosage": "Start 7.5 mg hs; target 15 mg - 30 mg hs (higher doses decrease sedating H1 effect).",
         "warnings": "Low-dose sedation and weight gain; limited efficacy in primary agitation (SYMBAD trial)."
     },
     "Mianserin": {
         "category": "Benzene Tetracyclic Antidepressant (NaSSA)",
-        "pKi": {"5HT2A": 8.0, "D2": 5.5, "NET": 6.0, "α2A": 7.2, "NMDA": 0.0, "GABA-A": 0.0, "H1": 9.0, "α1": 7.3, "M1": 5.0},
+        "pKi": {"5HT2A": 8.0, "D2": 5.5, "NET": 6.0, "α2A": 7.2, "NMDA": 0.0, "GABA-A": 0.0, "H1": 9.0, "α1": 7.3, "M1": 5.0, "5HT2C": 7.5},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.5, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
-        "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.35,
+        "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.35, "convulsant_index": 0.2,
         "dosage": "Start 10 mg hs; titrate up to 30 mg - 60 mg hs.",
         "warnings": "Agranulocytosis/bone marrow depression, high sedation, and orthostasis."
     },
     "Lamotrigine": {
         "category": "Mood Stabilizer Anticonvulsant",
-        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.5, "GABA-A": 6.0, "H1": 0.0, "α1": 0.0, "M1": 0.0},
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.5, "GABA-A": 6.0, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.5, "GABA-A": 0.5},
-        "Fr_renal": 0.94, "Fr_hepatic": 0.06, "Risk_QTc": 0.10,
+        "Fr_renal": 0.94, "Fr_hepatic": 0.06, "Risk_QTc": 0.10, "convulsant_index": 0.0,
         "dosage": "Start 25 mg/day; slow titration to target 100 mg - 200 mg daily.",
         "warnings": "Stevens-Johnson Syndrome (SJS) and Toxic Epidermal Necrolysis (TEN). Discontinue at first sign of rash."
     },
     "Carbamazepine": {
         "category": "Mood Stabilizer Anticonvulsant",
-        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.0, "GABA-A": 6.8, "H1": 0.0, "α1": 0.0, "M1": 0.0},
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.0, "GABA-A": 6.8, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
-        "Fr_renal": 0.28, "Fr_hepatic": 0.72, "Risk_QTc": 0.30,
+        "Fr_renal": 0.28, "Fr_hepatic": 0.72, "Risk_QTc": 0.30, "convulsant_index": 0.0,
         "dosage": "Start 100 mg bid; target 200 mg - 600 mg daily in divided doses.",
         "warnings": "Aplastic anemia, agranulocytosis, severe dermatologic reactions, potent CYP3A4 inducer."
     }
 }
 
 # -----------------------------------------------------------------------------
-# 2. COMPUTATIONAL FUNCTIONS & SIGMOIDAL SCALING
+# 2. COMPUTATIONAL FUNCTIONS, UPGRADE ENGINES & SIGMOIDAL SCALING
 # -----------------------------------------------------------------------------
 def sigmoid(x, k, x0):
     return 1.0 / (1.0 + np.exp(-k * (x - x0)))
@@ -225,7 +229,58 @@ def calculate_sigmoidal_lambdas(morse, sbp_drop, sas, qtc, egfr, lft_factor, dem
         "hepatic": lambda_hepatic
     }
 
-def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms, prior_history):
+# --- UPGRADE MODULE 1: SPECIAL CONDITIONS RISK WEIGHTING ENGINE ---
+def calculate_special_condition_penalties(drug_name, drug_data, patient_profile):
+    pk = drug_data.get("pKi", {})
+    
+    # 1. Epilepsy & AED Interaction Penalty (P_epilepsy)
+    seizure_freq = patient_profile.get('seizure_freq_year', 0.0)
+    active_aeds = patient_profile.get('active_aeds', [])
+    lambda_seizure = sigmoid(seizure_freq, k=0.8, x0=1.0)
+    convulsant_index = drug_data.get('convulsant_index', 0.0)
+    ddi_matrix = drug_data.get('aed_ddi_penalties', {})
+    ddi_penalty_sum = sum([ddi_matrix.get(aed.lower(), 0.0) for aed in active_aeds])
+    P_epilepsy = (lambda_seizure * convulsant_index * 8.0) + ddi_penalty_sum
+
+    # 2. Non-Communicable Diseases Penalty (P_NCD)
+    hba1c = patient_profile.get('hba1c', 5.7)
+    bmi = patient_profile.get('bmi', 22.0)
+    sbp_drop = patient_profile.get('sbp_drop', 0.0)
+    has_thyroid = patient_profile.get('has_thyroid_dysfunction', False)
+    
+    lambda_metabolic = 0.5 * (sigmoid(hba1c, k=1.0, x0=8.0) + sigmoid(bmi, k=0.15, x0=30.0))
+    pKi_H1 = pk.get('H1', 0.0)
+    pKi_5HT2C = pk.get('5HT2C', 0.0)
+    P_metabolic = lambda_metabolic * (pKi_H1 + pKi_5HT2C)
+    
+    lambda_HT = sigmoid(sbp_drop, k=0.25, x0=15.0)
+    pKi_alpha1 = pk.get('α1', pk.get('alpha1', 0.0))
+    P_HT = lambda_HT * pKi_alpha1
+    
+    lambda_thyroid = 1.5 if has_thyroid else 0.0
+    qtc_risk = drug_data.get('Risk_QTc', 0.0)
+    P_thyroid = lambda_thyroid * qtc_risk * 3.0
+    
+    P_NCD = P_metabolic + P_HT + P_thyroid
+
+    # 3. Extreme Age Group Penalty (P_age)
+    age = patient_profile.get('age', 65.0)
+    frailty = patient_profile.get('frailty_score', 0.2)
+    acb_flag = 1.0 if pk.get("M1", 0.0) >= 7.0 else 0.0
+    if age > 75.0:
+        age_factor = (age / 80.0) ** 1.4
+        P_age = age_factor * ((frailty * acb_flag * 2.0) + (frailty * pKi_H1 * 1.5))
+    else:
+        P_age = 0.0
+
+    return {
+        "P_epilepsy": round(P_epilepsy, 1),
+        "P_NCD": round(P_NCD, 1),
+        "P_age": round(P_age, 1),
+        "P_special_total": P_epilepsy + P_NCD + P_age
+    }
+
+def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms, prior_history, patient_profile):
     pk = drug_data["pKi"]
     ar = drug_data["Ar"]
     
@@ -283,7 +338,11 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
     p_acb = (c_patient * 2.0) if pk["M1"] >= 7.0 else 0.0
     p_organ = (lambdas["renal"] * drug_data["Fr_renal"] * 4.0) + (lambdas["hepatic"] * drug_data["Fr_hepatic"] * 4.0)
     
-    m_j = u_thera - u_risk - p_acb - p_organ - history_penalty
+    # Calculate Special Conditions Penalties
+    spec_penalties = calculate_special_condition_penalties(drug, drug_data, patient_profile)
+    p_special = spec_penalties["P_special_total"]
+
+    m_j = u_thera - u_risk - p_acb - p_organ - history_penalty - p_special
     if hard_locked:
         m_j = -999.0
         
@@ -301,6 +360,8 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         "ACB Penalty": round(p_acb, 1),
         "Organ Penalty": round(p_organ, 1),
         "History Penalty": round(history_penalty, 1),
+        "Special Penalty": round(p_special, 1),
+        "Special Breakdown": spec_penalties,
         "Sedation risk": p_sedation,
         "Orthostatic risk": p_orthostasis,
         "EPS risk": p_eps,
@@ -310,6 +371,71 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         "Dosage": drug_data["dosage"],
         "Warnings": drug_data["warnings"]
     }
+
+# --- UPGRADE MODULE 2: MULTI-AGENT COMBINATION REGIMEN ENGINE ---
+def evaluate_combination_regimens(monotherapy_results, candidate_drugs, weights, patient_profile, M_target_threshold=10.0, polypharmacy_theta=2.5, superiority_delta=1.5):
+    valid_mono = [r for r in monotherapy_results if not r["Hard Locked"]]
+    if not valid_mono:
+        return {"mode": "NONE", "is_viable": False}
+        
+    best_mono = valid_mono[0]
+    
+    # Triggers evaluation of dual-agent combinations
+    combination_results = []
+    receptors = list(weights.keys())
+    eligible_drugs = [d for d in valid_mono if d["Drug"] not in st.session_state.ruled_out]
+    
+    for item1, item2 in itertools.combinations(eligible_drugs, 2):
+        d1_name, d2_name = item1["Drug"], item2["Drug"]
+        d1, d2 = candidate_drugs[d1_name], candidate_drugs[d2_name]
+        
+        # Bounded Receptor Occupancy Additivity
+        u_thera_comb = 0.0
+        for r in receptors:
+            w_r = weights[r]
+            occ1 = (d1["pKi"].get(r, 0.0) / 10.0) * max(0, d1["Ar"].get(r, 0.0))
+            occ2 = (d2["pKi"].get(r, 0.0) / 10.0) * max(0, d2["Ar"].get(r, 0.0))
+            bounded_occ = min(1.0, occ1 + occ2)
+            u_thera_comb += w_r * bounded_occ * 10.0
+            
+        # Compounding Non-Linear Risk Overlap
+        qtc1 = d1.get('Risk_QTc', 0.0) * 50.0
+        qtc2 = d2.get('Risk_QTc', 0.0) * 50.0
+        compounded_qtc = 0.05 * ((qtc1 + qtc2) ** 1.8)
+        
+        acb1 = 1.0 if d1["pKi"].get("M1", 0.0) >= 7.0 else 0.0
+        acb2 = 1.0 if d2["pKi"].get("M1", 0.0) >= 7.0 else 0.0
+        compounded_acb = 1.2 * ((acb1 + acb2) ** 1.5)
+        
+        u_risk_comb = item1["Risk Deductions"] + item2["Risk Deductions"] + compounded_qtc + compounded_acb
+        spec1 = calculate_special_condition_penalties(d1_name, d1, patient_profile)
+        spec2 = calculate_special_condition_penalties(d2_name, d2, patient_profile)
+        p_special_comb = spec1["P_special_total"] + spec2["P_special_total"]
+        
+        # Polypharmacy friction penalty
+        M_comb = u_thera_comb - u_risk_comb - p_special_comb - polypharmacy_theta
+        max_single_score = max(item1["Raw_Mj"], item2["Raw_Mj"])
+        is_superior = (M_comb - max_single_score) >= superiority_delta
+        
+        combination_results.append({
+            'regimen': [d1_name, d2_name],
+            'M_combination': round(M_comb, 1),
+            'superiority_margin': round(M_comb - max_single_score, 1),
+            'is_superior': is_superior
+        })
+        
+    combination_results.sort(key=lambda x: x['M_combination'], reverse=True)
+    best_comb = combination_results[0] if combination_results else None
+    
+    if best_comb and best_comb['is_superior'] and best_mono["Raw_Mj"] < M_target_threshold:
+        return {
+            "mode": "COMBINATION",
+            "is_viable": True,
+            "regimen": best_comb['regimen'],
+            "score": best_comb['M_combination'],
+            "margin": best_comb['superiority_margin']
+        }
+    return {"mode": "MONOTHERAPY", "is_viable": False}
 
 def generate_cross_titration_schedule(prior_drug, target_drug):
     if not prior_drug or prior_drug == target_drug:
@@ -353,17 +479,42 @@ with c_etiology:
         ["Alzheimer's Disease (AD)", "Dementia with Lewy Bodies (DLB)", "Parkinson's Disease Dementia (PDD)", "Vascular Dementia (VaD)", "Frontotemporal Dementia (FTD)"]
     )
     mmse_score = st.number_input("MMSE / MoCA Score (0-30)", 0, 30, 14)
+    age_val = st.number_input("Patient Age (years)", 18, 110, 78)
 
 with c_bio1:
     morse_score = st.number_input("Morse Fall Scale (0-125)", 0, 125, 40)
     sbp_drop = st.number_input("Standing SBP Drop (mmHg)", 0, 60, 12)
     sas_score = st.number_input("SAS Motor / EPS Score (0-40)", 0, 40, 4)
+    frailty_val = st.slider("Frailty Index Score (0.0 - 1.0)", 0.0, 1.0, 0.3, step=0.05)
 
 with c_bio2:
     qtc_ms = st.number_input("Baseline QTc Interval (ms)", 300, 600, 430)
     egfr_val = st.number_input("eGFR (ml/min)", 5, 120, 55)
     hepatic_status = st.selectbox("Hepatic Function Status", list(HEPATIC_MAPPING.keys()), index=0)
     lft_val = HEPATIC_MAPPING[hepatic_status]
+
+# Special Conditions Input Sub-Section
+with st.expander("🩺 Special Conditions Risk Inputs (Epilepsy, NCDs, Comorbidities)", expanded=False):
+    col_sc1, col_sc2 = st.columns(2)
+    with col_sc1:
+        seizure_freq_val = st.number_input("Seizure Frequency (events/year)", 0.0, 50.0, 0.0, step=0.5)
+        active_aeds_val = st.multiselect("Active Anti-Epileptic Drugs (AEDs)", ["carbamazepine", "valproate", "lamotrigine", "levetiracetam"])
+    with col_sc2:
+        hba1c_val = st.number_input("HbA1c (%)", 4.0, 15.0, 6.5, step=0.1)
+        bmi_val = st.number_input("BMI (kg/m²)", 12.0, 50.0, 25.0, step=0.5)
+        has_thyroid_val = st.checkbox("Active Thyroid Dysfunction", value=False)
+
+# Assemble Patient Profile Dictionary
+patient_profile = {
+    "age": float(age_val),
+    "frailty_score": frailty_val,
+    "seizure_freq_year": seizure_freq_val,
+    "active_aeds": active_aeds_val,
+    "hba1c": hba1c_val,
+    "bmi": bmi_val,
+    "sbp_drop": float(sbp_drop),
+    "has_thyroid_dysfunction": has_thyroid_val
+}
 
 st.markdown("---")
 st.subheader("💊 Prior Psychotropic Exposure & Regimen")
@@ -450,7 +601,7 @@ weights = {
 }
 
 # -----------------------------------------------------------------------------
-# 4. HERO SPOTLIGHT
+# 4. HERO SPOTLIGHT & DECISION ENGINE INTEGRATION
 # -----------------------------------------------------------------------------
 lambdas = calculate_sigmoidal_lambdas(
     morse=morse_score * pref_falls,
@@ -465,12 +616,15 @@ lambdas = calculate_sigmoidal_lambdas(
 lambdas["H1"] = min(1.0, lambdas["H1"] * pref_sedation)
 
 results = [
-    calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms, prior_history)
+    calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, dementia_subtype, qtc_ms, prior_history, patient_profile)
     for drug, drug_data in DRUG_DATABASE.items()
 ]
 
 results = sorted(results, key=lambda x: x["Raw_Mj"], reverse=True)
 top_drug = results[0]
+
+# Evaluate Multi-Agent Combination Regimen Upgrade Engine
+comb_analysis = evaluate_combination_regimens(results, DRUG_DATABASE, weights, patient_profile, M_target_threshold=10.0)
 
 # Multi-Symptom Phenotype Clustering Display
 st.markdown("---")
@@ -498,6 +652,14 @@ if st.session_state.ruled_out:
 if top_drug["Hard Locked"]:
     st.error("🚨 No suitable candidate found. All eligible agents triggered critical clinical safety hard-locks or manual rule-outs.")
 else:
+    # Render Combination Suggestion Banner if Engine Triggers Superior Pair
+    if comb_analysis["is_viable"]:
+        st.warning(
+            f"⚡ **Multi-Agent Combination Regimen Suggested:** The monotherapy response is constrained. "
+            f"Combining **{' + '.join(comb_analysis['regimen'])}** provides higher therapeutic coverage "
+            f"(Combined Net Score: **{comb_analysis['score']}**, +{comb_analysis['margin']} superiority margin over single agent)."
+        )
+
     st.markdown(
         f"""
         <div style="background-color: #d1e7dd; border-left: 8px solid #0f5132; padding: 22px; border-radius: 8px; margin-bottom: 15px;">
@@ -513,6 +675,7 @@ else:
                 Deductions: <strong>-{top_drug['Risk Deductions']}</strong> &nbsp;|&nbsp; 
                 ACB Penalty: <strong>-{top_drug['ACB Penalty']}</strong> &nbsp;|&nbsp;
                 Organ Penalty: <strong>-{top_drug['Organ Penalty']}</strong> &nbsp;|&nbsp;
+                Special Conditions Penalty: <strong>-{top_drug['Special Penalty']}</strong> &nbsp;|&nbsp;
                 History Penalty: <strong>-{top_drug['History Penalty']}</strong>
             </p>
         </div>
@@ -605,7 +768,7 @@ with st.expander("🚦 Dashboard & Ranking", expanded=False):
     
     df_results_display = df_results[[
         "Drug", "Category", "Net Score (Mj)", "Therapeutic Gain", 
-        "Risk Deductions", "ACB Penalty", "Organ Penalty", "History Penalty",
+        "Risk Deductions", "ACB Penalty", "Organ Penalty", "Special Penalty", "History Penalty",
         "Dosage", "Lock Reason"
     ]].copy()
 
@@ -625,83 +788,51 @@ with st.expander("🚦 Dashboard & Ranking", expanded=False):
         df_results_display.style.map(apply_traffic_lights, subset=['Net Score (Mj)']),
         use_container_width=True
     )
+
 # -----------------------------------------------------------------------------
-# EXPANDABLE RATIONALE, FORMULAS & ALGORITHMIC THINKING MODEL
+# 6. EXPANDABLE RATIONALE, FORMULAS & ALGORITHMIC THINKING MODEL
 # -----------------------------------------------------------------------------
 with st.expander("🧮 Algorithmic Architecture & Clinical Rationale", expanded=False):
     st.markdown(r"""
-    This decision-support tool employs a **Multi-Criteria Utility Optimization Model** balancing therapeutic receptor targeting against patient-specific vulnerabilities and prior treatment history.
+    This decision-support tool employs a **Multi-Criteria Utility Optimization Model** balancing therapeutic receptor targeting against patient-specific vulnerabilities, comorbidity penalties, and prior treatment history.
 
     ---
 
     **1. Neurological-Treatment Coupling ($v_s \rightarrow w_r$)**
     
-    Rather than treating symptoms as isolated clinical presentation, this tool aims mapping NPI subscales ($v_s \in [0.0, 1.0]$) to patient's underlying neurological underlying. To prevent scaling bias, target weighting ($w_r$) for each receptors focused ($r$) uses a non-linear coupling function:
+    Maps NPI subscales ($v_s \in [0.0, 1.0]$) to target weighting ($w_r$) for each receptor modality:
 
     $$w_r = \min\left(1.0, \max_{s}\left(v_s \cdot \kappa_{s,r}\right)\right)$$
 
-    * **Coupling Coefficients ($\kappa_{s,r}$):** Represent relativity of each contributions, e.g. Hallucinations rely heavily on cortical $5\text{-HT}_{2\text{A}}$ hyperfunction ($\kappa = 0.8$), whereas apathy is relied via noradrenergic ($\kappa = 0.8$) and glutamatergic pathways ($\kappa = 0.4$).
-
     ---
 
-    **2. Sigmoidal Patient Vulnerability Scaling ($\lambda_r$)**
+    **2. Sigmoidal & Special Condition Risk Scaling ($\lambda_r, P_{\text{special}}$)**
     
-    Static contraindications fail to represent continuous physiological decline. Continuous biomarkers ($x$) are used to normalized risk scalars ($\lambda_r \in [0.0, 1.0]$) using sigmoidal transfer functions:
+    Risk parameters incorporate both physiological biomarkers ($\lambda_r$) and integrated comorbidity penalty modules ($P_{\text{special}}$):
 
-    $$\lambda(x) = \frac{1}{1 + e^{-k(x - x_0)}}$$
+    $$P_{\text{special}} = P_{\text{epilepsy}} + P_{\text{NCD}} + P_{\text{age}}$$
 
-    * **Fall & Sedation Risk ($\lambda_{\text{H1}}$):** Analyed via Morse Fall Scale score ($x_0 = 35.0, k = 0.08$) and scaled by caregiver concern preference weights.
-    * **Orthostatic Risk ($\lambda_{\alpha1}$):** Implied by standing Systolic BP drop in mmHg ($x_0 = 15.0, k = 0.25$).
-    * **Extrapyramidal Risk ($\lambda_{\text{D2}}$):** Based on Simpson-Angus Scale (SAS) score ($x_0 = 8.0, k = 0.30$), with $\lambda_{\text{D2}} = 1.0$ hard-locked for DLB/PDD etiologies.
-    * **Cardiotoxicity Risk ($\lambda_{\text{QTc}}$):** Evaluation of baseline QTc interval ($x_0 = 450.0\text{ ms}, k = 0.05$).
-    * **Organ Clearance Penalties:** Inverted sigmoid for eGFR ($\lambda_{\text{renal}}$) and discrete mapping for hepatic impairment ($\lambda_{\text{hepatic}}$).
+    * **Epilepsy & AED Penalty ($P_{\text{epilepsy}}$):** Evaluates seizure threshold reduction and CYP/protein-binding DDI penalties with current AEDs.
+    * **Non-Communicable Diseases Penalty ($P_{\text{NCD}}$):** Scales metabolic risk via $H_1$/$5\text{-HT}_{2\text{C}}$ binding, vascular volatility via $\alpha_1$, and thyroid-mediated QTc amplification.
+    * **Extreme Age Penalty ($P_{\text{age}}$):** Exponentially scales frailty and anticholinergic vulnerability for patients $> 75$ years.
 
     ---
 
     **3. Net Utility Match Score Calculation ($M_j$)**
     
-    For each candidate agent ($j$), the match score ($M_j$) combines therapeutic gain ($U_{\text{thera}}$), dynamic risk deductions ($U_{\text{risk}}$), anticholinergic burden ($P_{\text{ACB}}$), clearance organ penalties ($P_{\text{organ}}$), and prior treatment history penalties ($P_{\text{history}}$):
-
-    $$M_j = U_{\text{thera}} - U_{\text{risk}} - P_{\text{ACB}} - P_{\text{organ}} - P_{\text{history}}$$
-
-    * **Therapeutic Gain ($U_{\text{thera}}$):**
-      $$U_{\text{thera}} = \sum_{r} \left( w_r \cdot pK_{i,r} \cdot A_r \right)$$
-      *Where $pK_{i,r}$ is binding affinity ($-\log_{10} K_i$) and $A_r \in \{-1.0, 0.0, 0.5, 1.0\}$ represents intrinsic efficacy (antagonist, neutral, partial agonist, full agonist).*
-
-    * **Dynamic Risk Deductions ($U_{\text{risk}}$):**
-      $$U_{\text{risk}} = (\lambda_{\text{H1}} \cdot pK_{i,\text{H1}}) + (\lambda_{\alpha1} \cdot pK_{i,\alpha1}) + (\lambda_{\text{D2}} \cdot pK_{i,\text{D2}} \cdot \mathbb{I}_{\text{Antagonist}}) + 5.0(\lambda_{\text{QTc}} \cdot \text{Risk}_{\text{QTc}})$$
-      *Dopaminergic risk deduction applies to full $D_2$ antagonists ($A_{\text{D2}} < 0$).*
-
-    * **Anticholinergic Cognitive Burden Penalty ($P_{\text{ACB}}$):**
-      $$P_{\text{ACB}} = C_{\text{patient}} \times 2.0 \quad \text{if } pK_{i,\text{M1}} \ge 7.0 \text{ else } 0.0$$
-      *Where cognitive vulnerability constants $C_{\text{patient}} = 3.0$ if MMSE < 10, $2.0$ if MMSE 10–20, and $1.0$ if MMSE > 20.*
-
-    * **Organ Clearance Penalty ($P_{\text{organ}}$):**
-      $$P_{\text{organ}} = 4.0 \left( \lambda_{\text{renal}} \cdot \text{Fr}_{\text{renal}} + \lambda_{\text{hepatic}} \cdot \text{Fr}_{\text{hepatic}} \right)$$
-
-    * **Prior Response Penalty ($P_{\text{history}}$):**
-      Applies a $-5.0$ penalty for documented prior treatment failure at standard doses, forces a hard-lock for prior severe adverse reactions/intolerance, or highlights dose optimization when partial benefit was previously observed.
+    $$M_j = U_{\text{thera}} - U_{\text{risk}} - P_{\text{ACB}} - P_{\text{organ}} - P_{\text{special}} - P_{\text{history}}$$
 
     ---
 
-    **4. Clinical Safety Hard-Lock Protocol**
+    **4. Multi-Agent Combination Engine**
     
-    Absolute clinical contraindications override scoring and force an unconditional lock ($M_j = -999.0$):
-    * **Etiology Hard-Lock:** Full $D_2$ antagonists in DLB or PDD etiologies.
-    * **Cardiac Hard-Lock:** High QTc-risk agents ($\text{Risk}_{\text{QTc}} > 0.60$) when baseline QTc $> 500\text{ ms}$.
-    * **Clinician Rule-Out:** Direct UI override via session-state toggle.
+    When single-agent utility falls below threshold, dual-agent regimens are evaluated using bounded receptor additivity and non-linear risk compounding with polypharmacy friction penalty $\theta$:
 
-    ---
-
-    **5. Side-Effect Probability**
-    
-    Estimates receptor occupancy and baseline vulnerability into clinically risk likelihood percentages ($P_{\text{event}} \in [0\%, 95\%]$) via a bounded logistic function:
-
-    $$P_{\text{event}} = \min\left(95\%, \text{int}\left( \frac{100}{1 + e^{-0.5(pK_i \cdot \lambda - 3.5)}} \right)\right)$$
+    $$M(\mathbf{C}) = U_{\text{thera}}(\mathbf{C}) - U_{\text{risk}}(\mathbf{C}) - P_{\text{special}}(\mathbf{C}) - \theta \cdot (|\mathbf{C}| - 1)$$
     """)
 
 # -----------------------------------------------------------------------------
-# 6. CITATIONS & REFERENCES
+# 7. CITATIONS & REFERENCES
 # -----------------------------------------------------------------------------
 with st.expander("🔍 References & Citations"):
     st.markdown(
@@ -713,4 +844,4 @@ with st.expander("🔍 References & Citations"):
         5. **Davies, S. J., et al. (2018).** *Sequential drug treatment algorithm for agitation and aggression in Alzheimer's and mixed dementia*. J Psychopharmacol. PMID: 29338602.
         6. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
         """
-    )
+    
