@@ -46,7 +46,7 @@ AED_TO_DRUG_NAME = {
 }
 
 # -----------------------------------------------------------------------------
-# 1. PHARMACODYNAMIC DATABASE WITH DOSAGE SPECTRUM & COMPLETE DDI MATRIX
+# 1. PHARMACODYNAMIC DATABASE WITH DOSAGE SPECTRUM & DDI 
 # -----------------------------------------------------------------------------
 DRUG_DATABASE = {
     "Brexpiprazole": {
@@ -73,7 +73,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.50, "convulsant_index": 0.2,
         "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
-        "dosage": "Start 0.25 mg - 0.5 mg/day; target 0.5 mg - 1.5 mg/day (max 2.0 mg/day in elderly).",
+        "dosage": "Start 0.25 mg - 0.5 mg/day; titrate up to 0.5 mg - 1.5 mg/day (max 2.0 mg/day in elderly).",
         "warnings": "QTc prolongation, dose-dependent extrapyramidal symptoms (EPS), hyperprolactinemia, and cerebrovascular risk."
     },
     "Quetiapine": {
@@ -91,7 +91,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.07, "Fr_hepatic": 0.93, "Risk_QTc": 0.30, "convulsant_index": 0.4,
         "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
-        "dosage": "Start 2.5 mg PO hs; target 5.0 mg/day, max 10 mg/day.",
+        "dosage": "Start 2.5 mg PO hs; titrate up to 5.0 mg/day, max 10 mg/day.",
         "warnings": "Severe metabolic syndrome, weight gain, sedation, and anticholinergic cognitive impairment."
     },
     "Haloperidol": {
@@ -118,7 +118,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 0.5, "D2": 0.5, "NET": 0.5, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.12, "Fr_hepatic": 0.88, "Risk_QTc": 0.25, "convulsant_index": 0.1,
         "aed_ddi_penalties": {"carbamazepine": 1.5, "valproate": 0.5},
-        "dosage": "Start 25 mg/day; target 50 mg - 100 mg/day.",
+        "dosage": "Start 25 mg/day; titrate up to 50 mg - 100 mg/day.",
         "warnings": "Hyponatremia/SIADH, serotonin syndrome, and mild GI distress. Well-tolerated cardiac profile."
     },
     "Valproic Acid": {
@@ -127,7 +127,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.10, "convulsant_index": 0.0,
         "aed_ddi_penalties": {"valproate": 4.0, "carbamazepine": 2.5, "lamotrigine": 2.0},
-        "dosage": "Start 125 mg - 250 mg PO bid; target serum concentration 50-80 mcg/ml.",
+        "dosage": "Start 125 mg - 250 mg PO bid; keep serum level 50-80 mcg/ml.",
         "warnings": "Hepatotoxicity, pancreatitis, thrombocytopenia; monitor LFTs, CBC required."
     },
     "Gabapentin": {
@@ -145,7 +145,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 1.0, "GABA-A": 0.0},
         "Fr_renal": 0.80, "Fr_hepatic": 0.20, "Risk_QTc": 0.05, "convulsant_index": 0.0,
         "aed_ddi_penalties": {},
-        "dosage": "Start 5 mg daily; titrate by 5 mg weekly to target 10 mg bid (max 10 mg daily if eGFR < 30).",
+        "dosage": "Start 5 mg daily; titrate by 5 mg weekly to titrate up to 10 mg bid (max 10 mg daily if eGFR < 30).",
         "warnings": "Dose adjustment in severe renal impairment (eGFR < 30 ml/min)."
     },
     "Amitriptyline": {
@@ -163,7 +163,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.85, "Fr_hepatic": 0.15, "Risk_QTc": 0.35, "convulsant_index": 0.2,
         "aed_ddi_penalties": {"carbamazepine": 2.0, "valproate": 0.5},
-        "dosage": "Start 37.5 mg daily XR; target 75 mg - 150 mg daily.",
+        "dosage": "Start 37.5 mg daily XR; titrate up to 75 mg - 150 mg/day.",
         "warnings": "Dose-dependent blood pressure elevation and sharp withdrawal discontinuation syndrome."
     },
     "Vortioxetine": {
@@ -172,7 +172,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.59, "Fr_hepatic": 0.41, "Risk_QTc": 0.15, "convulsant_index": 0.1,
         "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
-        "dosage": "Start 5.0 mg daily; target 5.0 mg - 10 mg daily in elderly.",
+        "dosage": "Start 5.0 mg daily; titrate up to 5.0 mg - 10 mg/day in elderly.",
         "warnings": "Nausea risk; low anticholinergic burden and favorable cognitive safety profile."
     },
     "Bupropion": {
@@ -190,7 +190,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.45, "convulsant_index": 0.1,
         "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
-        "dosage": "Start 12.5 mg - 25 mg hs / PRN; target 25 mg - 100 mg daily for nighttime agitation.",
+        "dosage": "Start 12.5 mg - 25 mg hs / PRN;  titrate up to 25 mg - 100 mg/day for nighttime agitation.",
         "warnings": "Orthostatic hypotension, priapism, and Daytime sedation."
     },
     "Mirtazapine": {
@@ -199,7 +199,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.75, "Fr_hepatic": 0.25, "Risk_QTc": 0.30, "convulsant_index": 0.1,
         "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
-        "dosage": "Start 7.5 mg hs; target 15 mg - 30 mg hs (higher doses decrease sedating H1 effect).",
+        "dosage": "Start 7.5 mg hs;  15 mg - 30 mg hs (higher doses decrease sedating H1 effect).",
         "warnings": "Low-dose sedation and weight gain; limited efficacy in primary agitation (SYMBAD trial)."
     },
     "Mianserin": {
@@ -217,7 +217,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.5, "GABA-A": 0.5},
         "Fr_renal": 0.94, "Fr_hepatic": 0.06, "Risk_QTc": 0.10, "convulsant_index": 0.0,
         "aed_ddi_penalties": {"lamotrigine": 4.0, "carbamazepine": 2.5, "valproate": 2.0},
-        "dosage": "Start 25 mg/day; slow titration to target 100 mg - 200 mg daily.",
+        "dosage": "Start 25 mg/day; slow titration to titrate up tp 100 mg - 200 mg/day.",
         "warnings": "Stevens-Johnson Syndrome (SJS) and Toxic Epidermal Necrolysis (TEN). Discontinue at first sign of rash."
     },
     "Carbamazepine": {
@@ -226,7 +226,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 0.28, "Fr_hepatic": 0.72, "Risk_QTc": 0.30, "convulsant_index": 0.0,
         "aed_ddi_penalties": {"carbamazepine": 4.0, "valproate": 2.5, "lamotrigine": 2.5},
-        "dosage": "Start 100 mg bid; target 200 mg - 600 mg daily in divided doses.",
+        "dosage": "Start 100 mg bid; titrate up tp 200 mg - 600 mg/day in divided doses.",
         "warnings": "Aplastic anemia, agranulocytosis, severe dermatologic reactions, potent CYP3A4 inducer."
     }
 }
@@ -261,7 +261,7 @@ def calculate_sigmoidal_lambdas(morse, sbp_drop, sas, qtc, egfr, lft_factor, dem
         "hepatic": lambda_hepatic
     }
 
-# --- UPGRADE MODULE 1: SPECIAL CONDITIONS RISK WEIGHTING ENGINE ---
+# SPECIAL CONDITIONS RISK WEIGHTING ENGINE
 def calculate_special_condition_penalties(drug_name, drug_data, patient_profile):
     pk = drug_data.get("pKi", {})
     
@@ -405,7 +405,7 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         "Warnings": drug_data["warnings"]
     }
 
-# --- UPGRADE MODULE 2: RE-CALIBRATED MULTI-AGENT COMBINATION REGIMEN ENGINE ---
+# MODULE 2: RE-CALIBRATED MULTI-AGENT COMBINATION REGIMEN
 def evaluate_combination_regimens(monotherapy_results, candidate_drugs, weights, patient_profile, M_target_threshold=12.0, polypharmacy_theta=1.2, superiority_delta=0.8):
     valid_mono = [r for r in monotherapy_results if not r["Hard Locked"]]
     if not valid_mono:
@@ -558,7 +558,7 @@ with col_prior1:
         options=list(DRUG_DATABASE.keys())
     )
 
-# --- FIX FOR BUG: AUTOMATIC BI-DIRECTIONAL AED SYNCHRONIZATION ---
+# AED SYNCHRONIZATION ---
 combined_prior_drugs = list(set(prior_drugs + [AED_TO_DRUG_NAME[aed] for aed in active_aeds_val if aed in AED_TO_DRUG_NAME]))
 
 prior_history = {}
@@ -580,7 +580,7 @@ if combined_prior_drugs:
                 outcome = "Active Regimen - Ongoing"
             prior_history[drug] = {"dosage": dosage, "outcome": outcome}
 
-# Build active_aeds_final for DDI lookup
+# Build active_aeds_final for DDI
 combined_aeds_set = set([aed.lower() for aed in active_aeds_val])
 for pdrug in combined_prior_drugs:
     if pdrug in AED_NAME_MAP:
@@ -658,7 +658,7 @@ weights = {
 }
 
 # -----------------------------------------------------------------------------
-# 4. HERO SPOTLIGHT & DECISION ENGINE INTEGRATION
+# 4. HERO SPOTLIGHT & DECISION ENGINE
 # -----------------------------------------------------------------------------
 lambdas = calculate_sigmoidal_lambdas(
     morse=morse_score * pref_falls,
@@ -682,18 +682,6 @@ top_drug = results[0]
 
 # Evaluate Multi-Agent Combination Regimen Upgrade Engine
 comb_analysis = evaluate_combination_regimens(results, DRUG_DATABASE, weights, patient_profile, M_target_threshold=12.0)
-
-# Multi-Symptom Phenotype Clustering Display
-st.markdown("---")
-st.subheader("📊 Phenotype Cluster Analysis (CCSMH Model)")
-p_agitation_psychosis = (v_agitation + v_delusions + v_hallucinations) / 3.0
-p_affective = (v_depression + v_anxiety + v_irritability) / 3.0
-p_apathy_executive = (v_apathy + v_disinhibition) / 2.0
-
-col_ph1, col_ph2, col_ph3 = st.columns(3)
-col_ph1.metric("Agitation-Psychosis Cluster", f"{p_agitation_psychosis*100:.0f}%")
-col_ph2.metric("Affective-Lability Cluster", f"{p_affective*100:.0f}%")
-col_ph3.metric("Apathy-Executive Cluster", f"{p_apathy_executive*100:.0f}%")
 
 st.markdown("---")
 
@@ -775,25 +763,6 @@ else:
 # -----------------------------------------------------------------------------
 # 5. EXPANDED CLINICAL DASHBOARD & CROSS-TITRATION ENGINE
 # -----------------------------------------------------------------------------
-with st.expander("📊 Estimated Side-Effect Probabilities (PETRUSHKA based model)", expanded=True):
-    st.markdown("#### Patient-Specific Risk Likelihood Output")
-    col_vis1, col_vis2, col_vis3 = st.columns(3)
-    
-    with col_vis1:
-        st.write("**Estimated Sedation Risk:**")
-        st.progress(top_drug["Sedation risk"])
-        st.caption(f"Likelihood: {top_drug['Sedation risk']}%")
-        
-    with col_vis2:
-        st.write("**Estimated Orthostatic Risk:**")
-        st.progress(top_drug["Orthostatic risk"])
-        st.caption(f"Likelihood: {top_drug['Orthostatic risk']}%")
-
-    with col_vis3:
-        st.write("**Estimated EPS Risk:**")
-        st.progress(top_drug["EPS risk"])
-        st.caption(f"Likelihood: {top_drug['EPS risk']}%")
-
 with st.expander("🔄 Sequential Cross-Titration & Dose Optimization Protocol", expanded=True):
     if combined_prior_drugs:
         distinct_priors = [d for d in combined_prior_drugs if d != top_drug["Drug"]]
@@ -819,6 +788,25 @@ with st.expander("🔄 Sequential Cross-Titration & Dose Optimization Protocol",
             st.info("Treatment Naive: Initiate top candidate at starting dose without cross-tapering.")
     else:
         st.info("Treatment Naive: Initiate top candidate at starting dose without cross-tapering.")
+		
+with st.expander("📊 Estimated Side-Effect Probabilities (PETRUSHKA based model)", expanded=True):
+    st.markdown("#### Patient-Specific Risk Likelihood Output")
+    col_vis1, col_vis2, col_vis3 = st.columns(3)
+    
+    with col_vis1:
+        st.write("**Estimated Sedation Risk:**")
+        st.progress(top_drug["Sedation risk"])
+        st.caption(f"Likelihood: {top_drug['Sedation risk']}%")
+        
+    with col_vis2:
+        st.write("**Estimated Orthostatic Risk:**")
+        st.progress(top_drug["Orthostatic risk"])
+        st.caption(f"Likelihood: {top_drug['Orthostatic risk']}%")
+
+    with col_vis3:
+        st.write("**Estimated EPS Risk:**")
+        st.progress(top_drug["EPS risk"])
+        st.caption(f"Likelihood: {top_drug['EPS risk']}%")
 
 with st.expander("🚦 Dashboard & Ranking", expanded=False):
     df_results = pd.DataFrame(results)
@@ -845,7 +833,18 @@ with st.expander("🚦 Dashboard & Ranking", expanded=False):
         df_results_display.style.map(apply_traffic_lights, subset=['Net Score (Mj)']),
         use_container_width=True
     )
+	
+# Multi-Symptom Phenotype Clustering Display
+st.markdown("---")
+st.subheader("📊 Phenotype Cluster Analysis (CCSMH Model)")
+p_agitation_psychosis = (v_agitation + v_delusions + v_hallucinations) / 3.0
+p_affective = (v_depression + v_anxiety + v_irritability) / 3.0
+p_apathy_executive = (v_apathy + v_disinhibition) / 2.0
 
+col_ph1, col_ph2, col_ph3 = st.columns(3)
+col_ph1.metric("Agitation-Psychosis Cluster", f"{p_agitation_psychosis*100:.0f}%")
+col_ph2.metric("Affective-Lability Cluster", f"{p_affective*100:.0f}%")
+col_ph3.metric("Apathy-Executive Cluster", f"{p_apathy_executive*100:.0f}%")
 # -----------------------------------------------------------------------------
 # 6. EXPANDABLE RATIONALE, FORMULAS & ALGORITHMIC THINKING MODEL
 # -----------------------------------------------------------------------------
