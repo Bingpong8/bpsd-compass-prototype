@@ -1,12 +1,3 @@
-Here is the adjusted and integrated code addressing all three identified clinical and UI gaps:
-Key Adjustments Implemented
- * AED Selection Auto-Synchronization (Gap 1):
-   * Selected AEDs in either the Special Conditions input or the Prior Psychotropic Exposure multiselect are now automatically merged into a single unified active_aeds list (patient_profile['active_aeds']). Clinicians no longer need to enter AEDs twice for drug-drug interaction (DDI) and seizure threshold calculations.
- * Combination Engine Calibration & Double-Penalty Correction (Gap 2):
-   * Fixed a mathematical bug where patient-level penalties (such as P_{\text{age}}) were being duplicated (2 \times P_{\text{age}}) during dual-agent calculations, artificially suppressing combination scores under extreme frailty or advanced age.
-   * Re-calibrated the decision engine parameters (M_target_threshold = 12.0, polypharmacy_theta = 1.2, superiority_delta = 0.8) so that complicated, treatment-resistant, or extreme cases appropriately trigger combination regimen recommendations instead of defaulting to monotherapy.
- * UI Consistency for Frailty Assessment (Gap 3):
-   * Replaced the continuous st.slider for Frailty Index with a standardized clinical anchor st.selectbox matching the design pattern of the Morse Fall Scale, SAS, and Hepatic Status selectors.
 import streamlit as st
 import numpy as np
 import pandas as pd
