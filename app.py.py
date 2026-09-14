@@ -98,7 +98,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 6.2, "D2": 6.6, "NET": 5.5, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.5, "D2": 0.5, "NET": 0.5, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.12, "Fr_hepatic": 0.88, "Risk_QTc": 0.25, "convulsant_index": 0.1,
-        "dosage": "Start 25 mg/day; target 50 mg - 100 mg/day.",
+        "dosage": "Start 25 mg/day; titrate up to 50 mg - 100 mg/day.",
         "warnings": "Hyponatremia/SIADH, serotonin syndrome, and mild GI distress. Well-tolerated cardiac profile."
     },
     "Valproic Acid": {
@@ -106,7 +106,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 7.2, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.10, "convulsant_index": 0.0,
-        "dosage": "Start 125 mg - 250 mg PO bid; target serum concentration 50-80 mcg/ml.",
+        "dosage": "Start 125 mg - 250 mg PO bid; target serum level 50-80 mcg/ml.",
         "warnings": "Hepatotoxicity, pancreatitis, thrombocytopenia; monitor LFTs, CBC required."
     },
     "Gabapentin": {
@@ -114,7 +114,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 6.8, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 1.00, "Fr_hepatic": 0.00, "Risk_QTc": 0.05, "convulsant_index": 0.0,
-        "dosage": "Start 100 mg tid; slow titrations up to 300 mg - 600 mg tid based on renal clearance.",
+        "dosage": "Start 100 mg TID; slow titrations up to 300 mg - 600 mg TID based on renal clearance.",
         "warnings": "Respiratory depression risk with CNS depressants/opioids; renal dose adjustment required."
     },
     "Memantine": {
@@ -122,7 +122,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 7.5, "GABA-A": 0.0, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 1.0, "GABA-A": 0.0},
         "Fr_renal": 0.80, "Fr_hepatic": 0.20, "Risk_QTc": 0.05, "convulsant_index": 0.0,
-        "dosage": "Start 5 mg daily; titrate by 5 mg weekly to target 10 mg bid (max 10 mg daily if eGFR < 30).",
+        "dosage": "Start 5 mg/day; titrate up to 10 mg BID (max 10 mg/day if eGFR < 30).",
         "warnings": "Dose adjustment in severe renal impairment (eGFR < 30 ml/min)."
     },
     "Amitriptyline": {
@@ -130,7 +130,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 8.1, "D2": 5.5, "NET": 7.7, "α2A": 6.8, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.9, "α1": 8.0, "M1": 8.8, "5HT2C": 7.5},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.70, "convulsant_index": 0.5,
-        "dosage": "Generally avoid in dementia. 5-10 mg PO hs if strictly indicated).",
+        "dosage": "Generally avoid in dementia. 5-10 mg PO hs if strictly indicated.",
         "warnings": "Severe anticholinergic toxicity, fall risk, cognitive decline, and cardiotoxicity."
     },
     "Venlafaxine": {
@@ -138,7 +138,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 5.0, "D2": 5.0, "NET": 6.4, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.85, "Fr_hepatic": 0.15, "Risk_QTc": 0.35, "convulsant_index": 0.2,
-        "dosage": "Start 37.5 mg daily XR; target 75 mg - 150 mg daily.",
+        "dosage": "Start 37.5 mg daily XR; target 75 mg - 150 mg/day.",
         "warnings": "Dose-dependent blood pressure elevation and sharp withdrawal discontinuation syndrome."
     },
     "Vortioxetine": {
@@ -146,7 +146,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 7.60, "D2": 5.00, "NET": 5.00, "α2A": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00, "5HT2C": 5.0},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.59, "Fr_hepatic": 0.41, "Risk_QTc": 0.15, "convulsant_index": 0.1,
-        "dosage": "Start 5.0 mg daily; target 5.0 mg - 10 mg daily in elderly.",
+        "dosage": "Start 5.0 mg daily; target 5.0 mg - 10 mg/day in elderly.",
         "warnings": "Nausea risk; low anticholinergic burden and favorable cognitive safety profile."
     },
     "Bupropion": {
@@ -154,7 +154,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 5.00, "D2": 5.20, "NET": 5.20, "α2A": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.5, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.87, "Fr_hepatic": 0.13, "Risk_QTc": 0.20, "convulsant_index": 0.8,
-        "dosage": "Start 100 mg SR or 150 mg XL daily; max 150 mg daily in elderly.",
+        "dosage": "Start 100 mg SR or 150 mg XL daily; max 150 mg/day in elderly.",
         "warnings": "Dose-dependent seizure risk; contraindications in seizure disorders, eating disorders, or sedative withdrawal."
     },
     "Trazodone": {
@@ -162,7 +162,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 7.80, "D2": 5.00, "NET": 5.00, "α2A": 6.40, "NMDA": 5.00, "GABA-A": 5.00, "H1": 7.50, "α1": 7.80, "M1": 5.00, "5HT2C": 6.5},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.45, "convulsant_index": 0.1,
-        "dosage": "Start 12.5 mg - 25 mg hs / PRN; target 25 mg - 100 mg daily for nighttime agitation.",
+        "dosage": "Start 12.5 mg - 25 mg hs / PRN; titrate up to 25 mg - 100 mg daily for nighttime agitation.",
         "warnings": "Orthostatic hypotension, priapism, and Daytime sedation."
     },
     "Mirtazapine": {
@@ -170,7 +170,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 8.1, "D2": 5.0, "NET": 5.0, "α2A": 7.3, "NMDA": 0.0, "GABA-A": 0.0, "H1": 9.3, "α1": 6.0, "M1": 5.0, "5HT2C": 7.6},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.75, "Fr_hepatic": 0.25, "Risk_QTc": 0.30, "convulsant_index": 0.1,
-        "dosage": "Start 7.5 mg hs; target 15 mg - 30 mg hs (higher doses decrease sedating H1 effect).",
+        "dosage": "Start 7.5 mg hs; titrate up to 15 mg - 30 mg hs (higher doses decrease sedating H1 effect).",
         "warnings": "Low-dose sedation and weight gain; limited efficacy in primary agitation (SYMBAD trial)."
     },
     "Mianserin": {
@@ -186,7 +186,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.5, "GABA-A": 6.0, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.5, "GABA-A": 0.5},
         "Fr_renal": 0.94, "Fr_hepatic": 0.06, "Risk_QTc": 0.10, "convulsant_index": 0.0,
-        "dosage": "Start 25 mg/day; slow titration to target 100 mg - 200 mg daily.",
+        "dosage": "Start 25 mg/day; titrate to 100 mg - 200 mg/day.",
         "warnings": "Stevens-Johnson Syndrome (SJS) and Toxic Epidermal Necrolysis (TEN). Discontinue at first sign of rash."
     },
     "Carbamazepine": {
@@ -194,13 +194,13 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.0, "GABA-A": 6.8, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 0.28, "Fr_hepatic": 0.72, "Risk_QTc": 0.30, "convulsant_index": 0.0,
-        "dosage": "Start 100 mg bid; target 200 mg - 600 mg daily in divided doses.",
+        "dosage": "Start 100 mg/day BID titrate to 200 mg - 600 mg/day.",
         "warnings": "Aplastic anemia, agranulocytosis, severe dermatologic reactions, potent CYP3A4 inducer."
     }
 }
 
 # -----------------------------------------------------------------------------
-# 2. COMPUTATIONAL FUNCTIONS, UPGRADE ENGINES & SIGMOIDAL SCALING
+# 2. ENGINES & SIGMOIDAL SCALING
 # -----------------------------------------------------------------------------
 def sigmoid(x, k, x0):
     return 1.0 / (1.0 + np.exp(-k * (x - x0)))
@@ -229,7 +229,7 @@ def calculate_sigmoidal_lambdas(morse, sbp_drop, sas, qtc, egfr, lft_factor, dem
         "hepatic": lambda_hepatic
     }
 
-# --- UPGRADE MODULE 1: SPECIAL CONDITIONS RISK WEIGHTING ENGINE ---
+# MODULE 1: SPECIAL CONDITIONS RISK WEIGHTING
 def calculate_special_condition_penalties(drug_name, drug_data, patient_profile):
     pk = drug_data.get("pKi", {})
     
@@ -372,7 +372,7 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         "Warnings": drug_data["warnings"]
     }
 
-# --- UPGRADE MODULE 2: MULTI-AGENT COMBINATION REGIMEN ENGINE ---
+# MODULE 2: MULTI-AGENT COMBINATION REGIMEN
 def evaluate_combination_regimens(monotherapy_results, candidate_drugs, weights, patient_profile, M_target_threshold=10.0, polypharmacy_theta=2.5, superiority_delta=1.5):
     valid_mono = [r for r in monotherapy_results if not r["Hard Locked"]]
     if not valid_mono:
@@ -601,7 +601,7 @@ weights = {
 }
 
 # -----------------------------------------------------------------------------
-# 4. HERO SPOTLIGHT & DECISION ENGINE INTEGRATION
+# 4. HERO SPOTLIGHT
 # -----------------------------------------------------------------------------
 lambdas = calculate_sigmoidal_lambdas(
     morse=morse_score * pref_falls,
@@ -623,7 +623,7 @@ results = [
 results = sorted(results, key=lambda x: x["Raw_Mj"], reverse=True)
 top_drug = results[0]
 
-# Evaluate Multi-Agent Combination Regimen Upgrade Engine
+# Evaluate Multi-Agent Combination Regimen
 comb_analysis = evaluate_combination_regimens(results, DRUG_DATABASE, weights, patient_profile, M_target_threshold=10.0)
 
 # Multi-Symptom Phenotype Clustering Display
@@ -656,8 +656,8 @@ else:
     if comb_analysis["is_viable"]:
         st.warning(
             f"⚡ **Multi-Agent Combination Regimen Suggested:** The monotherapy response is constrained. "
-            f"Combining **{' + '.join(comb_analysis['regimen'])}** provides higher therapeutic coverage "
-            f"(Combined Net Score: **{comb_analysis['score']}**, +{comb_analysis['margin']} superiority margin over single agent)."
+            f"Combining **{' + '.join(comb_analysis['regimen'])}** provides higher therapeutic possibilities "
+            f"(Combined Net Score: **{comb_analysis['score']}**, +{comb_analysis['margin']} show superiority over single agent)."
         )
 
     st.markdown(
@@ -716,7 +716,7 @@ else:
         st.rerun()
 
 # -----------------------------------------------------------------------------
-# 5. EXPANDED CLINICAL DASHBOARD & CROSS-TITRATION ENGINE
+# 5. EXPANDED CLINICAL DASHBOARD & CROSS-TITRATION
 # -----------------------------------------------------------------------------
 with st.expander("📊 Estimated Side-Effect Probabilities (PETRUSHKA based model)", expanded=True):
     st.markdown("#### Patient-Specific Risk Likelihood Output")
@@ -744,7 +744,7 @@ with st.expander("🔄 Sequential Cross-Titration", expanded=True):
         # Check if top recommended drug is ALREADY in the active regimen
         if top_drug["Drug"] in prior_drugs:
             st.info(
-                f"💡 **Dose Optimization Protocol:** **{top_drug['Drug']}** is already part of the patient's active regimen. "
+                f"💡 **Dose Optimization Protocol:** **{top_drug['Drug']}** is already part of the patient's current regimen. "
                 f"Rather than cross-tapering, evaluate optimizing current dosage toward targeted spectrum (**{top_drug['Dosage']}**)."
             )
         
@@ -759,7 +759,7 @@ with st.expander("🔄 Sequential Cross-Titration", expanded=True):
             if tt_df is not None:
                 st.table(tt_df)
         elif top_drug["Drug"] not in prior_drugs:
-            st.info("Treatment Naive: Initiate top candidate at starting dose without cross-tapering.")
+            st.info("Treatment Naive: Initiate top candidate at starting dose without.")
     else:
         st.info("Treatment Naive: Initiate top candidate at starting dose without cross-tapering.")
 
@@ -792,9 +792,9 @@ with st.expander("🚦 Dashboard & Ranking", expanded=False):
 # -----------------------------------------------------------------------------
 # 6. EXPANDABLE RATIONALE, FORMULAS & ALGORITHMIC THINKING MODEL
 # -----------------------------------------------------------------------------
-with st.expander("🧮 Algorithmic Architecture & Clinical Rationale", expanded=False):
+with st.expander("🧮 Algorithmic & Clinical Rationale", expanded=False):
     st.markdown(r"""
-    This decision-support tool employs a **Multi-Criteria Utility Optimization Model** balancing therapeutic receptor targeting against patient-specific vulnerabilities, comorbidity penalties, and prior treatment history.
+    This decision-support tool employs a **Multi-Criteria Optimization Model** balancing therapeutic receptor targeting correlated to patient-specific vulnerabilities, comorbidity penalties, and prior treatment history.
 
     ---
 
@@ -813,7 +813,7 @@ with st.expander("🧮 Algorithmic Architecture & Clinical Rationale", expanded=
     $$P_{\text{special}} = P_{\text{epilepsy}} + P_{\text{NCD}} + P_{\text{age}}$$
 
     * **Epilepsy & AED Penalty ($P_{\text{epilepsy}}$):** Evaluates seizure threshold reduction and CYP/protein-binding DDI penalties with current AEDs.
-    * **Non-Communicable Diseases Penalty ($P_{\text{NCD}}$):** Scales metabolic risk via $H_1$/$5\text{-HT}_{2\text{C}}$ binding, vascular volatility via $\alpha_1$, and thyroid-mediated QTc amplification.
+    * **Non-Communicable Diseases Penalty ($P_{\text{NCD}}$):** Scales metabolic risk via $H_1$/$5\text{-HT}_{2\text{C}}$ binding, vascular effects via $\alpha_1$, and thyroid-mediated QTc amplification.
     * **Extreme Age Penalty ($P_{\text{age}}$):** Exponentially scales frailty and anticholinergic vulnerability for patients $> 75$ years.
 
     ---
@@ -824,7 +824,7 @@ with st.expander("🧮 Algorithmic Architecture & Clinical Rationale", expanded=
 
     ---
 
-    **4. Multi-Agent Combination Engine**
+    **4. Multi-Agent Combination Cocktails**
     
     When single-agent utility falls below threshold, dual-agent regimens are evaluated using bounded receptor additivity and non-linear risk compounding with polypharmacy friction penalty $\theta$:
 
@@ -844,4 +844,4 @@ with st.expander("🔍 References & Citations"):
         5. **Davies, S. J., et al. (2018).** *Sequential drug treatment algorithm for agitation and aggression in Alzheimer's and mixed dementia*. J Psychopharmacol. PMID: 29338602.
         6. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
         """
-	)
+    
