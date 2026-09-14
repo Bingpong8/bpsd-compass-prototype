@@ -30,7 +30,7 @@ st.code(ascii_header, language=None)
 if "ruled_out" not in st.session_state:
     st.session_state.ruled_out = set()
 
-# Mapping AED names in DRUG_DATABASE to standardized DDI keys
+# Standardized AED Name Mappings
 AED_NAME_MAP = {
     "Valproic Acid": "valproate",
     "Carbamazepine": "carbamazepine",
@@ -38,8 +38,15 @@ AED_NAME_MAP = {
     "Gabapentin": "gabapentin"
 }
 
+AED_TO_DRUG_NAME = {
+    "carbamazepine": "Carbamazepine",
+    "valproate": "Valproic Acid",
+    "lamotrigine": "Lamotrigine",
+    "gabapentin": "Gabapentin"
+}
+
 # -----------------------------------------------------------------------------
-# 1. PHARMACODYNAMIC DATABASE WITH DOSAGE SPECTRUM & SAFETY PARAMETERS
+# 1. PHARMACODYNAMIC DATABASE WITH DOSAGE SPECTRUM & COMPLETE DDI MATRIX
 # -----------------------------------------------------------------------------
 DRUG_DATABASE = {
     "Brexpiprazole": {
@@ -47,6 +54,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 8.7, "D2": 9.5, "NET": 5.0, "α2A": 7.4, "NMDA": 0.0, "GABA-A": 0.0, "H1": 7.1, "α1": 8.0, "M1": 5.0, "5HT2C": 6.2},
         "Ar": {"5HT2A": 1.0, "D2": 1.0, "NET": 0.0, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.14, "Fr_hepatic": 0.86, "Risk_QTc": 0.20, "convulsant_index": 0.1,
+        "aed_ddi_penalties": {"carbamazepine": 3.0, "valproate": 0.5},
         "dosage": "Start 0.5 mg PO OD, max 2 mg/day for agitation.",
         "warnings": "Akathisia and impulse-control disorders. Monitor elderly closely."
     },
@@ -55,6 +63,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 9.3, "D2": 5.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.06, "Fr_hepatic": 0.94, "Risk_QTc": 0.40, "convulsant_index": 0.0,
+        "aed_ddi_penalties": {"carbamazepine": 3.0, "valproate": 0.5},
         "dosage": "Standard dose: 34 mg PO OD or 10 mg PO OD in CYP3A4 inhibitor co-administration.",
         "warnings": "QTc prolongation risk. Indicated primarily for Parkinson's Disease Psychosis."
     },
@@ -72,7 +81,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 6.8, "D2": 5.8, "NET": 5.0, "α2A": 5.5, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.0, "α1": 7.1, "M1": 6.0, "5HT2C": 6.0},
         "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.40, "convulsant_index": 0.2,
-        "aed_ddi_penalties": {"carbamazepine": 3.0, "valproate": 0.5},
+        "aed_ddi_penalties": {"carbamazepine": 3.5, "valproate": 0.5},
         "dosage": "Start 12.5 mg - 25 mg PO hs",
         "warnings": "QTc prolongation, severe orthostatic hypotension, sedation, and metabolic dysregulation."
     },
@@ -90,6 +99,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 7.2, "D2": 9.2, "NET": 5.0, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 6.0, "α1": 7.3, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.15, "Fr_hepatic": 0.85, "Risk_QTc": 0.85, "convulsant_index": 0.3,
+        "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
         "dosage": "Start as low as possible, 0.25-0.5 mg PO OD or PRN - max 2 mg/day.",
         "warnings": "Torsades de Pointes, Extrapyramidal Symptoms (EPS), and Tardive Dyskinesia."
     },
@@ -98,6 +108,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 5.2, "D2": 5.0, "NET": 5.0, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 6.3, "α1": 5.0, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.5, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.20, "Fr_hepatic": 0.80, "Risk_QTc": 0.75, "convulsant_index": 0.1,
+        "aed_ddi_penalties": {"carbamazepine": 1.5, "valproate": 0.5},
         "dosage": "Start 5 mg/day; max 10 mg/day.",
         "warnings": "Dose-dependent QTc prolongation risk; hyponatremia and bleeding precautions."
     },
@@ -106,6 +117,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 6.2, "D2": 6.6, "NET": 5.5, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.5, "D2": 0.5, "NET": 0.5, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.12, "Fr_hepatic": 0.88, "Risk_QTc": 0.25, "convulsant_index": 0.1,
+        "aed_ddi_penalties": {"carbamazepine": 1.5, "valproate": 0.5},
         "dosage": "Start 25 mg/day; target 50 mg - 100 mg/day.",
         "warnings": "Hyponatremia/SIADH, serotonin syndrome, and mild GI distress. Well-tolerated cardiac profile."
     },
@@ -114,6 +126,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 7.2, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.10, "convulsant_index": 0.0,
+        "aed_ddi_penalties": {"valproate": 4.0, "carbamazepine": 2.5, "lamotrigine": 2.0},
         "dosage": "Start 125 mg - 250 mg PO bid; target serum concentration 50-80 mcg/ml.",
         "warnings": "Hepatotoxicity, pancreatitis, thrombocytopenia; monitor LFTs, CBC required."
     },
@@ -122,6 +135,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 6.8, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 1.00, "Fr_hepatic": 0.00, "Risk_QTc": 0.05, "convulsant_index": 0.0,
+        "aed_ddi_penalties": {"gabapentin": 4.0, "valproate": 0.5, "carbamazepine": 0.5},
         "dosage": "Start 100 mg tid; slow titrations up to 300 mg - 600 mg tid based on renal clearance.",
         "warnings": "Respiratory depression risk with CNS depressants/opioids; renal dose adjustment required."
     },
@@ -130,6 +144,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 7.5, "GABA-A": 0.0, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 1.0, "GABA-A": 0.0},
         "Fr_renal": 0.80, "Fr_hepatic": 0.20, "Risk_QTc": 0.05, "convulsant_index": 0.0,
+        "aed_ddi_penalties": {},
         "dosage": "Start 5 mg daily; titrate by 5 mg weekly to target 10 mg bid (max 10 mg daily if eGFR < 30).",
         "warnings": "Dose adjustment in severe renal impairment (eGFR < 30 ml/min)."
     },
@@ -138,6 +153,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 8.1, "D2": 5.5, "NET": 7.7, "α2A": 6.8, "NMDA": 0.0, "GABA-A": 0.0, "H1": 8.9, "α1": 8.0, "M1": 8.8, "5HT2C": 7.5},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.70, "convulsant_index": 0.5,
+        "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
         "dosage": "Generally avoid in dementia. 5-10 mg PO hs if strictly indicated).",
         "warnings": "Severe anticholinergic toxicity, fall risk, cognitive decline, and cardiotoxicity."
     },
@@ -146,6 +162,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 5.0, "D2": 5.0, "NET": 6.4, "α2A": 5.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 5.0, "α1": 5.0, "M1": 5.0, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.85, "Fr_hepatic": 0.15, "Risk_QTc": 0.35, "convulsant_index": 0.2,
+        "aed_ddi_penalties": {"carbamazepine": 2.0, "valproate": 0.5},
         "dosage": "Start 37.5 mg daily XR; target 75 mg - 150 mg daily.",
         "warnings": "Dose-dependent blood pressure elevation and sharp withdrawal discontinuation syndrome."
     },
@@ -154,6 +171,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 7.60, "D2": 5.00, "NET": 5.00, "α2A": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00, "5HT2C": 5.0},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.59, "Fr_hepatic": 0.41, "Risk_QTc": 0.15, "convulsant_index": 0.1,
+        "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
         "dosage": "Start 5.0 mg daily; target 5.0 mg - 10 mg daily in elderly.",
         "warnings": "Nausea risk; low anticholinergic burden and favorable cognitive safety profile."
     },
@@ -162,6 +180,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 5.00, "D2": 5.20, "NET": 5.20, "α2A": 5.00, "NMDA": 5.00, "GABA-A": 5.00, "H1": 5.00, "α1": 5.00, "M1": 5.00, "5HT2C": 5.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.5, "NET": 1.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.87, "Fr_hepatic": 0.13, "Risk_QTc": 0.20, "convulsant_index": 0.8,
+        "aed_ddi_penalties": {"carbamazepine": 3.0, "valproate": 0.5},
         "dosage": "Start 100 mg SR or 150 mg XL daily; max 150 mg daily in elderly.",
         "warnings": "Dose-dependent seizure risk; contraindications in seizure disorders, eating disorders, or sedative withdrawal."
     },
@@ -170,6 +189,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 7.80, "D2": 5.00, "NET": 5.00, "α2A": 6.40, "NMDA": 5.00, "GABA-A": 5.00, "H1": 7.50, "α1": 7.80, "M1": 5.00, "5HT2C": 6.5},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.45, "convulsant_index": 0.1,
+        "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
         "dosage": "Start 12.5 mg - 25 mg hs / PRN; target 25 mg - 100 mg daily for nighttime agitation.",
         "warnings": "Orthostatic hypotension, priapism, and Daytime sedation."
     },
@@ -178,6 +198,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 8.1, "D2": 5.0, "NET": 5.0, "α2A": 7.3, "NMDA": 0.0, "GABA-A": 0.0, "H1": 9.3, "α1": 6.0, "M1": 5.0, "5HT2C": 7.6},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.0, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.75, "Fr_hepatic": 0.25, "Risk_QTc": 0.30, "convulsant_index": 0.1,
+        "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
         "dosage": "Start 7.5 mg hs; target 15 mg - 30 mg hs (higher doses decrease sedating H1 effect).",
         "warnings": "Low-dose sedation and weight gain; limited efficacy in primary agitation (SYMBAD trial)."
     },
@@ -186,6 +207,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 8.0, "D2": 5.5, "NET": 6.0, "α2A": 7.2, "NMDA": 0.0, "GABA-A": 0.0, "H1": 9.0, "α1": 7.3, "M1": 5.0, "5HT2C": 7.5},
         "Ar": {"5HT2A": 1.0, "D2": 0.0, "NET": 0.5, "α2A": 1.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.70, "Fr_hepatic": 0.30, "Risk_QTc": 0.35, "convulsant_index": 0.2,
+        "aed_ddi_penalties": {"carbamazepine": 2.5, "valproate": 0.5},
         "dosage": "Start 10 mg hs; titrate up to 30 mg - 60 mg hs.",
         "warnings": "Agranulocytosis/bone marrow depression, high sedation, and orthostasis."
     },
@@ -194,6 +216,7 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.5, "GABA-A": 6.0, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.5, "GABA-A": 0.5},
         "Fr_renal": 0.94, "Fr_hepatic": 0.06, "Risk_QTc": 0.10, "convulsant_index": 0.0,
+        "aed_ddi_penalties": {"lamotrigine": 4.0, "carbamazepine": 2.5, "valproate": 2.0},
         "dosage": "Start 25 mg/day; slow titration to target 100 mg - 200 mg daily.",
         "warnings": "Stevens-Johnson Syndrome (SJS) and Toxic Epidermal Necrolysis (TEN). Discontinue at first sign of rash."
     },
@@ -202,13 +225,14 @@ DRUG_DATABASE = {
         "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.0, "GABA-A": 6.8, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 0.28, "Fr_hepatic": 0.72, "Risk_QTc": 0.30, "convulsant_index": 0.0,
+        "aed_ddi_penalties": {"carbamazepine": 4.0, "valproate": 2.5, "lamotrigine": 2.5},
         "dosage": "Start 100 mg bid; target 200 mg - 600 mg daily in divided doses.",
         "warnings": "Aplastic anemia, agranulocytosis, severe dermatologic reactions, potent CYP3A4 inducer."
     }
 }
 
 # -----------------------------------------------------------------------------
-# 2. COMPUTATIONAL FUNCTIONS, UPGRADE ENGINES & SIGMOIDAL SCALING
+# 2. COMPUTATIONAL FUNCTIONS & SIGMOIDAL SCALING
 # -----------------------------------------------------------------------------
 def sigmoid(x, k, x0):
     return 1.0 / (1.0 + np.exp(-k * (x - x0)))
@@ -246,6 +270,7 @@ def calculate_special_condition_penalties(drug_name, drug_data, patient_profile)
     active_aeds = patient_profile.get('active_aeds', [])
     lambda_seizure = sigmoid(seizure_freq, k=0.8, x0=1.0)
     convulsant_index = drug_data.get('convulsant_index', 0.0)
+    
     ddi_matrix = drug_data.get('aed_ddi_penalties', {})
     ddi_penalty_sum = sum([ddi_matrix.get(aed.lower(), 0.0) for aed in active_aeds])
     P_epilepsy = (lambda_seizure * convulsant_index * 8.0) + ddi_penalty_sum
@@ -302,7 +327,7 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         hard_locked = True
         hard_lock_reason = "Ruled Out by Clinician"
 
-    # Prior History Correlation Logic
+    # Prior History & Active Regimen Correlation Logic
     if drug in prior_history:
         outcome = prior_history[drug]["outcome"]
         dose = prior_history[drug]["dosage"]
@@ -312,8 +337,8 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         elif outcome == "Severe Adverse Effects / Intolerant":
             hard_locked = True
             hard_lock_reason = f"Historical Intolerance: Discontinued due to adverse effects ({dose})."
-        elif outcome == "Partial Response / Tolerated":
-            clinical_note = f"Prior partial benefit noted at {dose}. Consider optimizing dose before class switch."
+        elif outcome in ["Partial Response / Tolerated", "Active Regimen - Ongoing"]:
+            clinical_note = f"Currently active/prior tolerated agent at {dose}. Evaluate dose optimization before class switch."
 
     # Etiology & QTc Safety Hard-Locks
     if dementia_subtype in ["Dementia with Lewy Bodies (DLB)", "Parkinson's Disease Dementia (PDD)"] and ar["D2"] < 0:
@@ -418,10 +443,10 @@ def evaluate_combination_regimens(monotherapy_results, candidate_drugs, weights,
         spec1 = calculate_special_condition_penalties(d1_name, d1, patient_profile)
         spec2 = calculate_special_condition_penalties(d2_name, d2, patient_profile)
         
-        # FIX FOR GAP 2: Patient-level Age penalty is applied ONCE to the patient, not duplicated!
+        # Patient-level Age penalty applied once
         p_special_comb = spec1["P_epilepsy"] + spec2["P_epilepsy"] + spec1["P_NCD"] + spec2["P_NCD"] + max(spec1["P_age"], spec2["P_age"])
         
-        # Combined Net Score with tuned Polypharmacy Friction Score
+        # Combined Net Score
         M_comb = u_thera_comb - u_risk_comb - p_special_comb - polypharmacy_theta
         max_single_score = max(item1["Raw_Mj"], item2["Raw_Mj"])
         is_superior = (M_comb - max_single_score) >= superiority_delta
@@ -436,7 +461,6 @@ def evaluate_combination_regimens(monotherapy_results, candidate_drugs, weights,
     combination_results.sort(key=lambda x: x['M_combination'], reverse=True)
     best_comb = combination_results[0] if combination_results else None
     
-    # Trigger condition: triggers when best monotherapy falls below target or when combination cleared superiority margin
     if best_comb and best_comb['is_superior'] and (best_mono["Raw_Mj"] < M_target_threshold or best_comb['superiority_margin'] > 2.0):
         return {
             "mode": "COMBINATION",
@@ -503,7 +527,6 @@ with c_bio1:
     sbp_drop = st.number_input("Standing SBP Drop (mmHg)", 0, 60, 12)
     sas_score = st.number_input("SAS Motor / EPS Score (0-40)", 0, 40, 4)
     
-    # FIX FOR GAP 3: Consistent UI Selectbox for Frailty Index
     frailty_str = st.selectbox("Frailty Index Tier", list(FRAILTY_MAPPING.keys()), index=1)
     frailty_val = FRAILTY_MAPPING[frailty_str]
 
@@ -518,7 +541,7 @@ with st.expander("🩺 Special Conditions Risk Inputs (Epilepsy, NCDs, Comorbidi
     col_sc1, col_sc2 = st.columns(2)
     with col_sc1:
         seizure_freq_val = st.number_input("Seizure Frequency (events/year)", 0.0, 50.0, 0.0, step=0.5)
-        active_aeds_val = st.multiselect("Active Anti-Epileptic Drugs (AEDs)", ["carbamazepine", "valproate", "lamotrigine", "levetiracetam"])
+        active_aeds_val = st.multiselect("Active Anti-Epileptic Drugs (AEDs)", ["carbamazepine", "valproate", "lamotrigine", "gabapentin", "levetiracetam"])
     with col_sc2:
         hba1c_val = st.number_input("HbA1c (%)", 4.0, 15.0, 6.5, step=0.1)
         bmi_val = st.number_input("BMI (kg/m²)", 12.0, 50.0, 25.0, step=0.5)
@@ -535,27 +558,34 @@ with col_prior1:
         options=list(DRUG_DATABASE.keys())
     )
 
+# --- FIX FOR BUG: AUTOMATIC BI-DIRECTIONAL AED SYNCHRONIZATION ---
+combined_prior_drugs = list(set(prior_drugs + [AED_TO_DRUG_NAME[aed] for aed in active_aeds_val if aed in AED_TO_DRUG_NAME]))
+
 prior_history = {}
-if prior_drugs:
+if combined_prior_drugs:
     with col_prior2:
-        for drug in prior_drugs:
-            c_d1, c_d2 = st.columns(2)
-            with c_d1:
-                dosage = st.text_input(f"Dose for {drug}", value=" mg/day", key=f"dose_{drug}")
-            with c_d2:
-                outcome = st.selectbox(
-                    f"Outcome for {drug}",
-                    ["Partial Response / Tolerated", "Treatment Failure / Ineffective", "Severe Adverse Effects / Intolerant"],
-                    key=f"outcome_{drug}"
-                )
+        for drug in combined_prior_drugs:
+            if drug in prior_drugs:
+                c_d1, c_d2 = st.columns(2)
+                with c_d1:
+                    dosage = st.text_input(f"Dose for {drug}", value=" mg/day", key=f"dose_{drug}")
+                with c_d2:
+                    outcome = st.selectbox(
+                        f"Outcome for {drug}",
+                        ["Active Regimen - Ongoing", "Partial Response / Tolerated", "Treatment Failure / Ineffective", "Severe Adverse Effects / Intolerant"],
+                        key=f"outcome_{drug}"
+                    )
+            else:
+                dosage = DRUG_DATABASE[drug]["dosage"]
+                outcome = "Active Regimen - Ongoing"
             prior_history[drug] = {"dosage": dosage, "outcome": outcome}
 
-# FIX FOR GAP 1: Auto-synchronize AEDs selected in either location
-combined_aeds = set([aed.lower() for aed in active_aeds_val])
-for pdrug in prior_drugs:
+# Build active_aeds_final for DDI lookup
+combined_aeds_set = set([aed.lower() for aed in active_aeds_val])
+for pdrug in combined_prior_drugs:
     if pdrug in AED_NAME_MAP:
-        combined_aeds.add(AED_NAME_MAP[pdrug])
-active_aeds_final = list(combined_aeds)
+        combined_aeds_set.add(AED_NAME_MAP[pdrug])
+active_aeds_final = list(combined_aeds_set)
 
 # Assemble Patient Profile Dictionary
 patient_profile = {
@@ -764,20 +794,20 @@ with st.expander("📊 Estimated Side-Effect Probabilities (PETRUSHKA based mode
         st.progress(top_drug["EPS risk"])
         st.caption(f"Likelihood: {top_drug['EPS risk']}%")
 
-with st.expander("🔄 Sequential Cross-Titration", expanded=True):
-    if prior_drugs:
-        distinct_priors = [d for d in prior_drugs if d != top_drug["Drug"]]
+with st.expander("🔄 Sequential Cross-Titration & Dose Optimization Protocol", expanded=True):
+    if combined_prior_drugs:
+        distinct_priors = [d for d in combined_prior_drugs if d != top_drug["Drug"]]
         
-        # Check if top recommended drug is ALREADY in the active regimen
-        if top_drug["Drug"] in prior_drugs:
+        # Correctly handles cases where top recommended drug is ALREADY active in regimen
+        if top_drug["Drug"] in combined_prior_drugs:
             st.info(
-                f"💡 **Dose Optimization Protocol:** **{top_drug['Drug']}** is already part of the patient's active regimen. "
+                f"💡 **Active Regimen Optimization Protocol:** **{top_drug['Drug']}** is already part of the patient's active regimen. "
                 f"Rather than cross-tapering, evaluate optimizing current dosage toward targeted spectrum (**{top_drug['Dosage']}**)."
             )
         
         if distinct_priors:
             prior_selected = st.selectbox(
-                "Select distinct prior agent to cross-taper from:",
+                "Select distinct active/prior agent to cross-taper from:",
                 options=distinct_priors,
                 key="cross_taper_selector"
             )
@@ -785,7 +815,7 @@ with st.expander("🔄 Sequential Cross-Titration", expanded=True):
             tt_df = generate_cross_titration_schedule(prior_selected, top_drug["Drug"])
             if tt_df is not None:
                 st.table(tt_df)
-        elif top_drug["Drug"] not in prior_drugs:
+        elif top_drug["Drug"] not in combined_prior_drugs:
             st.info("Treatment Naive: Initiate top candidate at starting dose without cross-tapering.")
     else:
         st.info("Treatment Naive: Initiate top candidate at starting dose without cross-tapering.")
@@ -872,4 +902,3 @@ with st.expander("🔍 References & Citations"):
         6. **CCSMH (2024–2025).** *Canadian Clinical Practice Guidelines for Assessing and Managing BPSD*. ccsmh.ca.
         """
     )
-
