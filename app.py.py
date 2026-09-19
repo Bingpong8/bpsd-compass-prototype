@@ -229,7 +229,7 @@ DRUG_DATABASE = {
     },
     "Carbamazepine": {
         "category": "Mood Stabilizer Anticonvulsant",
-        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.0, "GABA-A": 6.8, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 3.90, "NMDA": 0.0, "GABA-A": 6.8, "H1": 0.0, "α1": 4.3, "M1": 0.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
         "Fr_renal": 0.28, "Fr_hepatic": 0.72, "Risk_QTc": 0.30, "convulsant_index": 0.0,
         "aed_ddi_penalties": {"carbamazepine": 4.0, "valproate": 2.5, "lamotrigine": 2.5, "phenytoin": 3.0},
