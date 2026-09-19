@@ -220,7 +220,7 @@ DRUG_DATABASE = {
     },
     "Lamotrigine": {
         "category": "Mood Stabilizer Anticonvulsant",
-        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 6.5, "GABA-A": 6.0, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
+        "pKi": {"5HT2A": 0.0, "D2": 3.4, "NET": 3.6, "α2A": 0.0, "NMDA": 3.5, "GABA-A": 0, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
         "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.5, "GABA-A": 0.5},
         "Fr_renal": 0.94, "Fr_hepatic": 0.06, "Risk_QTc": 0.10, "convulsant_index": 0.0,
         "aed_ddi_penalties": {"lamotrigine": 4.0, "carbamazepine": 2.5, "valproate": 2.0, "phenytoin": 2.5},
