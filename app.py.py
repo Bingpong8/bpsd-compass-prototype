@@ -307,7 +307,7 @@ def calculate_special_condition_penalties(drug_name, drug_data, patient_profile)
     age = patient_profile.get('age', 65.0)
     frailty = patient_profile.get('frailty_score', 0.2)
     acb_flag = 1.0 if pk.get("M1", 0.0) >= 7.0 else 0.0
-    if age > 75.0:
+    if age > 80.0:
         age_factor = (age / 80.0) ** 1.4
         P_age = age_factor * ((frailty * acb_flag * 2.0) + (frailty * pKi_H1 * 1.5))
     else:
