@@ -53,8 +53,9 @@ ANTICHOLINERGIC_AGENTS = ["Trihexyphenidyl (Anticholinergic)", "Benztropine (Ant
 ACHEI_AGENTS = ["Donepezil (AChEI)", "Galantamine (AChEI)", "Rivastigmine (AChEI)"]
 
 # -----------------------------------------------------------------------------
-# 1. PHARMACODYNAMIC DATABASE WITH DOSAGE SPECTRUM & EXPANDED DDI 
+# 1. PHARMACODYNAMIC DATABASE WITH DOSAGE SPECTRUM & CORRECTED pKi VALUES
 # -----------------------------------------------------------------------------
+# Note: pKi values for Lamotrigine and Carbamazepine updated (NMDA & NET = 0.00)
 DRUG_DATABASE = {
     "Brexpiprazole": {
         "category": "Atypical Antipsychotic",
@@ -89,7 +90,7 @@ DRUG_DATABASE = {
         "Ar": {"5HT2A": 1.0, "D2": -1.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.40, "convulsant_index": 0.2,
         "aed_ddi_penalties": {"carbamazepine": 3.5, "valproate": 0.5, "phenytoin": 3.5},
-        "dosage": "Start 12.5 mg - 25 mg PO hs",
+        "dosage": "Start 12.5 mg - 25 mg PO hs; target 50 - 150 mg/day in divided doses.",
         "warnings": "QTc prolongation, severe orthostatic hypotension, sedation, and metabolic dysregulation."
     },
     "Olanzapine": {
@@ -135,7 +136,7 @@ DRUG_DATABASE = {
         "Fr_renal": 0.05, "Fr_hepatic": 0.95, "Risk_QTc": 0.10, "convulsant_index": 0.0,
         "aed_ddi_penalties": {"valproate": 4.0, "carbamazepine": 2.5, "lamotrigine": 2.0, "phenytoin": 2.0},
         "dosage": "Start 125 mg - 250 mg PO bid; keep serum level 50-80 mcg/ml.",
-        "warnings": "Hepatotoxicity, pancreatitis, thrombocytopenia; monitor LFTs and CBC."
+        "warnings": "Hepatotoxicity, pancreatitis, thrombocytopenia; monitor baseline LFTs, CBC, and plasma levels."
     },
     "Gabapentin": {
         "category": "GABA analogue Anticonvulsant",
@@ -144,7 +145,7 @@ DRUG_DATABASE = {
         "Fr_renal": 1.00, "Fr_hepatic": 0.00, "Risk_QTc": 0.05, "convulsant_index": 0.0,
         "aed_ddi_penalties": {"gabapentin": 4.0, "valproate": 0.5, "carbamazepine": 0.5, "phenytoin": 0.5},
         "dosage": "Start 100 mg tid; slow titrations up to 300 mg - 600 mg tid based on eGFR.",
-        "warnings": "Respiratory depression risk with CNS depressants/opioids; strict renal dose adjustment."
+        "warnings": "Respiratory depression risk with CNS depressants/opioids; 100% renal elimination requires strict dose adjustment."
     },
     "Memantine": {
         "category": "Cognitive Enhancer",
@@ -220,21 +221,21 @@ DRUG_DATABASE = {
     },
     "Lamotrigine": {
         "category": "Mood Stabilizer Anticonvulsant",
-        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0, "GABA-A": 0, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
-        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.5, "GABA-A": 0.5},
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.94, "Fr_hepatic": 0.06, "Risk_QTc": 0.10, "convulsant_index": 0.0,
         "aed_ddi_penalties": {"lamotrigine": 4.0, "carbamazepine": 2.5, "valproate": 2.0, "phenytoin": 2.5},
         "dosage": "Start 25 mg/day; slow titration up to 100 mg - 200 mg/day.",
-        "warnings": "Stevens-Johnson Syndrome (SJS). Discontinue immediately at first sign of rash."
+        "warnings": "Stevens-Johnson Syndrome (SJS). Discontinue immediately at first sign of rash. Reduce dose 50% with Valproate."
     },
     "Carbamazepine": {
         "category": "Mood Stabilizer Anticonvulsant",
-        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 3.90, "NMDA": 0.0, "GABA-A": 6.8, "H1": 0.0, "α1": 4.3, "M1": 0.0, "5HT2C": 0.0},
-        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 1.0},
+        "pKi": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0, "H1": 0.0, "α1": 0.0, "M1": 0.0, "5HT2C": 0.0},
+        "Ar": {"5HT2A": 0.0, "D2": 0.0, "NET": 0.0, "α2A": 0.0, "NMDA": 0.0, "GABA-A": 0.0},
         "Fr_renal": 0.28, "Fr_hepatic": 0.72, "Risk_QTc": 0.30, "convulsant_index": 0.0,
         "aed_ddi_penalties": {"carbamazepine": 4.0, "valproate": 2.5, "lamotrigine": 2.5, "phenytoin": 3.0},
         "dosage": "Start 100 mg bid; titrate up to 200 mg - 600 mg/day in divided doses.",
-        "warnings": "Potent CYP3A4 inducer. Aplastic anemia, agranulocytosis, severe dermatologic reactions."
+        "warnings": "Potent CYP3A4 inducer. Aplastic anemia, agranulocytosis, hyponatremia, and severe dermatologic reactions."
     }
 }
 
@@ -307,7 +308,7 @@ def calculate_special_condition_penalties(drug_name, drug_data, patient_profile)
     age = patient_profile.get('age', 65.0)
     frailty = patient_profile.get('frailty_score', 0.2)
     acb_flag = 1.0 if pk.get("M1", 0.0) >= 7.0 else 0.0
-    if age > 80.0:
+    if age > 75.0:
         age_factor = (age / 80.0) ** 1.4
         P_age = age_factor * ((frailty * acb_flag * 2.0) + (frailty * pKi_H1 * 1.5))
     else:
@@ -372,7 +373,7 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         clinical_note += "⚠️ Potent CYP induction (Phenytoin/Carbamazepine) may cause sub-therapeutic plasma levels. Dosage adjustment required. "
 
     # Etiology & QTc Safety Hard-Locks
-    if dementia_subtype in ["Dementia with Lewy Bodies (DLB)", "Parkinson's Disease Dementia (PDD)"] and ar["D2"] < 0:
+    if dementia_subtype in ["Dementia with Lewy Bodies (DLB)", "Parkinson's Disease Dementia (PDD)"] and ar.get("D2", 0.0) < 0:
         hard_locked = True
         hard_lock_reason = "Contraindicated: Full D2 antagonist in DLB/PDD etiology"
     elif qtc_ms > 500.0 and drug_data["Risk_QTc"] > 0.60:
@@ -380,26 +381,26 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
         hard_lock_reason = "Contraindicated: Severe baseline QTc (>500ms) with high QTc-risk agent"
 
     u_thera = (
-        (weights["5HT2A"] * pk["5HT2A"] * ar["5HT2A"]) +
-        (weights["D2"] * pk["D2"] * ar["D2"]) +
-        (weights["NET"] * pk["NET"] * ar["NET"]) +
-        (weights["α2A"] * pk["α2A"] * ar["α2A"]) +
-        (weights["NMDA"] * pk["NMDA"] * ar["NMDA"]) +
-        (weights["GABA-A"] * pk["GABA-A"] * ar["GABA-A"])
+        (weights.get("5HT2A", 0.0) * pk.get("5HT2A", 0.0) * ar.get("5HT2A", 0.0)) +
+        (weights.get("D2", 0.0) * pk.get("D2", 0.0) * ar.get("D2", 0.0)) +
+        (weights.get("NET", 0.0) * pk.get("NET", 0.0) * ar.get("NET", 0.0)) +
+        (weights.get("α2A", 0.0) * pk.get("α2A", 0.0) * ar.get("α2A", 0.0)) +
+        (weights.get("NMDA", 0.0) * pk.get("NMDA", 0.0) * ar.get("NMDA", 0.0)) +
+        (weights.get("GABA-A", 0.0) * pk.get("GABA-A", 0.0) * ar.get("GABA-A", 0.0))
     )
     
-    d2_risk = (lambdas["D2"] * pk["D2"]) if ar["D2"] < 0 else 0.0
+    d2_risk = (lambdas["D2"] * pk.get("D2", 0.0)) if ar.get("D2", 0.0) < 0 else 0.0
     qtc_risk_deduction = lambdas["QTc"] * drug_data["Risk_QTc"] * 5.0
     
     u_risk = (
-        (lambdas["H1"] * pk["H1"]) +
-        (lambdas["α1"] * pk["α1"]) +
+        (lambdas["H1"] * pk.get("H1", 0.0)) +
+        (lambdas["α1"] * pk.get("α1", pk.get("alpha1", 0.0))) +
         d2_risk +
         qtc_risk_deduction
     )
     
     c_patient = 3.0 if mmse_score < 10 else (2.0 if mmse_score <= 20 else 1.0)
-    p_acb = (c_patient * 2.0) if pk["M1"] >= 7.0 else 0.0
+    p_acb = (c_patient * 2.0) if pk.get("M1", 0.0) >= 7.0 else 0.0
     p_organ = (lambdas["renal"] * drug_data["Fr_renal"] * 4.0) + (lambdas["hepatic"] * drug_data["Fr_hepatic"] * 4.0)
     
     spec_penalties = calculate_special_condition_penalties(drug, drug_data, patient_profile)
@@ -409,9 +410,9 @@ def calculate_p3_match_score(drug, drug_data, weights, lambdas, mmse_score, deme
     if hard_locked:
         m_j = -999.0
         
-    p_sedation = min(95, int(sigmoid(pk["H1"] * lambdas["H1"], 0.5, 3.5) * 100))
-    p_orthostasis = min(95, int(sigmoid(pk["α1"] * lambdas["α1"], 0.5, 3.5) * 100))
-    p_eps = min(95, int(sigmoid(pk["D2"] * lambdas["D2"], 0.5, 4.0) * 100)) if ar["D2"] < 0 else 5
+    p_sedation = min(95, int(sigmoid(pk.get("H1", 0.0) * lambdas["H1"], 0.5, 3.5) * 100))
+    p_orthostasis = min(95, int(sigmoid(pk.get("α1", pk.get("alpha1", 0.0)) * lambdas["α1"], 0.5, 3.5) * 100))
+    p_eps = min(95, int(sigmoid(pk.get("D2", 0.0) * lambdas["D2"], 0.5, 4.0) * 100)) if ar.get("D2", 0.0) < 0 else 5
     
     # Potentiated EPS Risk via AChEI + SSRI + Antipsychotic Combination
     has_ssri = patient_profile.get('has_ssri', False)
@@ -568,11 +569,12 @@ with c_bio2:
     hepatic_status = st.selectbox("Hepatic Function Status", list(HEPATIC_MAPPING.keys()), index=0)
     lft_val = HEPATIC_MAPPING[hepatic_status]
 
-# Special Conditions Input Sub-Section
+# Special Conditions Input Sub-Section (Integer Seizure Frequency Rounding)
 with st.expander("🩺 Special Conditions Risk Inputs (Epilepsy, NCDs, Comorbidities)", expanded=False):
     col_sc1, col_sc2 = st.columns(2)
     with col_sc1:
-        seizure_freq_val = st.number_input("Seizure Frequency (events/year)", 0.0, 50.0, 0.0, step=0.5)
+        seizure_freq_input = st.number_input("Seizure Frequency (events/year)", 0.0, 50.0, 0.0, step=0.5)
+        seizure_freq_val = int(np.round(seizure_freq_input))  # Rounded to integer
         active_aeds_val = st.multiselect(
             "Active Anti-Epileptic Drugs (AEDs)", 
             ["carbamazepine", "valproate", "lamotrigine", "gabapentin", "phenytoin", "levetiracetam"]
@@ -641,6 +643,13 @@ for pdrug in combined_prior_drugs:
         combined_aeds_set.add(AED_NAME_MAP[pdrug])
 active_aeds_final = list(combined_aeds_set)
 
+# Mandatory Epilepsy Protocol Banner
+if seizure_freq_val > 0 or len(active_aeds_final) > 0:
+    st.warning(
+        f"⚠️ **EPILEPSY PROTOCOL ACTIVE**: Baseline AED dosing is **strictly mandatory** (Current integer seizure frequency: **{seizure_freq_val} events/year**). "
+        f"Do NOT reduce or discontinue AED dosages during psychotropic cross-titration or regimen optimization."
+    )
+
 # Stratify Branch A vs Branch B based on active drug burden
 polypharmacy_branch = active_psychotropic_count >= 2
 
@@ -659,7 +668,7 @@ else:
 patient_profile = {
     "age": float(age_val),
     "frailty_score": frailty_val,
-    "seizure_freq_year": seizure_freq_val,
+    "seizure_freq_year": float(seizure_freq_val),
     "active_aeds": active_aeds_final,
     "hba1c": hba1c_val,
     "bmi": bmi_val,
@@ -808,6 +817,14 @@ else:
         unsafe_allow_html=True
     )
 
+    # Organ Monitoring Callout Alerts
+    if top_drug['Drug'] == "Gabapentin":
+        st.info(f"🩺 **Organ Monitoring Alert (Renal)**: 100% Renal Elimination ($Fr_\\text{{renal}} = 1.00$). Current eGFR = {egfr_val} mL/min. Strict renal dose titration required.")
+    elif top_drug['Drug'] == "Valproic Acid":
+        st.info(f"🩺 **Organ Monitoring Alert (Hepatic)**: High Hepatic Metabolism ($Fr_\\text{{hepatic}} = 0.95$). Baseline LFTs, CBC, and plasma level monitoring (target 50–80 µg/mL) required.")
+    elif top_drug['Drug'] == "Memantine" and egfr_val < 30:
+        st.info(f"🩺 **Organ Monitoring Alert (Renal)**: High Renal Elimination ($Fr_\\text{{renal}} = 0.80$). Current eGFR = {egfr_val} mL/min (< 30 mL/min). Maximum dose cap: 10 mg daily.")
+
     if top_drug['Clinical Correlation Note']:
         st.info(f"💡 **Clinical Correlation Note:** {top_drug['Clinical Correlation Note']}")
 
@@ -853,10 +870,17 @@ with st.expander("🔄 Sequential Cross-Titration & Dose Optimization Protocol",
                 options=distinct_priors,
                 key="cross_taper_selector"
             )
-            st.markdown(f"### Cross-Titration: Taper **{prior_selected}** $\\rightarrow$ Initiate **{top_drug['Drug']}**")
-            tt_df = generate_cross_titration_schedule(prior_selected, top_drug["Drug"])
-            if tt_df is not None:
-                st.table(tt_df)
+            # Epilepsy Safety Lock Check
+            if (seizure_freq_val > 0 or len(active_aeds_final) > 0) and prior_selected in AED_NAME_MAP:
+                st.error(
+                    f"⛔ **CRITICAL EPILEPSY SAFETY LOCK**: **{prior_selected}** is an essential AED in a patient with active seizure history/epilepsy. "
+                    f"Baseline AED dosing is mandatory; do NOT taper or discontinue baseline AEDs during psychotropic cross-titration."
+                )
+            else:
+                st.markdown(f"### Cross-Titration: Taper **{prior_selected}** $\\rightarrow$ Initiate **{top_drug['Drug']}**")
+                tt_df = generate_cross_titration_schedule(prior_selected, top_drug["Drug"])
+                if tt_df is not None:
+                    st.table(tt_df)
         elif top_drug["Drug"] not in combined_prior_drugs:
             st.info("Treatment Naive: Initiate top candidate at starting dose without cross-tapering.")
     else:
@@ -942,9 +966,9 @@ with st.expander("🧮 Algorithmic Architecture & Clinical Rationale", expanded=
 
     $$P_{\text{special}} = P_{\text{epilepsy}} + P_{\text{NCD}} + P_{\text{age}}$$
 
-    * **Epilepsy & AED Penalty ($P_{\text{epilepsy}}$):** Evaluates seizure threshold reduction, CYP3A4 induction by Dilantin/Carbamazepine, and AED DDIs[span_1](start_span)[span_1](end_span).
-    * **Non-Communicable Diseases Penalty ($P_{\text{NCD}}$):** Scales metabolic risk via $H_1$/$5\text{-HT}_{2\text{C}}$ binding, vascular volatility via $\alpha_1$, and thyroid-mediated QTc amplification[span_2](start_span)[span_2](end_span).
-    * **Extreme Age Penalty ($P_{\text{age}}$):** Exponentially scales frailty and anticholinergic vulnerability for patients $> 75$ years[span_3](start_span)[span_3](end_span).
+    * **Epilepsy & AED Penalty ($P_{\text{epilepsy}}$):** Evaluates seizure threshold reduction, CYP3A4 induction by Dilantin/Carbamazepine, and AED DDIs.
+    * **Non-Communicable Diseases Penalty ($P_{\text{NCD}}$):** Scales metabolic risk via $H_1$/$5\text{-HT}_{2\text{C}}$ binding, vascular volatility via $\alpha_1$, and thyroid-mediated QTc amplification.
+    * **Extreme Age Penalty ($P_{\text{age}}$):** Exponentially scales frailty and anticholinergic vulnerability for patients $> 75$ years.
 
     ---
 
@@ -956,8 +980,8 @@ with st.expander("🧮 Algorithmic Architecture & Clinical Rationale", expanded=
 
     **4. Stratified Pathway & Multi-Agent Combination Engine**
     
-    * **Branch A (Low Burden, < 2 Active Psychotropics):** Standard monotherapy trial hierarchy[span_4](start_span)[span_4](end_span).
-    * **Branch B (Polypharmacy, $\ge 2$ Active Psychotropics):** Direct escalation to combination optimization and low-DDI agents (e.g., Brexpiprazole)[span_5](start_span)[span_5](end_span).
+    * **Branch A (Low Burden, < 2 Active Psychotropics):** Standard monotherapy trial hierarchy.
+    * **Branch B (Polypharmacy, $\ge 2$ Active Psychotropics):** Direct escalation to combination optimization and low-DDI agents (e.g., Brexpiprazole).
     """)
 
 # -----------------------------------------------------------------------------
