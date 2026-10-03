@@ -6,7 +6,7 @@ import itertools
 # Page Configuration & Header Setup
 st.set_page_config(page_title="BPSD Compass Prototype (P5 - Upgraded)", layout="wide")
 st.title("BPSD Compass Prototype (P5)")
-st.caption("Parameter-driven decision support tools — Integrated Pathway & DDI Safety Engine")
+st.caption("Parameter-driven decision support tools")
 
 ascii_header = r"""
 								THE DEATH OF PEACE OF MIND
