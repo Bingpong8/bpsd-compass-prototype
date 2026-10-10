@@ -465,7 +465,7 @@ COMBO_SUPERIORITY_DELTA = 0.05
 COMBO_STRONG_MARGIN = 0.15
 COMBO_U_TARGET = 0.50
 
-# Non-database agents in the audit: hazards they contribute to the patient's *background* risk
+# Non-database agent: hazards they contribute to the patient's *background* risk #PLACEHOLDER
 NONDB_BACKGROUND_HAZARD = {
     "Trihexyphenidyl (Anticholinergic)": {"cognition": 0.60, "sedation": 0.15},
     "Benztropine (Anticholinergic)":     {"cognition": 0.60, "sedation": 0.15},
@@ -480,8 +480,6 @@ SEROTONERGIC_DRUGS = ["Escitalopram", "Sertraline", "Venlafaxine", "Vortioxetine
 LEWY_SUBTYPES = ["Dementia with Lewy Bodies (DLB)", "Parkinson's Disease Dementia (PDD)"]
 ANTIPSYCHOTIC_CATEGORIES = ["Atypical Antipsychotic", "Typical Antipsychotic"]
 
-
-
 # Per-entry affinity uncertainty from the database (wider where sources disagree)
 PKI_SIGMA = {(d, r): s for d, dd in DRUG_DATABASE.items() for r, s in dd.get("pKi_sigma", {}).items()}
 
@@ -495,7 +493,7 @@ PKI_SIGMA = {(d, r): s for d, dd in DRUG_DATABASE.items() for r, s in dd.get("pK
 #   U = unverified: carried over from the previous version (not re-checked)
 #   F = floor/censored (pKi <= 5.0: reported weak/none; occupancy set to 0)
 #   X = no binding assumed (pKi 0.0)
-#   P = proxy: functional stand-in, not a true binding affinity (e.g., GABA-A rows for valproate/gabapentin)
+#   P = proxy: functional stand-in, not a true binding affinity (e.g. GABA-A for valproate/gabapentin)
 STATUS_LEGEND = {
     "V": "Verified (consistent with literature)", "C": "Corrected to literature", "U": "Unverified (carried over)",
     "F": "Floor / censored (weak or none reported)", "X": "No binding assumed", "P": "Proxy (not a true affinity)",
@@ -568,7 +566,7 @@ PKI_EVIDENCE = {   # (drug, receptor): (reported human Ki in nM, sources)
 }
 
 # -----------------------------------------------------------------------------
-# 3.1b CredibleMeds categories -> hazard bands; label PK calibration points
+# 3.1b CredibleMeds categories -> hazard bands; label PK calibration points for QTc
 # -----------------------------------------------------------------------------
 QT_BANDS = {"KR": (0.70, 1.00), "CR": (0.25, 0.55), "PR": (0.15, 0.35), "NL": (0.00, 0.15)}
 QT_CATEGORY_NAMES = {"KR": "Known risk of TdP", "CR": "Conditional risk", "PR": "Possible risk",
@@ -583,15 +581,12 @@ PK_CALIBRATION_POINTS = [   # (drug, setting, g_ren = fraction of normal GFR (ap
     ("Risperidone", "renal disease (clearance -60%; g assumed 0.30)", 0.30, 2.50, "label as cited in a psychotropic renal-disease review"),
 ]
 
-
 def implied_fr_ren(g_ren, auc_ratio):
     """Fr_ren implied by an observed AUC ratio: AUC ratio = 1 / (1 - Fr_ren (1 - g))."""
     return (1.0 - 1.0 / auc_ratio) / (1.0 - g_ren)
 
-
 def _mean_pki(kis):
     return 9.0 - float(np.mean([np.log10(k) for k in kis]))
-
 
 def pki_audit_df():
     rows = []
@@ -602,7 +597,6 @@ def pki_audit_df():
                      "Δ (DB − evidence)": round(dd["pKi"][rec] - lit, 2), "n sources": len(kis),
                      "Status": dd["pKi_status"][rec], "Sources": src})
     return pd.DataFrame(rows)
-
 
 def db_status_df():
     rows = []
@@ -640,7 +634,6 @@ def seizure_df():
     return pd.DataFrame([{"Drug": d, "convulsant_index": dd["convulsant_index"], "Status": dd["seizure_status"], "Basis": dd["seizure_note"]}
                          for d, dd in DRUG_DATABASE.items()])
 
-
 def delphi_template_df(kind):
     """Blank expert-rating sheets for the judgment-based parameters (export, circulate, re-import)."""
     cols = {f"Expert {i}": "" for i in range(1, 11)}
@@ -654,9 +647,8 @@ def delphi_template_df(kind):
     return pd.DataFrame([{"Curve": n, "Current x0": p[0], "Current k": p[1], "Range": f"{p[2]}–{p[3]}",
                           "Expert x0 (risk doubles at)": "", "Expert k (slope)": "", "Cohort evidence / OR": ""} for n, p in VULN_PARAMS.items()])
 
-
 # -----------------------------------------------------------------------------
-# 3.2 Parameter register: every placeholder, its calibration status in this version, and next steps
+# 3.2 Parameter register: every placeholder, calibration status in this version, and next steps
 # -----------------------------------------------------------------------------
 REGISTER_COLUMNS = ["ID", "Group", "Parameter (current value)", "Status", "Applied in this version", "Why uncertain",
                     "Suggested source / value", "How to calibrate", "How to validate", "Priority"]
@@ -760,11 +752,11 @@ VALIDATION_PLAN = [
 
 IMPROVEMENT_COLUMNS = ["Phase", "Workstream", "Action", "Deliverable / success metric", "Depends on"]
 IMPROVEMENT_PLAN = [
-    ("1 · 0–3 months", "Data", "Script PDSP/ChEMBL/IUPHAR extraction for all 20 drugs × 11 receptors; store replicate Ki with assay metadata; replace all U/F entries", "100% of affinity inputs V or C; provenance columns in the DB", "—"),
-    ("1 · 0–3 months", "Data", "Verify unresolved items: SERT floors for quetiapine/olanzapine/brexpiprazole/pimavanserin, QT category of carbamazepine and mianserin, Fr of 7 unverified drugs, dosage text", "Zero 'unverified' flags on safety-critical fields", "Extraction script"),
-    ("1 · 0–3 months", "Model scope", "Replace proxy rows (GABA-A for valproate/gabapentin) by mechanism-appropriate targets (α2δ, GABA-transaminase/Na-channel potency); add DAT, 5-HT1A, α2C, D3 and run an ablation study to keep only targets that change rankings", "No proxy (P) entries; panel justified by ablation", "Data extraction"),
-    ("1 · 0–3 months", "Elicitation", "Run Delphi (κ, ζ, β) and vulnerability-curve rating with ≥10 clinicians and caregiver input using the exported templates", "Calibrated κ/ζ/β with inter-rater agreement (IQR ≤ 0.2)", "Templates (included)"),
-    ("2 · 3–6 months", "Pharmacology", "Replace anchors by dose-occupancy curves (PET/PK); add geriatric clearance; per-drug E_MAX; per-pair DDI multipliers", "Predicted occupancy within ±10 pp of PET", "Data, PET literature"),
+    ("1 · 0–1 months", "Data", "Script PDSP/ChEMBL/IUPHAR extraction for all 20 drugs × 11 receptors; store replicate Ki with assay metadata; replace all U/F entries", "100% of affinity inputs V or C; provenance columns in the DB", "—"),
+    ("1 · 0–1 months", "Data", "Verify unresolved items: SERT floors for quetiapine/olanzapine/brexpiprazole/pimavanserin, QT category of carbamazepine and mianserin, Fr of 7 unverified drugs, dosage text", "Zero 'unverified' flags on safety-critical fields", "Extraction script"),
+    ("1 · 0–1 months", "Model scope", "Replace proxy rows (GABA-A for valproate/gabapentin) by mechanism-appropriate targets (α2δ, GABA-transaminase/Na-channel potency); add DAT, 5-HT1A, α2C, D3 and run an ablation study to keep only targets that change rankings", "No proxy (P) entries; panel justified by ablation", "Data extraction"),
+    ("1 · 1–2 months", "Elicitation", "Run Delphi (κ, ζ, β) and vulnerability-curve rating with ≥10 clinicians and caregiver input using the exported templates", "Calibrated κ/ζ/β with inter-rater agreement (IQR ≤ 0.2)", "Templates (included)"),
+    ("2 · 2–3 months", "Pharmacology", "Replace anchors by dose-occupancy curves (PET/PK); add geriatric clearance; per-drug E_MAX; per-pair DDI multipliers", "Predicted occupancy within ±10 pp of PET", "Data, PET literature"),
     ("2 · 3–6 months", "Safety", "Concentration–QTc slopes per drug; calibrate hazards (β) to incidence; fit vulnerability curves and hyponatremia amplifiers to cohort ORs", "Calibration slope 0.8–1.2", "Cohort data access"),
     ("2 · 3–6 months", "Statistics", "Hierarchical Bayesian calibration replacing hand-set σ; automated Sobol sensitivity with stability criteria", "90% interval coverage ≥ 85%", "Calibrated inputs"),
     ("2 · 3–6 months", "Engineering", "Move constants/DB to versioned JSON/YAML with checksums; unit tests in CI; audit log of inputs, outputs and DB version; separate model package from UI", "Reproducible runs; CI green", "—"),
@@ -783,14 +775,12 @@ IMPROVEMENT_PLAN = [
 def _sig(z):
     return 1.0 / (1.0 + np.exp(-z))
 
-
 def rescaled_logistic(x, x0, k, xmin, xmax, invert=False):
     """Logistic vulnerability rescaled so that lambda(xmin)=0 and lambda(xmax)=1 exactly."""
     x = np.clip(x, xmin, xmax)
     lo, hi = _sig(k * (xmin - x0)), _sig(k * (xmax - x0))
     lam = np.clip((_sig(k * (x - x0)) - lo) / (hi - lo), 0.0, 1.0)
     return 1.0 - lam if invert else lam
-
 
 class Sampler:
     """Draws uncertain model inputs. n == 1 returns nominal (median) values.
@@ -804,7 +794,6 @@ class Sampler:
         "severity": "Severity weights (ζ)",
         "vulnerability": "Vulnerability curves (x0, k)",
     }
-
     def __init__(self, n=1, seed=0, vary=None):
         self.n = int(n)
         self.rng = np.random.default_rng(seed)
@@ -870,7 +859,6 @@ class Sampler:
             return np.full(self.n, x0), np.full(self.n, k)
         return self._memo(("vuln", name), make)
 
-
 # -----------------------------------------------------------------------------
 # 4.2 NEED WEIGHTS & PATIENT VULNERABILITY
 # -----------------------------------------------------------------------------
@@ -891,7 +879,6 @@ def compute_need(v, S):
             s[rec] = np.sign(net)
         return w, s
     return S._memo(("need",), make)
-
 
 def patient_vulnerability(ctx, S):
     """lambda_d in [0,1] for each risk domain (rescaled logistics + frailty/thyroid amplifiers)."""
@@ -920,7 +907,6 @@ def patient_vulnerability(ctx, S):
         return lam
     return S._memo(("vulnerability_all",), make)
 
-
 # -----------------------------------------------------------------------------
 # 4.3 EXPOSURE & OCCUPANCY
 # -----------------------------------------------------------------------------
@@ -933,12 +919,10 @@ def clearance_fraction(drug, dd, ctx):
     f_hep = INDUCER_HEPATIC_CL_FACTOR if induced else 1.0
     return 1.0 - dd["Fr_renal"] * (1.0 - g_ren) - dd["Fr_hepatic"] * (1.0 - g_hep * f_hep)
 
-
 def dose_factor(phi_raw, ctx):
     if ctx["dose_policy"] == "auto":
         return float(min(1.0, np.clip(phi_raw, PHI_MIN, PHI_MAX)))
     return 1.0
-
 
 def drug_pharmacology(drug, dd, ctx, S, delta=None):
     """Exposure, unbound target concentration and occupancy ratios x_r = C / Ki_r."""
@@ -967,7 +951,6 @@ def drug_pharmacology(drug, dd, ctx, S, delta=None):
         eff[r] = a - RECEPTOR_PROFILE[r]["tone"]
     return {"name": drug, "dd": dd, "phi_raw": phi_raw, "phi": phi, "E": 1.0 / phi, "delta": delta,
             "m": m, "x": x, "eff": eff, "conc": conc}
-
 
 # -----------------------------------------------------------------------------
 # 4.4 HAZARDS & REGIMEN SCORING
@@ -1015,7 +998,6 @@ def background_items(ctx, S, exclude):
                            lambda dn=dn: drug_pharmacology(dn, DRUG_DATABASE[dn], ctx, S, delta=1.0)))
     return out
 
-
 def nondb_background(ctx, S):
     """Independent background hazards from non-database agents (e.g., anticholinergics)."""
     surv = {d: np.ones(S.n) for d in DOMAINS}
@@ -1023,7 +1005,6 @@ def nondb_background(ctx, S):
         for d, val in NONDB_BACKGROUND_HAZARD.get(nd, {}).items():
             surv[d] = surv[d] * (1.0 - val)
     return {d: 1.0 - sv for d, sv in surv.items()}
-
 
 def score_regimen(items, ctx, S, v, prior_history):
     """Utility U, marginal risks dR_d, soft burden rho and net score M for 1-2 candidate agents.
@@ -1088,7 +1069,6 @@ def score_regimen(items, ctx, S, v, prior_history):
             "hist_pen": zeta_h * rho, "M": M, "qtc_ok": qtc_ok, "dqt": dqt,
             "indicated": U > U_MIN, "theta": theta_c, "contrib": contrib, "w": w, "s": s}
 
-
 # -----------------------------------------------------------------------------
 # 4.5 STAGE A CONSTRAINTS & CLINICAL NOTES
 # -----------------------------------------------------------------------------
@@ -1109,7 +1089,6 @@ def static_lock_reasons(drug, dd, ctx, prior_history):
         reasons.append("Contraindicated: Full D2 antagonist in DLB/PDD etiology")
     return reasons
 
-
 def clinical_notes(drug, dd, ctx, prior_history, theta_m1):
     note = ""
     hist = prior_history.get(drug)
@@ -1128,8 +1107,6 @@ def clinical_notes(drug, dd, ctx, prior_history, theta_m1):
     if dd["pKi"].get("SERT", 0.0) >= SERT_ACTIVE_PKI or dd.get("hypoNa_index", 0.0) >= 0.30:
         note += "🧂 Hyponatremia surveillance: check serum Na at baseline and at ~2 and ~4 weeks (higher risk with age, thiazides, low baseline Na). "
     return note
-
-
 # -----------------------------------------------------------------------------
 # 4.6 CANDIDATE EVALUATION, MONTE CARLO & SENSITIVITY
 # -----------------------------------------------------------------------------
@@ -1145,7 +1122,6 @@ def evaluate_single(drug, dd, ctx, S, v, prior_history):
     feasible = static_ok & sc["qtc_ok"] & sc["indicated"]
     M = np.where(feasible, sc["M"], -np.inf)
     return {"drug": drug, "ph": ph, "sc": sc, "locks": locks, "feasible": feasible, "M": M}
-
 
 def result_row(res, ctx, prior_history):
     """Scalarise a nominal (n=1) evaluation into the dictionary used by the UI."""
@@ -1182,7 +1158,6 @@ def result_row(res, ctx, prior_history):
     }
     return row
 
-
 def run_monte_carlo(ctx, v, prior_history, n, seed=2026):
     """Propagate input uncertainty to M_j; returns per-drug rank-first probability and intervals."""
     S = Sampler(n, seed)
@@ -1205,7 +1180,6 @@ def run_monte_carlo(ctx, v, prior_history, n, seed=2026):
         }
     return out
 
-
 def variance_shares(drug, ctx, v, prior_history, n, seed=2027):
     """One-at-a-time variance contribution of each uncertainty group to M for one drug."""
     var = {}
@@ -1216,8 +1190,6 @@ def variance_shares(drug, ctx, v, prior_history, n, seed=2027):
         var[g] = float(np.var(m)) if len(m) > 2 else 0.0
     tot = sum(var.values())
     return {g: (val / tot if tot > 0 else 0.0) for g, val in var.items()}
-
-
 # -----------------------------------------------------------------------------
 # 4.7 COMBINATION REGIMENS & CROSS-TITRATION
 # -----------------------------------------------------------------------------
@@ -1244,7 +1216,6 @@ def evaluate_combination_regimens(point_rows, ctx, S0, v, prior_history):
                 "score": round(100 * best["M"], 1), "margin": round(100 * best["margin"], 1)}
     return {"mode": "MONOTHERAPY", "is_viable": False}
 
-
 def generate_cross_titration_schedule(prior_drug, target_drug):
     if not prior_drug or prior_drug == target_drug:
         return None
@@ -1254,7 +1225,6 @@ def generate_cross_titration_schedule(prior_drug, target_drug):
         {"Phase": "Days 8–11", "Prior Agent Action": f"Taper {prior_drug} to 25% dose", "New Agent Action": f"Titrate {target_drug} toward target dose", "Monitoring": "NPI symptom trajectory"},
         {"Phase": "Day 12+", "Prior Agent Action": f"Discontinue {prior_drug}", "New Agent Action": f"Optimize {target_drug} target dose", "Monitoring": "Full CGI-I / NPI-Q re-assessment"}
     ])
-
 # =============================================================================
 # 5. VERIFICATION: SELF-CHECKS
 # =============================================================================
@@ -1268,18 +1238,15 @@ def _test_ctx(**kw):
     ctx.update(kw)
     return ctx
 
-
 def _test_v(**kw):
     v0 = {k: 0.0 for k in ["delusions", "hallucinations", "agitation", "depression", "anxiety", "euphoria", "apathy",
                            "disinhibition", "irritability", "motor", "sleep", "appetite"]}
     v0.update(kw)
     return v0
 
-
 def _rows(ctx, v, S=None):
     S = S or Sampler(1)
     return {nm: result_row(evaluate_single(nm, dd, ctx, S, v, {}), ctx, {}) for nm, dd in DRUG_DATABASE.items()}
-
 
 def run_self_checks():
     """Verification + face-validity checks. Returns a list of dicts (Check, Result, Detail)."""
@@ -1477,7 +1444,7 @@ with c_bio2:
 with st.expander("🩺 Special Conditions Risk Inputs (Epilepsy, NCDs, Comorbidities)", expanded=False):
     col_sc1, col_sc2 = st.columns(2)
     with col_sc1:
-        seizure_freq_input = st.number_input("Seizure Frequency (events/year)", 0.0, 50.0, 0.0, step=0.5)
+        seizure_freq_input = st.number_input("Seizure Frequency (events/year)", 0, 50, 0, step=1)
         seizure_freq_val = int(np.round(seizure_freq_input))  # Rounded to integer
         active_aeds_val = st.multiselect(
             "Active Anti-Epileptic Drugs (AEDs)", 
