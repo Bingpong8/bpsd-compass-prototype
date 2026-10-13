@@ -576,7 +576,8 @@ def effect_size_concordance_df():
     df = pd.DataFrame(rows)
     for domain in EFFECT_SIZE_OBS:
         sub = df[df["Domain"] == domain]
-        rho[domain] = (float(sub["Observed benefit (−SMD)"].corr(sub["Model utility U (×100)"], method="spearman")), len(sub))
+        # Spearman = Pearson correlation of average ranks (no SciPy dependency)
+        rho[domain] = (float(sub["Observed benefit (−SMD)"].rank().corr(sub["Model utility U (×100)"].rank())), len(sub))
     return df, rho
 
 
