@@ -1,13 +1,3 @@
-"""
-app.py: Streamlit user interface of the BPSD Compass prototype (framework v3.1).
-
-Run with:  streamlit run app.py
-
-  database.py  drug database, constants, evidence tables, mappings, parameter register
-  engine.py    occupancy / pharmacokinetics / hazard scoring, Monte Carlo, combinations, self-checks
-  app.py       patient inputs, decision engine call, dashboards, calibration center, rationale, references
-NOT validated for clinical use.
-"""
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -15,7 +5,6 @@ import streamlit as st
 from database import *   # noqa: F401,F403
 from engine import *     # noqa: F401,F403
 
-# Page Configuration & Header Setup
 st.set_page_config(page_title="BPSD Compass Prototype (P5 - Framework v3.1)", layout="wide")
 st.title("BPSD Compass Prototype (P5)")
 st.caption("Parameter-driven decision support tools — occupancy-based framework v3.1")
@@ -37,19 +26,11 @@ ascii_header = r"""
 							     Dolor et Astra, Nihil est Veritas
 """
 st.code(ascii_header, language=None)
-
-# Session state and calibrated/elicited parameters (reset on every run because imported modules persist between reruns)
-# Initialize Session State for Interactive Rule-Out
 if "ruled_out" not in st.session_state:
     st.session_state.ruled_out = set()
 apply_elicited_overrides(st.session_state.get("elicited_params"))
 
-# =============================================================================
-# 6. USER INTERFACE
-# =============================================================================
-# -----------------------------------------------------------------------------
-# 6.1 SETTINGS & WARNINGS
-# -----------------------------------------------------------------------------
+# UI
 st.warning(
     "⚠️ **Framework v3.1 (occupancy-based, audited and partly calibrated database).** Reference anchors, severity weights, risk liabilities and vulnerability curves are "
     "partly calibrated: see the Calibration, Audit & Improvement Center. This prototype is not validated for clinical use."
