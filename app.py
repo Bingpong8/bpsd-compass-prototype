@@ -359,7 +359,7 @@ else:
         st.session_state.ruled_out.add(top_drug["Drug"])
         st.rerun()
 
-# --- Dashboards ---
+# Dashboards
 with st.expander("Sequential Cross-Titration & Dose Optimization Protocol", expanded=True):
     distinct_priors = [d for d in combined_prior_drugs if d != top_drug["Drug"]]
 
@@ -475,7 +475,7 @@ col_ph1.metric("Agitation-Psychosis Cluster", f"{p_agitation_psychosis*100:.0f}%
 col_ph2.metric("Affective-Lability Cluster", f"{p_affective*100:.0f}%")
 col_ph3.metric("Apathy-Executive Cluster", f"{p_apathy_executive*100:.0f}%")
 
-# --- Calibration, audit & improvement center ---
+# Calibration, audit & improvement center
 with st.expander("Calibration, Audit & Improvement Center", expanded=False):
     reg_df = pd.DataFrame(build_placeholder_register(), columns=REGISTER_COLUMNS)
     st.markdown("### 1. Calibration status at a glance")
@@ -485,7 +485,7 @@ with st.expander("Calibration, Audit & Improvement Center", expanded=False):
     st.dataframe(pr_df, use_container_width=True)
     st.markdown("### 2. Parameter register: status, what was applied, and how to calibrate / validate")
     st.dataframe(reg_df, use_container_width=True)
-    st.download_button("⬇️ Download register (CSV)", reg_df.to_csv(index=False).encode("utf-8"),
+    st.download_button("Download register (CSV)", reg_df.to_csv(index=False).encode("utf-8"),
                        file_name="parameter_register.csv", mime="text/csv")
     st.markdown("### 3. Improvement roadmap")
     st.dataframe(pd.DataFrame(IMPROVEMENT_PLAN, columns=IMPROVEMENT_COLUMNS), use_container_width=True)
@@ -548,7 +548,7 @@ with st.expander("Calibration, Audit & Improvement Center", expanded=False):
         n_fail = int((chk["Result"] == "FAIL").sum())
         (st.success if n_fail == 0 else st.error)(f"{len(chk) - n_fail}/{len(chk)} checks passed.")
 
-# --- Rationale ---
+# Rationale
 with st.expander("Algorithmic Architecture & Clinical Rationale", expanded=False):
     st.markdown(r"""
     This tool uses an **occupancy-based, two-stage multi-criteria model**: hard constraints first (Stage A), then a bounded utility–risk score (Stage B). Every term is dimensionless and bounded.
@@ -607,7 +607,6 @@ with st.expander("Algorithmic Architecture & Clinical Rationale", expanded=False
     * **Branch B (Polypharmacy, $\ge 2$ Active Psychotropics):** Direct escalation to combination optimization, scored with the same occupancy/hazard rules (competitive binding, additive ΔQTc, noisy-OR hazards).
 
     **Calibration status (v3.1):** EPS threshold 78% and slope from Kapur 2000; PET dose–occupancy anchors (risperidone, olanzapine, haloperidol, brexpiprazole, vortioxetine) and SERT occupancy ≈80%; drug-specific carbamazepine induction ratios; E_MAX = 2×; κ for agitation/psychosis from network meta-analyses (SMD/0.5); sedation β from mirtazapine somnolence; hyponatremia β, indices and amplifiers from older-adult event rates and relative risks; vulnerability centres from clinical cut-offs (Morse 45, orthostatic 20 mmHg, QTc 470 ms, Na 135 mmol/L); affinity noise σ estimated from multi-source Ki. Severity weights ζ remain judgment-based (expert-elicitation import available).
-
     **Known limitations:** reference anchors, $\zeta$, $\beta$, and vulnerability curves are uncalibrated placeholders; SERT is modelled (literature Ki; PET occupancy anchors); the database was audited against the literature (see the Calibration Center), but other targets (e.g., sodium channels for lamotrigine/carbamazepine, 5-HT1A) are not, so those agents may show no therapeutic engagement; hERG data are not in the database, so QTc uses the per-drug risk index scaled by exposure.
     """)
 
