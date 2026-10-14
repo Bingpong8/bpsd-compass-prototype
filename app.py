@@ -324,14 +324,14 @@ else:
     )
 
     if top_drug['Drug'] == "Gabapentin":
-        st.info(f"🩺 **Organ Monitoring Alert (Renal)**: 100% Renal Elimination ($Fr_\\text{{renal}} = 1.00$). Current eGFR = {egfr_val} mL/min; exposure factor E = {top_drug['Exposure Factor (E)']}. Strict renal dose titration required.")
+        st.info(f"**Organ Monitoring Alert (Renal)**: 100% Renal Elimination ($Fr_\\text{{renal}} = 1.00$). Current eGFR = {egfr_val} mL/min; exposure factor E = {top_drug['Exposure Factor (E)']}. Strict renal dose titration required.")
     elif top_drug['Drug'] == "Valproic Acid":
-        st.info(f"🩺 **Organ Monitoring Alert (Hepatic)**: High Hepatic Metabolism ($Fr_\\text{{hepatic}} = 0.95$); exposure factor E = {top_drug['Exposure Factor (E)']}. Baseline LFTs, CBC, and plasma level monitoring (target 50–80 µg/mL) required.")
+        st.info(f"**Organ Monitoring Alert (Hepatic)**: High Hepatic Metabolism ($Fr_\\text{{hepatic}} = 0.95$); exposure factor E = {top_drug['Exposure Factor (E)']}. Baseline LFTs, CBC, and plasma level monitoring (target 50–80 µg/mL) required.")
     elif top_drug['Drug'] == "Memantine" and egfr_val < 30:
-        st.info(f"🩺 **Organ Monitoring Alert (Renal)**: High Renal Elimination ($Fr_\\text{{renal}} = 0.80$). Current eGFR = {egfr_val} mL/min (< 30 mL/min). Maximum dose cap: 10 mg daily.")
+        st.info(f"**Organ Monitoring Alert (Renal)**: High Renal Elimination ($Fr_\\text{{renal}} = 0.80$). Current eGFR = {egfr_val} mL/min (< 30 mL/min). Maximum dose cap: 10 mg daily.")
 
     if top_drug["Occupancy"]["SERT"] >= 0.30:
-        st.info(f"🧂 **Hyponatremia Monitoring Alert**: SERT occupancy ≈ {100 * top_drug['Occupancy']['SERT']:.0f}%. "
+        st.info(f"**Hyponatremia Monitoring Alert**: SERT occupancy ≈ {100 * top_drug['Occupancy']['SERT']:.0f}%. "
                 f"Baseline Na = {sodium_val:.0f} mmol/L{' with thiazide use' if thiazide_val else ''}; hyponatremia index = {top_drug['Hyponatremia risk']}. "
                 f"Recheck sodium at ~2 and ~4 weeks (and with any new confusion, falls or nausea).")
 
@@ -360,7 +360,7 @@ else:
         st.rerun()
 
 # --- Dashboards ---
-with st.expander("🔄 Sequential Cross-Titration & Dose Optimization Protocol", expanded=True):
+with st.expander("Sequential Cross-Titration & Dose Optimization Protocol", expanded=True):
     distinct_priors = [d for d in combined_prior_drugs if d != top_drug["Drug"]]
 
     if top_drug["Drug"] in combined_prior_drugs:
@@ -396,7 +396,7 @@ with st.expander("📊 Patient-Weighted Marginal Risk Indices (framework v3.1)",
             st.progress(top_drug[key])
             st.caption(f"Index: {top_drug[key]}")
 
-with st.expander("🧬 Receptor Occupancy & Domain Risk Breakdown (top-ranked candidate)", expanded=False):
+with st.expander("Receptor Occupancy & Domain Risk Breakdown (top-ranked candidate)", expanded=False):
     if top_drug["Hard Locked"]:
         st.info("No eligible top candidate to break down.")
     else:
@@ -411,7 +411,7 @@ with st.expander("🧬 Receptor Occupancy & Domain Risk Breakdown (top-ranked ca
         st.caption(f"Projected ΔQTc ≈ {top_drug['Projected dQTc (ms)']} ms; exposure factor E = {top_drug['Exposure Factor (E)']}.")
 
 if mc is not None:
-    with st.expander("🎲 Uncertainty & Sensitivity (Monte Carlo)", expanded=False):
+    with st.expander("Uncertainty & Sensitivity (Monte Carlo)", expanded=False):
         def index_or_none(x):
             return None if np.isnan(x) else round(100 * x, 1)
 
