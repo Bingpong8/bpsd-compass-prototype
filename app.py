@@ -61,7 +61,7 @@ neo_brutalism_css = """
         background-color: var(--bg-color);
         color: var(--text-color);
         background-image: radial-gradient(var(--halftone-dot) 0.01px, transparent 0.01px);
-        background-size: 12px 12px;
+        background-size: 13px 13px;
         font-family: 'Courier New', Courier, 'Consolas', sans-serif;
     }
 
