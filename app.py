@@ -62,7 +62,7 @@ neo_brutalism_css = """
         background-color: var(--bg-color);
         color: var(--text-color);
         /* เปลี่ยนขนาดจุดให้เล็กจิ๋วเหมือนฝุ่น (Particle) ด้วย radial-gradient และ background-size ที่ถี่ขึ้น */
-        background-image: radial-gradient(var(--halftone-dot) 0.8px, transparent 1px);
+        background-image: radial-gradient(var(--halftone-dot) 0.2px, transparent 1px);
         background-size: 6px 6px;
         font-family: 'Courier New', Courier, 'Consolas', sans-serif;
     }
