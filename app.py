@@ -43,7 +43,6 @@ neo_brutalism_css = """
         --shadow-dist: 5px;
         --radius: 0px;
     }
-
     @media (prefers-color-scheme: dark) {
         :root {
             --bg-color: #000000;
@@ -67,11 +66,16 @@ neo_brutalism_css = """
         font-family: 'Courier New', Courier, 'Consolas', sans-serif;
     }
 
-    /* Typography Overrides */
-    h1, h2, h3, h4, h5, h6, p, label, span, div {
-        color: var(--text-color) !important;
-        font-family: 'Consolas', 'Courier New', monospace, sans-serif !important;
-    }
+	/* Typography Overrides */
+	h1, h2, h3, h4, h5, h6, p, label {
+    	color: var(--text-color) !important;
+    	font-family: 'Consolas', 'Courier New', monospace, sans-serif !important;
+	}
+	span:not([data-testid="stIconMaterial"]), 
+	div:not([data-testid="stIconMaterial"]) {
+    	color: var(--text-color) !important;
+    	font-family: 'Consolas', 'Courier New', monospace, sans-serif !important;
+	}
 
     h1 {
         font-size: 2.2rem !important;
@@ -111,20 +115,21 @@ neo_brutalism_css = """
         background-image: radial-gradient(var(--halftone-dot) 12%, transparent 13%);
         background-size: 10px 10px;
     }
+	
+	/* Streamlit Containers & Expanders Override */
+	div[data-testid="stExpander"] {
+    	background-color: var(--card-bg) !important;
+    	border: var(--border-width) solid var(--border-color) !important;
+    	box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
+    	border-radius: var(--radius) !important;
+    	margin-bottom: 1rem !important;
+	}
 
-    /* Streamlit Containers & Expanders Override */
-    div[data-testid="stExpander"] {
-        background-color: var(--card-bg) !important;
-        border: var(--border-width) solid var(--border-color) !important;
-        box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
-        border-radius: var(--radius) !important;
-        margin-bottom: 1rem !important;
-    }
-    div[data-testid="stExpander"] details summary {
-        font-weight: bold !important;
-        font-size: 1.1rem !important;
-        background-color: var(--accent-bg) !important;
-        border-bottom: var(--border-width) solid var(--border-color) !important;
+	div[data-testid="stExpander"] details summary {
+    	font-weight: bold !important;
+    	font-size: 1.1rem !important;
+    	background-color: var(--accent-bg) !important;
+    	border-bottom: var(--border-width) solid var(--border-color) !important;
     }
 
     /* Form Controls & Inputs */
