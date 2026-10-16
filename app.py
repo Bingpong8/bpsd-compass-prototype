@@ -38,7 +38,7 @@ neo_brutalism_css = """
         --card-bg: #FFFFFF;
         --accent-bg: #F0F0F0;
         --halftone-dot: #000000;
-        --halftone-dot-opacity: 0.05; /* ปรับความจางลงให้เหมือนฝุ่นละออง */
+        --halftone-dot-opacity: 0.01; /* ปรับความจางลงให้เหมือนฝุ่นละออง */
         --border-width: 3px;
         --shadow-dist: 5px;
         --radius: 0px;
@@ -53,7 +53,7 @@ neo_brutalism_css = """
             --card-bg: #121212;
             --accent-bg: #1A1A1A;
             --halftone-dot: #FFFFFF;
-            --halftone-dot-opacity: 0.08; /* ปรับความจางสำหรับโหมดมืด */
+            --halftone-dot-opacity: 0.02; /* ปรับความจางสำหรับโหมดมืด */
         }
     }
 
