@@ -61,7 +61,7 @@ neo_brutalism_css = """
         background-color: var(--bg-color);
         color: var(--text-color);
         background-image: radial-gradient(var(--halftone-dot) 0.05px, transparent 0.05px);
-        background-size: 12px 12px;
+        background-size: 14px 14px;
         font-family: 'Courier New', Courier, 'Consolas', sans-serif;
     }
 
@@ -111,7 +111,7 @@ neo_brutalism_css = """
         box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color);
         padding: 20px;
         margin-bottom: 25px;
-        background-image: radial-gradient(var(--halftone-dot) 0.02, transparent 0.01);
+        background-image: radial-gradient(var(--halftone-dot) 0.02px, transparent 0.01px);
         background-size: 10px 10px;
     }
 	
