@@ -1,24 +1,10 @@
-"""
-database.py: knowledge base of the BPSD Compass prototype (framework v3.1).
-
-Contents
-  1. Mappings (NPI severity options, AED names, medication-audit agent lists)
-  2. Knowledge base: audited drug database, model constants, receptor mechanisms, anchors, safety domains
-  3. Evidence and calibration registry: Ki evidence, PET/PK/QT/seizure tables, parameter register,
-     validation and improvement roadmaps, expert-elicitation (Delphi) tools
-No Streamlit code lives here, so the data can be imported and tested on its own.
-NOT validated for clinical use.
-"""
+"""BPSD Compass knowledge base (framework v3.1): mappings, audited drug database, model constants, evidence tables, parameter register.
+No Streamlit code. Not validated for clinical use."""
 import copy
-
 import numpy as np
 import pandas as pd
 
-# =============================================================================
-# 1. MAPPINGS (UI option lists, AED names, agent lists)
-# =============================================================================
-
-# Standardized AED Name Mappings (Including Dilantin / Phenytoin)
+# --- Mappings: UI option lists, AED names, agent lists ---
 AED_NAME_MAP = {
     "Valproic Acid": "valproate",
     "Carbamazepine": "carbamazepine",
@@ -35,7 +21,6 @@ AED_TO_DRUG_NAME = {
     "phenytoin": "Phenytoin (Dilantin)"
 }
 
-# Non-Database Prior Regimen Agents
 MAOI_AGENTS = ["Phenelzine (MAOI)", "Tranylcypromine (MAOI)", "Selegiline (MAOI)"]
 ANTICHOLINERGIC_AGENTS = ["Trihexyphenidyl (Anticholinergic)", "Benztropine (Anticholinergic)"]
 ACHEI_AGENTS = ["Donepezil (AChEI)", "Galantamine (AChEI)", "Rivastigmine (AChEI)"]
@@ -66,14 +51,9 @@ CAREGIVER_CONCERN_MAPPING = {
     "2 - High Concern": 1.5
 }
 
-# =============================================================================
-# 2. KNOWLEDGE BASE
-# =============================================================================
-# -----------------------------------------------------------------------------
-# 2.1 DRUG DATABASE (audited; status codes explained in section 3)
-# -----------------------------------------------------------------------------
-# Fields: pKi (11 receptors; pKi<=5.0 = floor/censored, 0.0 = no binding), pKi_status / pKi_sigma, Fr_renal / Fr_hepatic,
-# Risk_QTc (+ CredibleMeds category), convulsant_index, hypoNa_index (non-SERT SIADH hazard), d2_full_antagonist, dosage, warnings.
+# --- Drug database (audited; status codes explained under STATUS_LEGEND) ---
+# Fields: pKi (11 receptors; <=5.0 floor, 0.0 none) + pKi_status, Fr_renal/Fr_hepatic, Risk_QTc (+ category), convulsant_index,
+# hypoNa_index (non-SERT SIADH hazard), d2_full_antagonist (optional), dosage, warnings.
 DRUG_DATABASE = {
     'Brexpiprazole': {
         "category": 'Atypical Antipsychotic',
@@ -301,18 +281,15 @@ DRUG_DATABASE = {
     },
 }
 
-# -----------------------------------------------------------------------------
-# 2.2 MODEL CONSTANTS, RECEPTOR MECHANISMS, ANCHORS & SAFETY DOMAINS
-# -----------------------------------------------------------------------------
-# Values marked PLACEHOLDER are uncalibrated modelling choices; section 3 lists the status of
-# every parameter, how to calibrate it and how to validate it.
+# --- Model constants, receptor mechanisms, anchors, safety domains ---
+# PLACEHOLDER = uncalibrated; the status of every parameter is in build_placeholder_register().
 
 RECEPTORS_ALL = ["5HT2A", "D2", "NET", "SERT", "α2A", "NMDA", "GABA-A", "H1", "α1", "M1", "5HT2C"]
 THERAPEUTIC_RECEPTORS = ["5HT2A", "D2", "NET", "SERT", "α2A", "NMDA", "GABA-A"]
 
-PHI_MIN = 0.10          # floor on fraction of normal clearance remaining
-PHI_MAX = 8.0           # cap on induction-driven clearance gain (quetiapine clearance x7.5 with carbamazepine) [Ref 21]
-E_MAX_STANDARD = 2.0     # CALIBRATED (provisional): memantine AUC x1.97 in moderate impairment is label-accepted without dose change, labelled reductions start at x2.3-2.5 [Ref 34]
+PHI_MIN = 0.10   # floor on remaining clearance fraction
+PHI_MAX = 8.0   # quetiapine clearance x7.5 with carbamazepine [Ref 21]
+E_MAX_STANDARD = 2.0   # label AUC: memantine x1.97 accepted without dose change, reductions from x2.3-2.5 [Ref 34]
 # Drug-specific clearance ratio under carbamazepine/phenytoin induction (total-clearance ratio R; hepatic multiplier derived from Fr_hepatic)
 INDUCTION_CL_RATIO = {
     "Quetiapine": (7.5, "V", "Carbamazepine 200 mg tid: AUC -87%, Cmax -80%, oral clearance x7.5 [Ref 21]"),
@@ -325,15 +302,14 @@ INDUCTION_CL_DEFAULT = (2.0, "U", "PLACEHOLDER ratio for hepatically cleared dru
 INDUCTION_MIN_FR_HEP = 0.25   # drugs with a smaller hepatic fraction are assumed unaffected by induction
 INDUCER_AEDS = {"carbamazepine", "phenytoin"}
 
-CENSOR_PKI = 5.0        # pKi <= 5.0 in the database = floor/"no meaningful binding" -> occupancy 0
-SIGMA_PKI = 0.40        # inter-assay noise (log10 units); provisional value, re-estimated from all multi-source evidence in section 3 [Ref 14, 15]
+CENSOR_PKI = 5.0   # pKi <= 5.0 is a floor ("no meaningful binding"): occupancy 0
 
-THETA_STAR = 0.78       # D2 net-antagonism threshold for EPS: response >65%, prolactin >72%, EPS/akathisia >78% occupancy [Ref 8]
-TAU_EPS = 0.03          # CALIBRATED (provisional): no EPS below 78% and 4 of 5 patients above it in Kapur 2000 -> steep window [Ref 8]
-QTC_MAX = 500.0         # hard QTc limit (ms)
-QT_EFFECT_MS = 20.0     # CALIBRATED (provisional): dQTc (ms) at Risk_QTc = 1 so that Known-risk agents (~0.8) reach ~16 ms and unlisted agents stay <5 ms, around the ICH E14 5-10 ms concern thresholds [Ref 30]
-QT_MIN_MEANINGFUL_MS = 5.0    # ICH E14 mean-effect threshold of regulatory concern; smaller rises do not trigger the QTc hard constraint [Ref 30]
-U_MIN = 0.02            # candidates with utility <= U_MIN have no modelled therapeutic engagement
+THETA_STAR = 0.78   # EPS threshold: response >65%, prolactin >72%, EPS >78% D2 occupancy [Ref 8]
+TAU_EPS = 0.03   # no EPS below 78%, 4 of 5 above (Kapur 2000) [Ref 8]
+QTC_MAX = 500.0   # hard QTc limit (ms)
+QT_EFFECT_MS = 20.0   # ms at Risk_QTc = 1; known-risk agents (~0.8) reach ~16 ms, near the ICH E14 concern range [Ref 30]
+QT_MIN_MEANINGFUL_MS = 5.0   # ICH E14 mean-effect concern threshold [Ref 30]
+U_MIN = 0.02   # utility at or below this = no modelled therapeutic engagement
 
 # Receptor mechanism table: alpha = intrinsic activity relative to full agonist,
 # tone = endogenous tone. Net signalling change per full occupancy: Delta = alpha - tone.
@@ -346,10 +322,9 @@ RECEPTOR_PROFILE = {
     "NMDA":  {"alpha": 0.0, "tone": 1.0},   # channel blockade              -> Delta = -1
     "GABA-A": {"alpha": 1.0, "tone": 0.0},  # positive modulation           -> Delta = +1
 }
-ALPHA_OVERRIDES = {("Brexpiprazole", "D2"): 0.43}   # D2 partial agonist (PLACEHOLDER value)
+ALPHA_OVERRIDES = {("Brexpiprazole", "D2"): 0.43}   # D2 partial agonist (PLACEHOLDER)
 
-# Signed symptom -> receptor coupling kappa (sign = desired direction of net signalling change).
-# Magnitudes carried over from the previous version; D2/apathy is now explicitly opposite in sign.
+# Signed symptom -> receptor coupling kappa (sign = desired direction of net signalling change)
 KAPPA = {
     "5HT2A": {"delusions": -0.7, "hallucinations": -0.8, "agitation": -0.15, "disinhibition": -0.5,
               "sleep": -0.6, "motor": -0.5, "appetite": -0.4},
@@ -364,8 +339,7 @@ KAPPA = {
 # Reference anchors: fix the unbound target-site concentration at the standard geriatric dose in
 # normal organ function. ("occ", receptor, theta) back-calculates C_ref = Ki * theta / (1 - theta);
 # ("conc", nM) gives the unbound concentration directly.
-# PLACEHOLDER / ORDER-OF-MAGNITUDE ESTIMATES: replace with PET occupancy or measured unbound
-# concentrations. These anchors are the single most influential uncalibrated inputs of the model.
+# Order-of-magnitude placeholders except where a PET dose-occupancy fit is cited; the most influential uncalibrated inputs.
 REFERENCE_ANCHORS = {
     "Brexpiprazole": ("dose", "D2", 1.0, 0.873, 0.364),   # PET 64% at 1 mg, 80% at 4 mg [Ref 19]
     "Pimavanserin":  ("occ", "5HT2A", 0.80),
@@ -389,10 +363,9 @@ REFERENCE_ANCHORS = {
     "Carbamazepine": ("conc", 1000.0),
 }
 DEFAULT_ANCHOR = ("conc", 10.0)
-ANCHOR_LOGIT_SD = 0.35   # logit-SD of occupancy anchors: brexpiprazole PET 64 +/- 8% at 1 mg (logit SD ~0.35) [Ref 19]
+ANCHOR_LOGIT_SD = 0.35   # brexpiprazole PET 64 ± 8% at 1 mg [Ref 19]
 
-# Risk domains: severity weight zeta, receptor liabilities beta (probability that full occupancy
-# produces the adverse effect), and which patient-vulnerability function applies.
+# Risk domains: severity weight zeta and receptor liabilities beta (P(adverse effect) at full occupancy)
 DOMAINS = {
     "sedation":    {"label": "Sedation / falls",                  "zeta": 0.20, "beta": {"H1": 0.40}},   # beta: mirtazapine somnolence 54% vs 18% placebo (excess 0.36 at θ_H1≈0.97), amitriptyline 60% [Ref 22]
     "orthostasis": {"label": "Orthostatic hypotension",           "zeta": 0.15, "beta": {"α1": 0.9}},
@@ -403,10 +376,9 @@ DOMAINS = {
     "metabolic":   {"label": "Metabolic",                         "zeta": 0.10, "beta": {"H1": 0.5, "5HT2C": 0.7}},
     "hyponatremia": {"label": "Hyponatremia (SIADH)",             "zeta": 0.20, "beta": {"SERT": 0.55}},   # beta: SSRI hyponatremia 9.8% in older adults at θ_SERT 0.8 (reference patient age 75, Na 138) [Ref 24]
 }
-ZETA_HISTORY = 0.20     # severity weight of the soft history / interaction burden
+ZETA_HISTORY = 0.20   # severity weight of the soft history/interaction burden
 
-# Rescaled-logistic vulnerability parameters: (x0, k, x_min, x_max). x0 and k carried over from the
-# previous version (uncalibrated); the MMSE and seizure ranges are illustrative.
+# Rescaled-logistic vulnerability parameters (x0, k, x_min, x_max); k and several ranges are placeholders
 VULN_PARAMS = {
     "sedation_falls": (45.0, 0.08, 0.0, 125.0),   # Morse Fall Scale; x0 = high-risk cut-off ≥45 [Ref 27]
     "orthostasis":    (20.0, 0.25, 0.0, 60.0),    # standing SBP drop (mmHg); x0 = consensus definition ≥20 [Ref 28]
@@ -418,65 +390,56 @@ VULN_PARAMS = {
     "bmi":            (30.0, 0.15, 12.0, 50.0),
     "sodium":         (135.0, 0.5, 120.0, 145.0), # baseline serum Na (mmol/L), inverted; x0 = hyponatremia definition <135 [Ref 26]
 }
-THYROID_QTC_AMPLIFIER = 0.30     # PLACEHOLDER: extra QTc vulnerability with thyroid dysfunction
-EPS_COMBO_AMPLIFIER = 0.25       # PLACEHOLDER: AChEI + SSRI + antipsychotic EPS potentiation
+THYROID_QTC_AMPLIFIER = 0.30   # PLACEHOLDER: extra QTc vulnerability with thyroid dysfunction
+EPS_COMBO_AMPLIFIER = 0.25   # PLACEHOLDER: AChEI + SSRI + antipsychotic EPS potentiation
 
-# Soft history / interaction burden components (each in [0, 1], combined by noisy-OR)
-RHO_FAILURE = 0.60               # prior documented treatment failure
-RHO_ACHEI_MAX = 0.80             # anticholinergic opposition to AChEI (scaled by M1 occupancy)
-RHO_AED_DUPLICATE = 0.80         # candidate AED already on board for epilepsy
-RHO_POLYPHARMACY = 0.15          # extra burden for adding a second agent
+# Soft history / interaction burden components (noisy-OR)
+RHO_FAILURE = 0.60   # prior documented treatment failure
+RHO_ACHEI_MAX = 0.80   # anticholinergic opposition to AChEI (scaled by M1 occupancy)
+RHO_AED_DUPLICATE = 0.80   # candidate AED already on board for epilepsy
+RHO_POLYPHARMACY = 0.15   # extra burden for a second agent
 
-# Combination-regimen decision constants (index units: M is on a [-1-Z, 1] scale)
+# Combination-regimen thresholds (M-score units)
 COMBO_SUPERIORITY_DELTA = 0.05
 COMBO_STRONG_MARGIN = 0.15
 COMBO_U_TARGET = 0.50
 
-# Non-database agents in the audit: hazards they contribute to the patient's *background* risk
+# Background hazards of non-database agents
 NONDB_BACKGROUND_HAZARD = {
     "Trihexyphenidyl (Anticholinergic)": {"cognition": 0.60, "sedation": 0.15},
     "Benztropine (Anticholinergic)":     {"cognition": 0.60, "sedation": 0.15},
 }
-# Hyponatremia (SIADH) model constants (all PLACEHOLDER unless noted)
-NA_HARD_LIMIT = 130.0                          # baseline Na (mmol/L) below which SERT-active/SIADH agents are excluded
-THIAZIDE_RR = float(np.sqrt(1.24 * 11.2))      # geometric mean of adjusted OR 1.24 (large 2025 cohort) and earlier ORs 11.2-13.5 [Ref 25]
-AGE_RR = float(np.sqrt(1.0 * 6.3))             # geometric mean of "no age difference" (2025 meta-analysis) and OR 6.3 (older review) [Ref 23, 24]
-
+# Hyponatremia (SIADH)
+NA_HARD_LIMIT = 130.0   # baseline Na (mmol/L) below which SERT-active/SIADH agents are excluded [Ref 26]
+THIAZIDE_RR = float(np.sqrt(1.24 * 11.2))   # geometric mean of adjusted OR 1.24 (2025 cohort) and earlier ORs 11.2-13.5 [Ref 25]
+AGE_RR = float(np.sqrt(1.0 * 6.3))   # geometric mean of no age effect (2025 meta-analysis) and OR 6.3 [Ref 23, 24]
 
 def _lam_na_reference():
-    """Baseline-sodium vulnerability of the reference patient (Na 140 mmol/L), same rescaled-logistic form as section 4."""
+    """Baseline-sodium vulnerability of the reference patient (Na 140 mmol/L)."""
     x0, k, lo, hi = VULN_PARAMS["sodium"]
     sg = lambda z: 1.0 / (1.0 + np.exp(-z))
     lam = (sg(k * (140.0 - x0)) - sg(k * (lo - x0))) / (sg(k * (hi - x0)) - sg(k * (lo - x0)))
     return 1.0 - float(lam)
 
-
 def amplifier_from_rr(rr, lam0):
-    """Amplifier a in lambda' = 1-(1-lambda)(1-a) that multiplies the risk of a patient with vulnerability lam0 by rr."""
+    """Amplifier a in lambda' = 1-(1-lambda)(1-a) that multiplies the risk at vulnerability lam0 by rr."""
     return (rr - 1.0) * lam0 / (1.0 - lam0)
 
-
-THIAZIDE_AMPLIFIER = round(amplifier_from_rr(THIAZIDE_RR, _lam_na_reference()), 2)   # extra hyponatremia vulnerability with thiazide use
-AGE_NA_AMPLIFIER_MAX = round(amplifier_from_rr(AGE_RR, _lam_na_reference()), 2)   # extra vulnerability reached at age >= 85 (ramp from 65)
-SERT_ACTIVE_PKI = 7.0                          # pKi(SERT) at/above which an agent counts as SERT-active
+_LAM_NA_REF = _lam_na_reference()
+THIAZIDE_AMPLIFIER = round(amplifier_from_rr(THIAZIDE_RR, _LAM_NA_REF), 2)
+AGE_NA_AMPLIFIER_MAX = round(amplifier_from_rr(AGE_RR, _LAM_NA_REF), 2)   # reached at age >= 85 (ramp from 65)
+SERT_ACTIVE_PKI = 7.0   # pKi(SERT) at/above which an agent is SERT-active
 
 SEROTONERGIC_DRUGS = ["Escitalopram", "Sertraline", "Venlafaxine", "Vortioxetine", "Amitriptyline"]
 LEWY_SUBTYPES = ["Dementia with Lewy Bodies (DLB)", "Parkinson's Disease Dementia (PDD)"]
 ANTIPSYCHOTIC_CATEGORIES = ["Atypical Antipsychotic", "Typical Antipsychotic"]
 
-
-
-# Per-entry affinity uncertainty from the database (wider where sources disagree)
-PKI_SIGMA = {}   # per-entry affinity uncertainty; filled in section 3 from the multi-source evidence
-
-
 _DEFAULT_PARAMS = {"KAPPA": copy.deepcopy(KAPPA), "DOMAINS": copy.deepcopy(DOMAINS),
                    "VULN_PARAMS": dict(VULN_PARAMS), "ZETA_HISTORY": ZETA_HISTORY}
 
-
 def apply_elicited_overrides(elicited=None):
-    """Restore the calibrated defaults in place, then apply expert-panel medians (κ, ζ, β, vulnerability x0/k) if given.
-    app.py calls this at the top of every Streamlit run: imported modules persist between reruns, so state is reset explicitly."""
+    """Restore calibrated defaults in place, then apply expert-panel medians (κ, ζ, β, vulnerability x0/k) if given.
+    Called at the top of every Streamlit run because imported modules persist between reruns."""
     global ZETA_HISTORY
     KAPPA.clear()
     KAPPA.update(copy.deepcopy(_DEFAULT_PARAMS["KAPPA"]))
@@ -485,26 +448,22 @@ def apply_elicited_overrides(elicited=None):
     VULN_PARAMS.clear()
     VULN_PARAMS.update(_DEFAULT_PARAMS["VULN_PARAMS"])
     ZETA_HISTORY = _DEFAULT_PARAMS["ZETA_HISTORY"]
-    el = elicited
-    if not el:
+    if not elicited:
         return
-    for (rec, sym), val in el.get("kappa", {}).items():
+    for (rec, sym), val in elicited.get("kappa", {}).items():
         KAPPA.setdefault(rec, {})[sym] = float(np.clip(val, -1.0, 1.0))
-    for key, val in el.get("zeta", {}).items():
+    for key, val in elicited.get("zeta", {}).items():
         if key == "history":
             ZETA_HISTORY = float(max(val, 0.0))
         else:
             DOMAINS[key]["zeta"] = float(max(val, 0.0))
-    for (key, rec), val in el.get("beta", {}).items():
+    for (key, rec), val in elicited.get("beta", {}).items():
         DOMAINS[key]["beta"][rec] = float(np.clip(val, 0.01, 0.99))
-    for name, (x0, k) in el.get("vuln", {}).items():
+    for name, (x0, k) in elicited.get("vuln", {}).items():
         VULN_PARAMS[name] = (float(x0), float(k), VULN_PARAMS[name][2], VULN_PARAMS[name][3])
 
-# =============================================================================
-# 3. EVIDENCE & CALIBRATION REGISTRY
-#    3.1 Evidence tables · 3.2 Parameter register · 3.3 Validation & improvement roadmaps
-# =============================================================================
-# Status legend used across the database (pKi_status / pk_status / qt_status / seizure_status):
+# --- Evidence and calibration registry ---
+# Status codes used in pKi_status / pk_status / qt_status / seizure_status:
 #   V = verified: consistent with >=1 independent literature source (|ΔpKi| <= 0.5)
 #   C = corrected in this audit to the literature value
 #   U = unverified: carried over from the previous version (not re-checked)
@@ -516,9 +475,7 @@ STATUS_LEGEND = {
     "F": "Floor / censored (weak or none reported)", "X": "No binding assumed", "P": "Proxy (not a true affinity)",
 }
 
-# -----------------------------------------------------------------------------
-# 3.1a Multi-source affinity evidence (human Ki, nM). DB pKi = 9 - mean(log10 Ki) where corrected.
-# -----------------------------------------------------------------------------
+# Multi-source affinity evidence (human Ki, nM); corrected DB pKi = 9 - mean(log10 Ki)
 PKI_EVIDENCE = {   # (drug, receptor): (reported human Ki in nM, sources)
     ('Escitalopram', 'SERT'): ([1.1, 3.0], 'Vanderbilt protocol (1.1); Kristensen 2011 review (3)'),
     ('Sertraline', 'SERT'): ([0.29, 0.1], 'Tatsumi 1997 (0.29); Kristensen 2011 (0.1)'),
@@ -582,11 +539,8 @@ PKI_EVIDENCE = {   # (drug, receptor): (reported human Ki in nM, sources)
     ('Memantine', 'NMDA'): ([400.0, 700.0, 2200.0], '[3H]MK-801 Ki 0.4-0.7 µM; current IC50 2.2 µM'),
 }
 
-# -----------------------------------------------------------------------------
-# 3.1a-2 Data-driven affinity uncertainty (calibration of SIGMA_PKI)
-# -----------------------------------------------------------------------------
-_NON_REPLICATE = {("Trazodone", "α1")}   # second value is the prior database entry, not an independent replicate
-
+# --- Affinity uncertainty estimated from the evidence ---
+_NON_REPLICATE = {("Trazodone", "α1")}   # second value is the prior DB entry, not an independent replicate
 
 def estimate_sigma_pki():
     """Pooled SD of log10 Ki across independent sources (entries with >= 2 sources)."""
@@ -597,20 +551,19 @@ def estimate_sigma_pki():
             ss += float(np.var(logs, ddof=1)) * (len(logs) - 1)
             dfree += len(logs) - 1
             n_entries += 1
-    return (float(np.sqrt(ss / dfree)) if dfree else SIGMA_PKI), n_entries
+    return float(np.sqrt(ss / dfree)), n_entries
 
 
 SIGMA_PKI_ESTIMATE, SIGMA_PKI_N = estimate_sigma_pki()
-SIGMA_PKI = round(max(SIGMA_PKI_ESTIMATE, 0.25), 2)
-for (_d, _r), (_kis, _src) in PKI_EVIDENCE.items():
+SIGMA_PKI = round(max(SIGMA_PKI_ESTIMATE, 0.25), 2)   # inter-assay noise (log10) [Ref 14, 15]
+PKI_SIGMA = {}   # per-entry sigma, wider where sources disagree
+for (_d, _r), (_kis, _) in PKI_EVIDENCE.items():
     if len(_kis) > 1:
         _half = (max(np.log10(_kis)) - min(np.log10(_kis))) / 2.0
         if _half > SIGMA_PKI:
             PKI_SIGMA[(_d, _r)] = round(float(_half), 2)
 
-# -----------------------------------------------------------------------------
-# 3.1b CredibleMeds categories -> hazard bands; label PK calibration points
-# -----------------------------------------------------------------------------
+# --- CredibleMeds hazard bands, label PK points, evidence tables ---
 QT_BANDS = {"KR": (0.70, 1.00), "CR": (0.25, 0.55), "PR": (0.15, 0.35), "NL": (0.00, 0.15)}
 QT_CATEGORY_NAMES = {"KR": "Known risk of TdP", "CR": "Conditional risk", "PR": "Possible risk",
                      "NL": "Not found in lists reviewed", "UN": "Unverified"}
@@ -630,15 +583,11 @@ def implied_fr_ren(g_ren, auc_ratio):
     return (1.0 - 1.0 / auc_ratio) / (1.0 - g_ren)
 
 
-def _mean_pki(kis):
-    return 9.0 - float(np.mean([np.log10(k) for k in kis]))
-
-
 def pki_audit_df():
     rows = []
     for (drug, rec), (kis, src) in PKI_EVIDENCE.items():
         dd = DRUG_DATABASE[drug]
-        lit = _mean_pki(kis)
+        lit = 9.0 - float(np.mean(np.log10(kis)))
         rows.append({"Drug": drug, "Receptor": rec, "DB pKi": dd["pKi"][rec], "Evidence pKi (geo-mean)": round(lit, 2),
                      "Δ (DB − evidence)": round(dd["pKi"][rec] - lit, 2), "n sources": len(kis),
                      "Status": dd["pKi_status"][rec], "Sources": src})
@@ -648,8 +597,8 @@ def pki_audit_df():
 def db_status_df():
     rows = []
     for drug, dd in DRUG_DATABASE.items():
-        st_ = list(dd["pKi_status"].values())
-        rows.append({"Drug": drug, **{k: st_.count(k) for k in "VCUFXP"},
+        codes = list(dd["pKi_status"].values())
+        rows.append({"Drug": drug, **{k: codes.count(k) for k in "VCUFXP"},
                      "PK (Fr)": dd["pk_status"], "QT": f'{dd["qt_category"]}/{dd["qt_status"]}', "Seizure": dd["seizure_status"]})
     return pd.DataFrame(rows)
 
@@ -659,7 +608,7 @@ def pk_calibration_df():
     for drug, setting, g, auc, src in PK_CALIBRATION_POINTS:
         fr = implied_fr_ren(g, auc)
         rows.append({"Drug": drug, "Setting": setting, "AUC ratio": auc, "Implied Fr_ren": round(fr, 2),
-                     "Physical (Fr ≤ 1)": bool(fr <= 1.0 + 1e-9),   # >1 means GFR alone cannot explain the AUC rise (e.g., tubular secretion)
+                     "Physical (Fr ≤ 1)": fr <= 1.0 + 1e-9,   # >1: GFR alone cannot explain the AUC rise
                      "DB Fr_ren": DRUG_DATABASE[drug]["Fr_renal"], "Δ (DB − implied)": round(DRUG_DATABASE[drug]["Fr_renal"] - fr, 2),
                      "Source": src})
     return pd.DataFrame(rows)
@@ -670,9 +619,9 @@ def qt_band_df():
     for drug, dd in DRUG_DATABASE.items():
         cat = dd["qt_category"]
         lo, hi = QT_BANDS.get(cat, (None, None))
-        inb = None if lo is None else (lo - 1e-9 <= dd["Risk_QTc"] <= hi + 1e-9)
+        in_band = None if lo is None else (lo - 1e-9 <= dd["Risk_QTc"] <= hi + 1e-9)
         rows.append({"Drug": drug, "Category": cat, "Meaning": QT_CATEGORY_NAMES[cat], "Risk_QTc": dd["Risk_QTc"],
-                     "Band": "—" if lo is None else f"{lo:.2f}–{hi:.2f}", "In band": "n/a" if inb is None else ("yes" if inb else "NO"),
+                     "Band": "—" if lo is None else f"{lo:.2f}–{hi:.2f}", "In band": "n/a" if in_band is None else ("yes" if in_band else "NO"),
                      "Status": dd["qt_status"]})
     return pd.DataFrame(rows)
 
@@ -699,7 +648,7 @@ def dose_occupancy_df():
         a = REFERENCE_ANCHORS[drug]
         pred = a[3] * dose / (a[4] + dose)
         rows.append({"Drug": drug, "Receptor": rec, "Dose (mg)": dose, "Published occupancy": obs, "Model occupancy": round(pred, 3),
-                     "Δ (pp)": round(100 * (pred - obs), 1), "Within ±5 pp": bool(abs(pred - obs) <= 0.05 + 1e-9), "Source": src})
+                     "Δ (pp)": round(100 * (pred - obs), 1), "Within ±5 pp": abs(pred - obs) <= 0.05 + 1e-9, "Source": src})
     return pd.DataFrame(rows)
 
 
@@ -724,8 +673,8 @@ KAPPA_EVIDENCE = [   # (receptor, symptom, kappa, status, basis)
 
 
 def kappa_evidence_df():
-    return pd.DataFrame([{"Receptor": r, "Symptom": s_, "κ in model": KAPPA[r][s_], "κ from evidence": k, "Status": st_, "Basis": b}
-                         for r, s_, k, st_, b in KAPPA_EVIDENCE])
+    return pd.DataFrame([{"Receptor": rec, "Symptom": sym, "κ in model": KAPPA[rec][sym], "κ from evidence": kappa, "Status": status, "Basis": basis}
+                         for rec, sym, kappa, status, basis in KAPPA_EVIDENCE])
 
 
 VULN_BASIS = {   # curve: (status, basis for x0)
@@ -742,11 +691,11 @@ VULN_BASIS = {   # curve: (status, basis for x0)
 
 def vuln_basis_df():
     return pd.DataFrame([{"Curve": n, "x0": VULN_PARAMS[n][0], "k (placeholder)": VULN_PARAMS[n][1], "Range": f"{VULN_PARAMS[n][2]}–{VULN_PARAMS[n][3]}",
-                          "Status": st_, "Basis": b} for n, (st_, b) in VULN_BASIS.items()])
+                          "Status": status, "Basis": basis} for n, (status, basis) in VULN_BASIS.items()])
 
 
 def induction_df():
-    rows = [{"Drug": d, "Clearance ratio R": r, "Status": st_, "Basis": b} for d, (r, st_, b) in INDUCTION_CL_RATIO.items()]
+    rows = [{"Drug": d, "Clearance ratio R": r, "Status": status, "Basis": basis} for d, (r, status, basis) in INDUCTION_CL_RATIO.items()]
     rows.append({"Drug": "all other drugs with Fr_hepatic ≥ 0.25", "Clearance ratio R": INDUCTION_CL_DEFAULT[0], "Status": INDUCTION_CL_DEFAULT[1], "Basis": INDUCTION_CL_DEFAULT[2]})
     return pd.DataFrame(rows)
 
@@ -760,12 +709,8 @@ SEDATION_OBS = {   # excess somnolence vs placebo (US label) [Ref 22]
 }
 
 
-def _expert_cols(df):
-    return [c for c in df.columns if str(c).startswith("Expert")]
-
-
 def parse_elicitation(kind, df, max_iqr=0.2, min_n=3):
-    """Medians of completed Delphi sheets -> (overrides, summary table). Rows with <min_n ratings or IQR > max_iqr are not applied."""
+    """Medians of completed Delphi sheets -> (overrides, summary). Rows with < min_n ratings or IQR > max_iqr are not applied."""
     summ, out = [], {}
     if kind == "vuln":
         res = {}
@@ -777,13 +722,13 @@ def parse_elicitation(kind, df, max_iqr=0.2, min_n=3):
             if ok:
                 res[r["Curve"]] = (float(x0), float(k))
         return {"vuln": res}, pd.DataFrame(summ)
-    cols = _expert_cols(df)
+    cols = [c for c in df.columns if str(c).startswith("Expert")]
     for _, r in df.iterrows():
         vals = pd.to_numeric(pd.Series([r[c] for c in cols]), errors="coerce").dropna()
         n = len(vals)
         med = float(vals.median()) if n else None
         iqr = float(vals.quantile(0.75) - vals.quantile(0.25)) if n else None
-        applied = bool(n >= min_n and iqr is not None and iqr <= max_iqr + 1e-12)
+        applied = n >= min_n and iqr is not None and iqr <= max_iqr + 1e-12
         item = f'{r["Receptor"]} / {r["Symptom"]}' if kind == "kappa" else str(r["Item"])
         summ.append({"Item": item, "n": n, "Median": med, "IQR": iqr, "Consensus (n≥3, IQR≤0.2)": applied})
         if not applied:
@@ -807,7 +752,7 @@ def parse_elicitation(kind, df, max_iqr=0.2, min_n=3):
 
 
 def delphi_template_df(kind):
-    """Blank expert-rating sheets for the judgment-based parameters (export, circulate, re-import)."""
+    """Blank expert-rating sheets for the judgment-based parameters."""
     cols = {f"Expert {i}": "" for i in range(1, 11)}
     if kind == "kappa":
         return pd.DataFrame([{"Receptor": r, "Symptom": s, "Current signed κ": k, **cols} for r, m in KAPPA.items() for s, k in m.items()])
@@ -820,18 +765,18 @@ def delphi_template_df(kind):
                           "Expert x0 (median of panel)": "", "Expert k (median of panel)": "", "Cohort evidence / OR": ""} for n, p in VULN_PARAMS.items()])
 
 
-# -----------------------------------------------------------------------------
-# 3.2 Parameter register: every placeholder, its calibration status in this version, and next steps
-# -----------------------------------------------------------------------------
+# --- Parameter register ---
 REGISTER_COLUMNS = ["ID", "Group", "Parameter (current value)", "Status", "Applied in this version", "Why uncertain",
                     "Suggested source / value", "How to calibrate", "How to validate", "Priority"]
+
+
 def build_placeholder_register():
     """Parameter register with the current (possibly elicited) values filled in."""
-    _STATUS_COUNTS = {k: sum(1 for dd in DRUG_DATABASE.values() for v in dd["pKi_status"].values() if v == k) for k in "VCUFXP"}
-    _N_DOSE_ANCHORS = sum(1 for a in REFERENCE_ANCHORS.values() if a[0] == "dose")
-    _N_CONC_ANCHORS = sum(1 for a in REFERENCE_ANCHORS.values() if a[0] == "conc")
+    status_counts = {k: sum(1 for dd in DRUG_DATABASE.values() for v in dd["pKi_status"].values() if v == k) for k in "VCUFXP"}
+    n_dose_anchors = sum(1 for a in REFERENCE_ANCHORS.values() if a[0] == "dose")
+    n_conc_anchors = sum(1 for a in REFERENCE_ANCHORS.values() if a[0] == "conc")
 
-    PLACEHOLDER_REGISTER = [
+    return [
         ("P01", "Exposure", f"Fr_renal / Fr_hepatic per drug; PHI_MIN = {PHI_MIN}; PHI_MAX = {PHI_MAX}; E_MAX_STANDARD = {E_MAX_STANDARD}",
          "Partially calibrated",
          "E_MAX_STANDARD 3.0 → 2.0 from label AUC data (memantine ×1.97 accepted without dose change; labelled reductions start at ×2.3–2.5) [Ref 34]; PHI_MAX 3 → 8 to allow quetiapine induction (×7.5) [Ref 21]; Fr re-checked for 13 drugs (5 corrected); 5 label AUC points tested.",
@@ -853,7 +798,7 @@ def build_placeholder_register():
          "All replicate Ki entries from PDSP, ChEMBL, IUPHAR per drug-receptor pair.",
          "Hierarchical log-normal model by receptor class; left-censoring for '>' values.",
          "Leave-one-source-out: held-out Ki inside the 90% interval in ≥85% of cases.", "High"),
-        ("P04", "Anchors", f"REFERENCE_ANCHORS: {_N_DOSE_ANCHORS} dose–occupancy fits, SERT occupancy anchors, {_N_CONC_ANCHORS} concentration anchors, quetiapine/pimavanserin/gabapentin/valproate/memantine occupancy placeholders; ANCHOR_LOGIT_SD = {ANCHOR_LOGIT_SD}",
+        ("P04", "Anchors", f"REFERENCE_ANCHORS: {n_dose_anchors} dose–occupancy fits, SERT occupancy anchors, {n_conc_anchors} concentration anchors, quetiapine/pimavanserin/gabapentin/valproate/memantine occupancy placeholders; ANCHOR_LOGIT_SD = {ANCHOR_LOGIT_SD}",
          "Partially calibrated",
          "Emax dose–occupancy curves fitted to PET points for risperidone (2 mg ≈65%), olanzapine (5/10 mg = 55/73%), haloperidol (65% at 1.5–2.1 mg), brexpiprazole (64/80% at 1/4 mg) and vortioxetine SERT (50/65/80% at 5/10/20 mg); anchors evaluated at the DB reference dose [Ref 17–20]; SERT ≈80% for escitalopram/sertraline/venlafaxine; anchor SD from brexpiprazole PET (±8 pp).",
          "Quetiapine occupancy is transient (peak 58–64%, minimal at 12 h); pimavanserin, memantine, GABAergic and tricyclic/trazodone/mirtazapine/mianserin/bupropion anchors remain estimates; PET data are from younger adults.",
@@ -917,7 +862,7 @@ def build_placeholder_register():
          "δ = smallest difference experts distinguish with ≥75% agreement.", "Combination suggestions concordant with experts in ≥80% of paired vignettes.", "Medium"),
         ("P17", "Background", f"NONDB_BACKGROUND_HAZARD = {NONDB_BACKGROUND_HAZARD}", "Placeholder", "Not changed.", "Fixed anticholinergic hazard.",
          "ACB score → cognitive-decline/delirium risk from cohorts.", "Fit h = 1 − exp(−γ·ACB).", "Predicted vs observed risk by ACB stratum within a factor of 1.5.", "Medium"),
-        ("P18", "Database", f"pKi entries (220): V {_STATUS_COUNTS['V']}, C {_STATUS_COUNTS['C']}, U {_STATUS_COUNTS['U']}, F {_STATUS_COUNTS['F']}, X {_STATUS_COUNTS['X']}, P {_STATUS_COUNTS['P']}; Fr, Risk_QTc, convulsant_index, hypoNa_index, induction ratios",
+        ("P18", "Database", f"pKi entries (220): V {status_counts['V']}, C {status_counts['C']}, U {status_counts['U']}, F {status_counts['F']}, X {status_counts['X']}, P {status_counts['P']}; Fr, Risk_QTc, convulsant_index, hypoNa_index, induction ratios",
          "Partially calibrated",
          "60 affinity entries checked against multi-source evidence (18 corrected by |Δ|>0.5, trazodone α1 averaged, SERT added for all drugs); brexpiprazole SERT floor confirmed by PET (<5% occupancy at 4 mg) [Ref 19]; Fr, QT bands, seizure indices, induction ratios and hyponatremia indices re-based; dosage text not re-checked.",
          "20 unverified (U) and 3 proxy (P) affinity entries; 7 unverified Fr; valproate/gabapentin proxies.",
@@ -931,14 +876,8 @@ def build_placeholder_register():
          "Anchor SD set from PET variability; affinity σ from evidence (P03).", "Other widths chosen for plausibility.", "Posterior distributions from the calibration steps above.",
          "Replace fixed widths by calibrated posteriors.", "90% intervals cover held-out expert-score variation or bootstrap replicates in ≥85% of cases.", "Medium"),
     ]
-    return PLACEHOLDER_REGISTER
 
-
-PLACEHOLDER_REGISTER = build_placeholder_register()
-
-# -----------------------------------------------------------------------------
-# 3.3 VALIDATION & IMPROVEMENT ROADMAPS
-# -----------------------------------------------------------------------------
+# --- Validation and improvement roadmaps ---
 VALIDATION_COLUMNS = ["Tier", "What is tested", "Acceptance criterion (suggested)", "Status in this app"]
 VALIDATION_PLAN = [
     ("V1 Software verification", "Bounds, monotonicity, competitive binding, exact vulnerability endpoints, database integrity", "All checks pass on every code change", "Implemented (self-checks)"),
