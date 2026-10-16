@@ -38,7 +38,7 @@ neo_brutalism_css = """
         --card-bg: #FFFFFF;
         --accent-bg: #F0F0F0;
         --halftone-dot: #000000;
-        --halftone-dot-opacity: 0.01; /* ปรับความจางลงให้เหมือนฝุ่นละออง */
+        --halftone-dot-opacity: 0.01;
         --border-width: 3px;
         --shadow-dist: 5px;
         --radius: 0px;
@@ -60,9 +60,8 @@ neo_brutalism_css = """
     .stApp {
         background-color: var(--bg-color);
         color: var(--text-color);
-        /* เปลี่ยนขนาดจุดให้เล็กจิ๋วเหมือนฝุ่น (Particle) ด้วย radial-gradient และ background-size ที่ถี่ขึ้น */
-        background-image: radial-gradient(var(--halftone-dot) 0.1px, transparent 0.1px);
-        background-size: 10px 10px;
+        background-image: radial-gradient(var(--halftone-dot) 0.08px, transparent 0.1px);
+        background-size: 12px 12px;
         font-family: 'Courier New', Courier, 'Consolas', sans-serif;
     }
 
@@ -213,7 +212,7 @@ neo_brutalism_css = """
 
     .recommendation-badge {
         display: inline-block;
-        background-color: var(--text-color);
+        background-color: var(--text-color) !important;
         color: var(--bg-color) !important;
         font-weight: 900;
         padding: 4px 10px;
@@ -254,11 +253,10 @@ neo_brutalism_css = """
             border-width: 3px;
             box-shadow: 4px 4px 0px var(--shadow-color);
         }
-
+		
         .hero-banner {
             padding: 12px;
         }
-
         .stButton button {
             padding: 0.4rem 0.8rem !important;
         }
@@ -435,7 +433,7 @@ else:
     )
 
 st.markdown("---")
-st.subheader("🎯 Target Symptom Severity (12 NPI Subscales)")
+st.subheader("Target Symptom Severity (12 NPI Subscales)")
 
 NPI_ITEMS = (  
     ("delusions", "Delusions (5-HT2A / D2 Target)", 1), ("hallucinations", "Hallucinations (5-HT2A Target)", 1),
@@ -453,7 +451,7 @@ for col, items in zip(st.columns(3), (NPI_ITEMS[:4], NPI_ITEMS[4:8], NPI_ITEMS[8
             v[key] = NPI_MAPPING[st.selectbox(label, npi_options, index=index)]
 
 st.markdown("---")
-st.subheader("🤝 Caregiver Priorities & Shared Decision (PETRUSHKA Model)")
+st.subheader("Caregiver Priorities & Shared Decision (PETRUSHKA Model)")
 caregiver_options = list(CAREGIVER_CONCERN_MAPPING.keys())
 col_pref1, col_pref2 = st.columns(2)
 
@@ -560,7 +558,7 @@ else:
     st.markdown(
         f"""
         <div class="recommendation-card">
-            <span class="recommendation-badge">🏆 Recommended Candidate Option</span>
+            <span class="recommendation-badge"> Recommended Candidate Option</span>
             <h1 style="margin: 8px 0 0 0;">
                 {top_drug['Drug']} <span style="font-size: 1.1rem; font-weight: normal;">({top_drug['Category']})</span>
             </h1>
