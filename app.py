@@ -70,12 +70,12 @@ neo_brutalism_css = """
     	color: var(--text-color) !important;
     	font-family: 'Consolas', 'Courier New', monospace, sans-serif !important;
 	}
-	span:not([data-testid="stIconMaterial"]), 
-	div:not([data-testid="stIconMaterial"]) {
+	span:not([data-testid="stIconMaterial"], [.recommendation-badge]), 
+	div:not([data-testid="stIconMaterial"], [.recommendation-badge]) {
     	color: var(--text-color) !important;
     	font-family: 'Consolas', 'Courier New', monospace, sans-serif !important;
 	}
-
+	
     h1 {
         font-size: 2.2rem !important;
         font-weight: 900 !important;
