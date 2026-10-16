@@ -52,7 +52,7 @@ neo_brutalism_css = """
             --card-bg: #121212;
             --accent-bg: #1A1A1A;
             --halftone-dot: #FFFFFF;
-            --halftone-dot-opacity: 0.02; /* ปรับความจางสำหรับโหมดมืด */
+            --halftone-dot-opacity: 0.02;
         }
     }
 
@@ -112,7 +112,7 @@ neo_brutalism_css = """
         box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color);
         padding: 20px;
         margin-bottom: 25px;
-        background-image: radial-gradient(var(--halftone-dot) 12%, transparent 13%);
+        background-image: radial-gradient(var(--halftone-dot) 0.02, transparent 0.01);
         background-size: 10px 10px;
     }
 	
