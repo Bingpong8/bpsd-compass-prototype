@@ -1,13 +1,284 @@
-"""BPSD Compass prototype (framework v3.1): Streamlit UI. Run with `streamlit run app.py`. Not validated for clinical use."""
+"""
+BPSD Compass prototype (framework v3.1): Streamlit UI. 
+Run with `streamlit run app.py`. Not validated for clinical use.
+
+UI Design: Black & White Neo-Brutalism with Dots Halftone Gradient
+Features:
+- High Contrast Light / Dark Mode support via CSS Variables & Media Queries
+- Hard Shadows, Heavy Borders, Sharp Corners (Neo-Brutalism Style)
+- Responsive Flex & Grid Layouts for mobile, tablet, and desktop screens
+- Custom Styled Metric Cards, Buttons, Inputs, Tables, and Dataframes
+"""
 import numpy as np
 import pandas as pd
 import streamlit as st
 from database import *   # noqa: F401,F403
 from engine import *     # noqa: F401,F403
 
-st.set_page_config(page_title="BPSD Compass Prototype (P5 - Framework v3.1)", layout="wide")
-st.title("BPSD Compass Prototype (P5)")
-st.caption("Parameter-driven decision support tools — occupancy-based framework v3.1")
+# -----------------------------------------------------------------------------
+# 1. Page Configuration
+# -----------------------------------------------------------------------------
+st.set_page_config(
+    page_title="BPSD Compass Prototype (P5 - Framework v3.1)", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# -----------------------------------------------------------------------------
+# 2. Neo-Brutalism & Halftone Custom CSS Injector
+# -----------------------------------------------------------------------------
+neo_brutalism_css = """
+<style>
+    /* Global Variables: Light & Dark Themes */
+    :root {
+        --bg-color: #FFFFFF;
+        --text-color: #000000;
+        --border-color: #000000;
+        --shadow-color: #000000;
+        --card-bg: #FFFFFF;
+        --accent-bg: #F0F0F0;
+        --halftone-dot: #000000;
+        --halftone-dot-opacity: 0.05; /* ปรับความจางลงให้เหมือนฝุ่นละออง */
+        --border-width: 3px;
+        --shadow-dist: 5px;
+        --radius: 0px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg-color: #000000;
+            --text-color: #FFFFFF;
+            --border-color: #FFFFFF;
+            --shadow-color: #FFFFFF;
+            --card-bg: #121212;
+            --accent-bg: #1A1A1A;
+            --halftone-dot: #FFFFFF;
+            --halftone-dot-opacity: 0.08; /* ปรับความจางสำหรับโหมดมืด */
+        }
+    }
+
+/* Main Container & Fine-Particle Dots Halftone Background */
+    .stApp {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        /* เปลี่ยนขนาดจุดให้เล็กจิ๋วเหมือนฝุ่น (Particle) ด้วย radial-gradient และ background-size ที่ถี่ขึ้น */
+        background-image: radial-gradient(var(--halftone-dot) 0.8px, transparent 1px);
+        background-size: 6px 6px;
+        font-family: 'Courier New', Courier, 'Consolas', sans-serif;
+    }
+
+    /* Typography Overrides */
+    h1, h2, h3, h4, h5, h6, p, label, span, div {
+        color: var(--text-color) !important;
+        font-family: 'Consolas', 'Courier New', monospace, sans-serif !important;
+    }
+
+    h1 {
+        font-size: 2.2rem !important;
+        font-weight: 900 !important;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+    }
+
+    h2, h3 {
+        font-weight: 800 !important;
+        text-transform: uppercase;
+    }
+
+    /* Neo-Brutalism Box Base */
+    .neo-box {
+        background-color: var(--card-bg);
+        border: var(--border-width) solid var(--border-color) !important;
+        box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
+        border-radius: var(--radius) !important;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+        transition: all 0.15s ease-in-out;
+    }
+
+    .neo-box:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: calc(var(--shadow-dist) + 2px) calc(var(--shadow-dist) + 2px) 0px var(--shadow-color) !important;
+    }
+
+    /* Custom Header / Hero Banner */
+    .hero-banner {
+        background-color: var(--card-bg);
+        border: var(--border-width) solid var(--border-color);
+        box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color);
+        padding: 20px;
+        margin-bottom: 25px;
+        background-image: radial-gradient(var(--halftone-dot) 12%, transparent 13%);
+        background-size: 10px 10px;
+    }
+
+    /* Streamlit Containers & Expanders Override */
+    div[data-testid="stExpander"] {
+        background-color: var(--card-bg) !important;
+        border: var(--border-width) solid var(--border-color) !important;
+        box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
+        border-radius: var(--radius) !important;
+        margin-bottom: 1rem !important;
+    }
+
+    div[data-testid="stExpander"] details summary {
+        font-weight: bold !important;
+        font-size: 1.1rem !important;
+        background-color: var(--accent-bg) !important;
+        border-bottom: var(--border-width) solid var(--border-color) !important;
+    }
+
+    /* Form Controls & Inputs */
+    .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"], .stMultiSelect div[data-baseweb="select"] {
+        border: var(--border-width) solid var(--border-color) !important;
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+        border-radius: var(--radius) !important;
+        box-shadow: 3px 3px 0px var(--shadow-color) !important;
+        font-weight: bold !important;
+    }
+
+    .stTextInput input:focus, .stNumberInput input:focus, .stSelectbox div[data-baseweb="select"]:focus-within {
+        transform: translate(-1px, -1px);
+        box-shadow: 5px 5px 0px var(--shadow-color) !important;
+    }
+
+    /* Buttons Override */
+    .stButton button {
+        background-color: var(--card-bg) !important;
+        color: var(--text-color) !important;
+        border: var(--border-width) solid var(--border-color) !important;
+        border-radius: var(--radius) !important;
+        box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        padding: 0.6rem 1.2rem !important;
+        transition: all 0.1s ease-in-out !important;
+        width: 100%;
+    }
+
+    .stButton button:hover {
+        transform: translate(-3px, -3px) !important;
+        box-shadow: calc(var(--shadow-dist) + 3px) calc(var(--shadow-dist) + 3px) 0px var(--shadow-color) !important;
+    }
+
+    .stButton button:active {
+        transform: translate(2px, 2px) !important;
+        box-shadow: 1px 1px 0px var(--shadow-color) !important;
+    }
+
+    /* Streamlit Alerts / Info / Warning Boxes */
+    div[data-testid="stNotification"] {
+        border: var(--border-width) solid var(--border-color) !important;
+        border-radius: var(--radius) !important;
+        box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
+        color: var(--text-color) !important;
+        background-color: var(--card-bg) !important;
+        font-weight: bold !important;
+    }
+
+    /* Metrics Styling */
+    div[data-testid="stMetric"] {
+        background-color: var(--card-bg) !important;
+        border: var(--border-width) solid var(--border-color) !important;
+        box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
+        padding: 12px !important;
+        border-radius: var(--radius) !important;
+    }
+
+    div[data-testid="stMetricValue"] {
+        font-size: 2rem !important;
+        font-weight: 900 !important;
+    }
+
+    /* ASCII Code Box Override */
+    .stCodeBlock {
+        border: var(--border-width) solid var(--border-color) !important;
+        box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
+        border-radius: var(--radius) !important;
+    }
+
+    /* Custom Recommendation Banner */
+    .recommendation-card {
+        border: 4px solid var(--border-color);
+        box-shadow: 7px 7px 0px var(--shadow-color);
+        background-color: var(--card-bg);
+        padding: 24px;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .recommendation-badge {
+        display: inline-block;
+        background-color: var(--text-color);
+        color: var(--bg-color) !important;
+        font-weight: 900;
+        padding: 4px 10px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+
+    .warning-card {
+        border: 3px solid var(--border-color);
+        box-shadow: 5px 5px 0px var(--shadow-color);
+        background-color: var(--card-bg);
+        padding: 16px;
+        margin-bottom: 15px;
+        border-left: 12px solid var(--border-color);
+    }
+
+    /* Dataframe Table Custom Styling */
+    div[data-testid="stDataFrame"] {
+        border: var(--border-width) solid var(--border-color) !important;
+        box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
+    }
+
+    /* Responsive Mobile Optimizations */
+    @media (max-width: 768px) {
+        :root {
+            --border-width: 2px;
+            --shadow-dist: 3px;
+        }
+
+        h1 {
+            font-size: 1.5rem !important;
+        }
+
+        .recommendation-card {
+            padding: 14px;
+            border-width: 3px;
+            box-shadow: 4px 4px 0px var(--shadow-color);
+        }
+
+        .hero-banner {
+            padding: 12px;
+        }
+
+        .stButton button {
+            padding: 0.4rem 0.8rem !important;
+        }
+    }
+</style>
+"""
+st.markdown(neo_brutalism_css, unsafe_allow_html=True)
+
+# -----------------------------------------------------------------------------
+# 3. Header & ASCII Art Section
+# -----------------------------------------------------------------------------
+st.markdown(
+    """
+    <div class="hero-banner">
+        <h1 style="margin:0;">BPSD Compass Prototype (P5)</h1>
+        <p style="margin: 5px 0 0 0; font-weight: bold; opacity: 0.8;">
+            Parameter-driven decision support tools — occupancy-based framework v3.1
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 ascii_header = r"""
 								THE DEATH OF PEACE OF MIND
@@ -35,8 +306,12 @@ st.warning(
     "**Framework v3.1 (occupancy-based, audited and partly calibrated database).** Reference anchors, severity weights, risk liabilities and vulnerability curves are "
     "partly calibrated: see the Calibration, Audit & Improvement Center. This prototype is not validated for clinical use."
 )
-with st.expander("Model & uncertainty settings (framework v3.1)", expanded=False):
-    col_set1, col_set2, col_set3 = st.columns(3)
+
+# -----------------------------------------------------------------------------
+# 4. Settings & Parameters Panel
+# -----------------------------------------------------------------------------
+with st.expander("⚙️ Model & uncertainty settings (framework v3.1)", expanded=False):
+    col_set1, col_set2, col_set3 = st.columns([1, 1, 1])
     with col_set1:
         dose_policy_label = st.radio(
             "Dose policy for organ function / DDI",
@@ -52,11 +327,13 @@ with st.expander("Model & uncertainty settings (framework v3.1)", expanded=False
     with col_set3:
         mc_draws = st.select_slider("Monte Carlo draws (0 = off)", options=[0, 200, 500, 1000, 2000], value=500)
         show_anchors = st.checkbox("Show reference anchors", value=False)
+
 dose_policy = "auto" if dose_policy_label.startswith("Auto") else "standard"
 background_mode = "addon" if background_label.startswith("Add-on") else "replace"
 
 st.subheader("📋 Patient Clinical Parameters")
 c_etiology, c_bio1, c_bio2 = st.columns(3)
+
 with c_etiology:
     dementia_subtype = st.selectbox(
         "Dementia Subtype / Etiology",
@@ -79,7 +356,7 @@ with c_bio2:
     hepatic_status = st.selectbox("Hepatic Function Status", list(HEPATIC_MAPPING.keys()), index=0)
     lft_val = HEPATIC_MAPPING[hepatic_status]
 
-with st.expander("Special Conditions Risk Inputs (Epilepsy, NCDs, Comorbidities)", expanded=False):
+with st.expander("🧪 Special Conditions Risk Inputs (Epilepsy, NCDs, Comorbidities)", expanded=False):
     col_sc1, col_sc2 = st.columns(2)
     with col_sc1:
         seizure_freq_input = st.number_input("Seizure Frequency (events/year)", 0.0, 50.0, 0.0, step=0.5)
@@ -99,7 +376,6 @@ st.markdown("---")
 st.subheader("Step 1: Expanded Prior Medication Audit & Regimen Risk Stratification")
 
 col_prior1, col_prior2 = st.columns(2)
-
 ALL_AUDIT_OPTIONS = list(DRUG_DATABASE.keys()) + MAOI_AGENTS + ANTICHOLINERGIC_AGENTS + ACHEI_AGENTS + ["Phenytoin (Dilantin)"]
 
 with col_prior1:
@@ -157,7 +433,7 @@ else:
     )
 
 st.markdown("---")
-st.subheader("Target Symptom Severity (12 NPI Subscales)")
+st.subheader("🎯 Target Symptom Severity (12 NPI Subscales)")
 
 NPI_ITEMS = (  
     ("delusions", "Delusions (5-HT2A / D2 Target)", 1), ("hallucinations", "Hallucinations (5-HT2A Target)", 1),
@@ -175,7 +451,7 @@ for col, items in zip(st.columns(3), (NPI_ITEMS[:4], NPI_ITEMS[4:8], NPI_ITEMS[8
             v[key] = NPI_MAPPING[st.selectbox(label, npi_options, index=index)]
 
 st.markdown("---")
-st.subheader("Caregiver Priorities & Shared Decision (PETRUSHKA Model)")
+st.subheader("🤝 Caregiver Priorities & Shared Decision (PETRUSHKA Model)")
 caregiver_options = list(CAREGIVER_CONCERN_MAPPING.keys())
 col_pref1, col_pref2 = st.columns(2)
 
@@ -216,7 +492,9 @@ patient_profile = {
     "active_nondb": [d for d in active_drugs if d in NONDB_BACKGROUND_HAZARD],
 }
 
-# Decision engine
+# -----------------------------------------------------------------------------
+# 5. Decision Engine Execution
+# -----------------------------------------------------------------------------
 symptoms_present = any(val > 0.0 for val in v.values())
 
 S0 = Sampler(1)  
@@ -276,16 +554,15 @@ else:
         mc_line = (f"<br/>P(rank 1) = <strong>{100 * mt['P_first']:.0f}%</strong> &nbsp;|&nbsp; "
                    f"Match Index 90% interval: <strong>{mj_interval(mt)}</strong> &nbsp;|&nbsp; Monte Carlo draws: {mc_draws}")
 
+    # Custom Neo-Brutalism Recommendation Banner
     st.markdown(
         f"""
-        <div style="background-color: #d1e7dd; border-left: 8px solid #0f5132; padding: 22px; border-radius: 8px; margin-bottom: 15px;">
-            <span style="font-size: 13px; color: #0f5132; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;">
-                🏆 Recommended Candidate Option
-            </span>
-            <h1 style="color: #0f5132; margin: 6px 0 0 0; font-size: 36px; font-weight: 800;">
-                {top_drug['Drug']} <span style="font-size: 18px; font-weight: normal;">({top_drug['Category']})</span>
+        <div class="recommendation-card">
+            <span class="recommendation-badge">🏆 Recommended Candidate Option</span>
+            <h1 style="margin: 8px 0 0 0;">
+                {top_drug['Drug']} <span style="font-size: 1.1rem; font-weight: normal;">({top_drug['Category']})</span>
             </h1>
-            <p style="color: #0f5132; font-size: 18px; margin: 10px 0 0 0;">
+            <p style="font-size: 1.05rem; margin-top: 12px; line-height: 1.6;">
                 Match Index (100·Mj): <strong>{top_drug['Net Score (Mj)']}</strong> &nbsp;|&nbsp;
                 Therapeutic utility: <strong>+{top_drug['Therapeutic Gain']}</strong> &nbsp;|&nbsp;
                 Safety deductions: <strong>-{top_drug['Risk Deductions']}</strong> &nbsp;|&nbsp;
@@ -314,9 +591,10 @@ else:
     if top_drug["Suggested Dose Scaling"] < 0.90:
         dose_scaling_msg = (f"<br/><strong>Organ/DDI dose scaling:</strong> clearance is reduced (φ = {top_drug['Suggested Dose Scaling']}); "
                             f"consider ≈ ×{top_drug['Suggested Dose Scaling']} of the standard dose to hold exposure at the reference level.")
+    
     st.markdown(
         f"""
-        <div style="background-color: #e2f0d9; border-left: 6px solid #385723; color: #274411; padding: 12px 18px; border-radius: 6px; margin-bottom: 15px; font-size: 15px;">
+        <div class="neo-box">
             <strong>Recommended Dosage Spectrum:</strong> {top_drug['Dosage']}{dose_scaling_msg}
         </div>
         """,
@@ -340,11 +618,11 @@ else:
 
     st.markdown(
         f"""
-        <div style="background-color: #fff3cd; border: 1px solid #ffebaa; border-left: 8px solid #ffc107; color: #856404; padding: 18px; border-radius: 6px; margin-bottom: 15px;">
-            <h4 style="margin: 0 0 6px 0; color: #856404; font-weight: 800; font-size: 17px;">
-            	 Clinical Warnings for {top_drug['Drug']}
+        <div class="warning-card">
+            <h4 style="margin: 0 0 6px 0; font-weight: 800; font-size: 1.1rem;">
+            	 ⚠️ Clinical Warnings for {top_drug['Drug']}
             </h4>
-            <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #533f03;">
+            <p style="margin: 0; font-size: 1rem; line-height: 1.5;">
                 {top_drug['Warnings']}
             </p>
         </div>
@@ -359,8 +637,10 @@ else:
         st.session_state.ruled_out.add(top_drug["Drug"])
         st.rerun()
 
-# Dashboards
-with st.expander("Sequential Cross-Titration & Dose Optimization Protocol", expanded=False):
+# -----------------------------------------------------------------------------
+# 6. Detailed Dashboards & Breakdowns
+# -----------------------------------------------------------------------------
+with st.expander("🔄 Sequential Cross-Titration & Dose Optimization Protocol", expanded=True):
     distinct_priors = [d for d in combined_prior_drugs if d != top_drug["Drug"]]
 
     if top_drug["Drug"] in combined_prior_drugs:
@@ -386,7 +666,7 @@ with st.expander("Sequential Cross-Titration & Dose Optimization Protocol", expa
     elif top_drug["Drug"] not in combined_prior_drugs:
         st.info("Treatment Naive: Initiate top candidate at starting dose without cross-tapering.")
 
-with st.expander("📊 Patient-Weighted Marginal Risk Indices (framework v3.1)", expanded=False):
+with st.expander("📊 Patient-Weighted Marginal Risk Indices (framework v3.1)", expanded=True):
     st.markdown("#### Marginal risk ΔR = λ · (1 − h_bg) · h  (0–100, uncalibrated index — not a probability)")
     risk_bars = (("Sedation / Falls", "Sedation risk"), ("Orthostatic", "Orthostatic risk"),
                  ("EPS (D2 window)", "EPS risk"), ("Hyponatremia", "Hyponatremia risk"))
@@ -396,7 +676,7 @@ with st.expander("📊 Patient-Weighted Marginal Risk Indices (framework v3.1)",
             st.progress(top_drug[key])
             st.caption(f"Index: {top_drug[key]}")
 
-with st.expander("Receptor Occupancy & Domain Risk Breakdown (top-ranked candidate)", expanded=False):
+with st.expander("🧬 Receptor Occupancy & Domain Risk Breakdown (top-ranked candidate)", expanded=False):
     if top_drug["Hard Locked"]:
         st.info("No eligible top candidate to break down.")
     else:
@@ -411,7 +691,7 @@ with st.expander("Receptor Occupancy & Domain Risk Breakdown (top-ranked candida
         st.caption(f"Projected ΔQTc ≈ {top_drug['Projected dQTc (ms)']} ms; exposure factor E = {top_drug['Exposure Factor (E)']}.")
 
 if mc is not None:
-    with st.expander("Uncertainty & Sensitivity (Monte Carlo)", expanded=False):
+    with st.expander("🎲 Uncertainty & Sensitivity (Monte Carlo)", expanded=False):
         def index_or_none(x):
             return None if np.isnan(x) else round(100 * x, 1)
 
@@ -432,7 +712,7 @@ if mc is not None:
             st.caption("Large shares identify the inputs that most need better evidence (calibration targets).")
 
 if show_anchors:
-    with st.expander("Reference Anchors (PET-fitted where marked; others placeholders)", expanded=False):
+    with st.expander("⚓ Reference Anchors (PET-fitted where marked; others placeholders)", expanded=True):
         anchor_labels = {"occ": "Occupancy (placeholder)", "dose": "Dose–occupancy (PET fit)", "conc": "Unbound conc. (nM)"}
         anchor_rows = []
         for nm, a in REFERENCE_ANCHORS.items():
@@ -443,7 +723,7 @@ if show_anchors:
         st.dataframe(pd.DataFrame(anchor_rows), use_container_width=True)
         st.caption("Replace with PET occupancy or measured unbound concentrations at the standard geriatric dose.")
 
-with st.expander("🚦 Dashboard & Ranking", expanded=True):
+with st.expander("🚦 Dashboard & Ranking", expanded=False):
     df_results = pd.DataFrame(results)
 
     df_results_display = df_results[[
@@ -452,20 +732,13 @@ with st.expander("🚦 Dashboard & Ranking", expanded=True):
         "Dosage", "Lock Reason"
     ]]
 
-    def apply_traffic_lights(val):
-        if val > 10.0:
-            return 'background-color: #d4edda; color: #155724; font-weight: bold;'
-        if val >= -10.0:
-            return 'background-color: #fff3cd; color: #856404;'
-        return 'background-color: #f8d7da; color: #721c24;'
-
     st.dataframe(
-        df_results_display.style.map(apply_traffic_lights, subset=['Net Score (Mj)']),
+        df_results_display,
         use_container_width=True
     )
 
 st.markdown("---")
-st.subheader("Phenotype Cluster Analysis (CCSMH Model)")
+st.subheader("🧩 Phenotype Cluster Analysis (CCSMH Model)")
 p_agitation_psychosis = (v["agitation"] + v["delusions"] + v["hallucinations"]) / 3.0
 p_affective = (v["depression"] + v["anxiety"] + v["irritability"]) / 3.0
 p_apathy_executive = (v["apathy"] + v["disinhibition"]) / 2.0
@@ -475,8 +748,10 @@ col_ph1.metric("Agitation-Psychosis Cluster", f"{p_agitation_psychosis*100:.0f}%
 col_ph2.metric("Affective-Lability Cluster", f"{p_affective*100:.0f}%")
 col_ph3.metric("Apathy-Executive Cluster", f"{p_apathy_executive*100:.0f}%")
 
-# Calibration, audit & improvement center
-with st.expander("Calibration, Audit & Improvement Center", expanded=False):
+# -----------------------------------------------------------------------------
+# 7. Calibration, Audit & Improvement Center
+# -----------------------------------------------------------------------------
+with st.expander("⚙️ Calibration, Audit & Improvement Center", expanded=False):
     reg_df = pd.DataFrame(build_placeholder_register(), columns=REGISTER_COLUMNS)
     st.markdown("### 1. Calibration status at a glance")
     st.dataframe(reg_df["Status"].value_counts().rename_axis("Status").reset_index(name="Parameter groups"), use_container_width=True)
@@ -548,8 +823,10 @@ with st.expander("Calibration, Audit & Improvement Center", expanded=False):
         n_fail = int((chk["Result"] == "FAIL").sum())
         (st.success if n_fail == 0 else st.error)(f"{len(chk) - n_fail}/{len(chk)} checks passed.")
 
-# Rationale
-with st.expander("Algorithmic Architecture & Clinical Rationale", expanded=False):
+# -----------------------------------------------------------------------------
+# 8. Rationale & Documentation Section
+# -----------------------------------------------------------------------------
+with st.expander("📚 Algorithmic Architecture & Clinical Rationale", expanded=False):
     st.markdown(r"""
     This tool uses an **occupancy-based, two-stage multi-criteria model**: hard constraints first (Stage A), then a bounded utility–risk score (Stage B). Every term is dimensionless and bounded.
 
@@ -569,7 +846,7 @@ with st.expander("Algorithmic Architecture & Clinical Rationale", expanded=False
 
     **3. Neurological-treatment coupling (noisy-OR)**
 
-    $$w_r = 1-\prod_{s}\left(1 - v_s\,|\kappa_{sr}|\right),\qquad s_r = \operatorname{sign}\Big(\sum_s v_s\,\kappa_{sr}\Big)$$
+    $$w_r = 1-\prod_{s}\left(1 - v_s\,\vert{}\kappa_{sr}\vert{}\right),\qquad s_r = \operatorname{sign}\Big(\sum_s v_s\,\kappa_{sr}\Big)$$
 
     **4. Therapeutic utility**
 
@@ -583,7 +860,7 @@ with st.expander("Algorithmic Architecture & Clinical Rationale", expanded=False
 
     $$\lambda_d(x)=\frac{\sigma(k(x-x_0))-\sigma(k(x_{\min}-x_0))}{\sigma(k(x_{\max}-x_0))-\sigma(k(x_{\min}-x_0))},\qquad \Delta R_{dj} = \lambda_d\,(1-h^{\text{bg}}_d)\,\big(h_{dj}^{\text{regimen}}-h_{dj}^{\text{current}}\big)$$
 
-    Domains: sedation/falls, orthostasis, EPS, QTc, anticholinergic cognition (M1), seizure threshold, metabolic, and **hyponatremia (SIADH)**, whose hazard is $h_{\\text{Na}} = 1-(1-\\beta\\,\\theta_{\\text{SERT}})\\,(1-I_j)^{E_j}$ ($I_j$ = non-SERT SIADH index, e.g., carbamazepine) with vulnerability from baseline sodium, age and thiazide use. In **add-on mode**, active database agents are evaluated jointly with the candidate (competitive binding) and utility and risk are the *increments* over the current regimen, so shared-receptor occupancy adds up instead of being discounted; non-database agents (e.g., anticholinergics) enter as independent background hazards $h^{\text{bg}}$ in $\Delta R = \lambda\,(1-h^{\text{bg}})\,\Delta h$. In **replacement mode** the candidate is scored alone. Frailty (age > 75) and thyroid dysfunction amplify vulnerability.
+    Domains: sedation/falls, orthostasis, EPS, QTc, anticholinergic cognition (M1), seizure threshold, metabolic, and **hyponatremia (SIADH)**, whose hazard is $h_{\text{Na}} = 1-(1-\beta\,\theta_{\text{SERT}})\,(1-I_j)^{E_j}$ ($I_j$ = non-SERT SIADH index, e.g., carbamazepine) with vulnerability from baseline sodium, age and thiazide use. In **add-on mode**, active database agents are evaluated jointly with the candidate (competitive binding) and utility and risk are the *increments* over the current regimen, so shared-receptor occupancy adds up instead of being discounted; non-database agents (e.g., anticholinergics) enter as independent background hazards $h^{\text{bg}}$ in $\Delta R = \lambda\,(1-h^{\text{bg}})\,\Delta h$. In **replacement mode** the candidate is scored alone. Frailty (age > 75) and thyroid dysfunction amplify vulnerability.
 
     **6. Stage A — hard constraints (non-compensatory)**
 
@@ -611,7 +888,7 @@ with st.expander("Algorithmic Architecture & Clinical Rationale", expanded=False
     """)
 
 # --- References ---
-with st.expander("References & Citations"):
+with st.expander("📖 References & Citations"):
     st.markdown(
         """
         1. **Roth, B. L., et al.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. UNC Chapel Hill / NIMH.
