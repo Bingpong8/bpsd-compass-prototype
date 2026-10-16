@@ -62,7 +62,7 @@ neo_brutalism_css = """
         background-color: var(--bg-color);
         color: var(--text-color);
         /* เปลี่ยนขนาดจุดให้เล็กจิ๋วเหมือนฝุ่น (Particle) ด้วย radial-gradient และ background-size ที่ถี่ขึ้น */
-        background-image: radial-gradient(var(--halftone-dot) 0.2px, transparent 1px);
+        background-image: radial-gradient(var(--halftone-dot) 0.1px, transparent 1px);
         background-size: 6px 6px;
         font-family: 'Courier New', Courier, 'Consolas', sans-serif;
     }
@@ -120,7 +120,6 @@ neo_brutalism_css = """
         border-radius: var(--radius) !important;
         margin-bottom: 1rem !important;
     }
-
     div[data-testid="stExpander"] details summary {
         font-weight: bold !important;
         font-size: 1.1rem !important;
@@ -157,12 +156,10 @@ neo_brutalism_css = """
         transition: all 0.1s ease-in-out !important;
         width: 100%;
     }
-
     .stButton button:hover {
         transform: translate(-3px, -3px) !important;
         box-shadow: calc(var(--shadow-dist) + 3px) calc(var(--shadow-dist) + 3px) 0px var(--shadow-color) !important;
     }
-
     .stButton button:active {
         transform: translate(2px, 2px) !important;
         box-shadow: 1px 1px 0px var(--shadow-color) !important;
@@ -198,7 +195,7 @@ neo_brutalism_css = """
         box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
         border-radius: var(--radius) !important;
     }
-
+	
     /* Custom Recommendation Banner */
     .recommendation-card {
         border: 4px solid var(--border-color);
@@ -310,7 +307,7 @@ st.warning(
 # -----------------------------------------------------------------------------
 # 4. Settings & Parameters Panel
 # -----------------------------------------------------------------------------
-with st.expander("⚙️ Model & uncertainty settings (framework v3.1)", expanded=False):
+with st.expander("Model & uncertainty settings (framework v3.1)", expanded=False):
     col_set1, col_set2, col_set3 = st.columns([1, 1, 1])
     with col_set1:
         dose_policy_label = st.radio(
@@ -356,7 +353,7 @@ with c_bio2:
     hepatic_status = st.selectbox("Hepatic Function Status", list(HEPATIC_MAPPING.keys()), index=0)
     lft_val = HEPATIC_MAPPING[hepatic_status]
 
-with st.expander("🧪 Special Conditions Risk Inputs (Epilepsy, NCDs, Comorbidities)", expanded=False):
+with st.expander("Special Conditions Risk Inputs (Epilepsy, NCDs, Comorbidities)", expanded=False):
     col_sc1, col_sc2 = st.columns(2)
     with col_sc1:
         seizure_freq_input = st.number_input("Seizure Frequency (events/year)", 0.0, 50.0, 0.0, step=0.5)
@@ -640,7 +637,7 @@ else:
 # -----------------------------------------------------------------------------
 # 6. Detailed Dashboards & Breakdowns
 # -----------------------------------------------------------------------------
-with st.expander("🔄 Sequential Cross-Titration & Dose Optimization Protocol", expanded=True):
+with st.expander("Sequential Cross-Titration & Dose Optimization Protocol", expanded=True):
     distinct_priors = [d for d in combined_prior_drugs if d != top_drug["Drug"]]
 
     if top_drug["Drug"] in combined_prior_drugs:
@@ -666,7 +663,7 @@ with st.expander("🔄 Sequential Cross-Titration & Dose Optimization Protocol",
     elif top_drug["Drug"] not in combined_prior_drugs:
         st.info("Treatment Naive: Initiate top candidate at starting dose without cross-tapering.")
 
-with st.expander("📊 Patient-Weighted Marginal Risk Indices (framework v3.1)", expanded=True):
+with st.expander("Patient-Weighted Marginal Risk Indices (framework v3.1)", expanded=True):
     st.markdown("#### Marginal risk ΔR = λ · (1 − h_bg) · h  (0–100, uncalibrated index — not a probability)")
     risk_bars = (("Sedation / Falls", "Sedation risk"), ("Orthostatic", "Orthostatic risk"),
                  ("EPS (D2 window)", "EPS risk"), ("Hyponatremia", "Hyponatremia risk"))
@@ -676,7 +673,7 @@ with st.expander("📊 Patient-Weighted Marginal Risk Indices (framework v3.1)",
             st.progress(top_drug[key])
             st.caption(f"Index: {top_drug[key]}")
 
-with st.expander("🧬 Receptor Occupancy & Domain Risk Breakdown (top-ranked candidate)", expanded=False):
+with st.expander("Receptor Occupancy & Domain Risk Breakdown (top-ranked candidate)", expanded=False):
     if top_drug["Hard Locked"]:
         st.info("No eligible top candidate to break down.")
     else:
@@ -691,7 +688,7 @@ with st.expander("🧬 Receptor Occupancy & Domain Risk Breakdown (top-ranked ca
         st.caption(f"Projected ΔQTc ≈ {top_drug['Projected dQTc (ms)']} ms; exposure factor E = {top_drug['Exposure Factor (E)']}.")
 
 if mc is not None:
-    with st.expander("🎲 Uncertainty & Sensitivity (Monte Carlo)", expanded=False):
+    with st.expander("Uncertainty & Sensitivity (Monte Carlo)", expanded=False):
         def index_or_none(x):
             return None if np.isnan(x) else round(100 * x, 1)
 
@@ -712,7 +709,7 @@ if mc is not None:
             st.caption("Large shares identify the inputs that most need better evidence (calibration targets).")
 
 if show_anchors:
-    with st.expander("⚓ Reference Anchors (PET-fitted where marked; others placeholders)", expanded=True):
+    with st.expander("Reference Anchors (PET-fitted where marked; others placeholders)", expanded=True):
         anchor_labels = {"occ": "Occupancy (placeholder)", "dose": "Dose–occupancy (PET fit)", "conc": "Unbound conc. (nM)"}
         anchor_rows = []
         for nm, a in REFERENCE_ANCHORS.items():
@@ -738,7 +735,7 @@ with st.expander("🚦 Dashboard & Ranking", expanded=False):
     )
 
 st.markdown("---")
-st.subheader("🧩 Phenotype Cluster Analysis (CCSMH Model)")
+st.subheader("Phenotype Cluster Analysis (CCSMH Model)")
 p_agitation_psychosis = (v["agitation"] + v["delusions"] + v["hallucinations"]) / 3.0
 p_affective = (v["depression"] + v["anxiety"] + v["irritability"]) / 3.0
 p_apathy_executive = (v["apathy"] + v["disinhibition"]) / 2.0
@@ -751,7 +748,7 @@ col_ph3.metric("Apathy-Executive Cluster", f"{p_apathy_executive*100:.0f}%")
 # -----------------------------------------------------------------------------
 # 7. Calibration, Audit & Improvement Center
 # -----------------------------------------------------------------------------
-with st.expander("⚙️ Calibration, Audit & Improvement Center", expanded=False):
+with st.expander("Calibration, Audit & Improvement Center", expanded=False):
     reg_df = pd.DataFrame(build_placeholder_register(), columns=REGISTER_COLUMNS)
     st.markdown("### 1. Calibration status at a glance")
     st.dataframe(reg_df["Status"].value_counts().rename_axis("Status").reset_index(name="Parameter groups"), use_container_width=True)
@@ -791,8 +788,8 @@ with st.expander("⚙️ Calibration, Audit & Improvement Center", expanded=Fals
     st.dataframe(seizure_df(), use_container_width=True)
     st.dataframe(vuln_basis_df(), use_container_width=True)
     st.markdown("### 12. Expert elicitation (Delphi): export templates, import completed sheets")
-    templates = (("⬇️ κ matrix", "kappa", "delphi_kappa.csv"), ("⬇️ ζ / β weights", "zeta_beta", "delphi_zeta_beta.csv"),
-                 ("⬇️ Vulnerability curves", "vuln", "delphi_vulnerability.csv"))
+    templates = (("↓κ matrix", "kappa", "delphi_kappa.csv"), ("⬇️ ζ / β weights", "zeta_beta", "delphi_zeta_beta.csv"),
+                 ("↑Vulnerability curves", "vuln", "delphi_vulnerability.csv"))
     for col, (label, kind, file_name) in zip(st.columns(3), templates):
         with col:
             st.download_button(label, delphi_template_df(kind).to_csv(index=False).encode("utf-8"), file_name=file_name, mime="text/csv")
@@ -826,7 +823,7 @@ with st.expander("⚙️ Calibration, Audit & Improvement Center", expanded=Fals
 # -----------------------------------------------------------------------------
 # 8. Rationale & Documentation Section
 # -----------------------------------------------------------------------------
-with st.expander("📚 Algorithmic Architecture & Clinical Rationale", expanded=False):
+with st.expander("Algorithmic Architecture & Clinical Rationale", expanded=False):
     st.markdown(r"""
     This tool uses an **occupancy-based, two-stage multi-criteria model**: hard constraints first (Stage A), then a bounded utility–risk score (Stage B). Every term is dimensionless and bounded.
 
@@ -888,7 +885,7 @@ with st.expander("📚 Algorithmic Architecture & Clinical Rationale", expanded=
     """)
 
 # --- References ---
-with st.expander("📖 References & Citations"):
+with st.expander("References & Citations"):
     st.markdown(
         """
         1. **Roth, B. L., et al.** *PDSP Ki Database. Psychoactive Drug Screening Program (PDSP)*. UNC Chapel Hill / NIMH.
