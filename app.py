@@ -640,6 +640,20 @@ else:
 # -----------------------------------------------------------------------------
 # 6. Detailed Dashboards & Breakdowns
 # -----------------------------------------------------------------------------
+with st.expander("🚦 Dashboard & Ranking", expanded=True):
+    df_results = pd.DataFrame(results)
+
+    df_results_display = df_results[[
+        "Drug", "Category", "Net Score (Mj)", "P(rank 1)", "Mj 5–95%", "Therapeutic Gain",
+        "Risk Deductions", "History Burden", "Exposure Factor (E)", "Suggested Dose Scaling",
+        "Dosage", "Lock Reason"
+    ]]
+
+    st.dataframe(
+        df_results_display,
+        use_container_width=True
+    )
+
 with st.expander("Sequential Cross-Titration & Dose Optimization Protocol", expanded=False):
     distinct_priors = [d for d in combined_prior_drugs if d != top_drug["Drug"]]
 
@@ -722,20 +736,6 @@ if show_anchors:
                                 "Value": round(receptor_occ[1], 3) if receptor_occ else a[1]})
         st.dataframe(pd.DataFrame(anchor_rows), use_container_width=True)
         st.caption("Replace with PET occupancy or measured unbound concentrations at the standard geriatric dose.")
-
-with st.expander("🚦 Dashboard & Ranking", expanded=True):
-    df_results = pd.DataFrame(results)
-
-    df_results_display = df_results[[
-        "Drug", "Category", "Net Score (Mj)", "P(rank 1)", "Mj 5–95%", "Therapeutic Gain",
-        "Risk Deductions", "History Burden", "Exposure Factor (E)", "Suggested Dose Scaling",
-        "Dosage", "Lock Reason"
-    ]]
-
-    st.dataframe(
-        df_results_display,
-        use_container_width=True
-    )
 
 st.markdown("---")
 st.subheader("Phenotype Cluster Analysis (CCSMH Model)")
