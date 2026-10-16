@@ -60,8 +60,8 @@ neo_brutalism_css = """
     .stApp {
         background-color: var(--bg-color);
         color: var(--text-color);
-        background-image: radial-gradient(var(--halftone-dot) 0.05px, transparent 0.05px);
-        background-size: 14px 14px;
+        background-image: radial-gradient(var(--halftone-dot) 0.05px, transparent 0.01px);
+        background-size: 12px 12px;
         font-family: 'Courier New', Courier, 'Consolas', sans-serif;
     }
 
