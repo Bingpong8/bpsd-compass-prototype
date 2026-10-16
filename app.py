@@ -640,7 +640,7 @@ else:
 # -----------------------------------------------------------------------------
 # 6. Detailed Dashboards & Breakdowns
 # -----------------------------------------------------------------------------
-with st.expander("Sequential Cross-Titration & Dose Optimization Protocol", expanded=True):
+with st.expander("Sequential Cross-Titration & Dose Optimization Protocol", expanded=False):
     distinct_priors = [d for d in combined_prior_drugs if d != top_drug["Drug"]]
 
     if top_drug["Drug"] in combined_prior_drugs:
@@ -666,7 +666,7 @@ with st.expander("Sequential Cross-Titration & Dose Optimization Protocol", expa
     elif top_drug["Drug"] not in combined_prior_drugs:
         st.info("Treatment Naive: Initiate top candidate at starting dose without cross-tapering.")
 
-with st.expander("Patient-Weighted Marginal Risk Indices (framework v3.1)", expanded=True):
+with st.expander("Patient-Weighted Marginal Risk Indices (framework v3.1)", expanded=False):
     st.markdown("#### Marginal risk ΔR = λ · (1 − h_bg) · h  (0–100, uncalibrated index — not a probability)")
     risk_bars = (("Sedation / Falls", "Sedation risk"), ("Orthostatic", "Orthostatic risk"),
                  ("EPS (D2 window)", "EPS risk"), ("Hyponatremia", "Hyponatremia risk"))
@@ -712,7 +712,7 @@ if mc is not None:
             st.caption("Large shares identify the inputs that most need better evidence (calibration targets).")
 
 if show_anchors:
-    with st.expander("Reference Anchors (PET-fitted where marked; others placeholders)", expanded=True):
+    with st.expander("Reference Anchors (PET-fitted where marked; others placeholders)", expanded=False):
         anchor_labels = {"occ": "Occupancy (placeholder)", "dose": "Dose–occupancy (PET fit)", "conc": "Unbound conc. (nM)"}
         anchor_rows = []
         for nm, a in REFERENCE_ANCHORS.items():
@@ -723,7 +723,7 @@ if show_anchors:
         st.dataframe(pd.DataFrame(anchor_rows), use_container_width=True)
         st.caption("Replace with PET occupancy or measured unbound concentrations at the standard geriatric dose.")
 
-with st.expander("🚦 Dashboard & Ranking", expanded=False):
+with st.expander("🚦 Dashboard & Ranking", expanded=True):
     df_results = pd.DataFrame(results)
 
     df_results_display = df_results[[
