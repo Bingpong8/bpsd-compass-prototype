@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# 2. Custom CSS Injector
+# 2. CSS Injector
 # -----------------------------------------------------------------------------
 neo_brutalism_css = """
 <style>
@@ -366,7 +366,7 @@ with st.expander("Special Conditions Risk Inputs (Epilepsy, NCDs, Comorbidities)
         thiazide_val = st.checkbox("Thiazide-type diuretic use", value=False)
 
 st.markdown("---")
-st.subheader("Step 1: Expanded Prior Medication Audit & Regimen Risk Stratification")
+st.subheader("Prior Medications & Risk Stratification")
 
 col_prior1, col_prior2 = st.columns(2)
 ALL_AUDIT_OPTIONS = list(DRUG_DATABASE.keys()) + MAOI_AGENTS + ANTICHOLINERGIC_AGENTS + ACHEI_AGENTS + ["Phenytoin (Dilantin)"]
