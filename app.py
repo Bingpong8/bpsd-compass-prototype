@@ -1,13 +1,6 @@
 """
 BPSD Compass prototype (framework v3.1): Streamlit UI. 
 Run with `streamlit run app.py`. Not validated for clinical use.
-
-UI Design: Black & White Neo-Brutalism with Dots Halftone Gradient
-Features:
-- High Contrast Light / Dark Mode support via CSS Variables & Media Queries
-- Hard Shadows, Heavy Borders, Sharp Corners (Neo-Brutalism Style)
-- Responsive Flex & Grid Layouts for mobile, tablet, and desktop screens
-- Custom Styled Metric Cards, Buttons, Inputs, Tables, and Dataframes
 """
 import numpy as np
 import pandas as pd
@@ -25,7 +18,7 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# 2. Neo-Brutalism & Halftone Custom CSS Injector
+# 2. Custom CSS Injector
 # -----------------------------------------------------------------------------
 neo_brutalism_css = """
 <style>
@@ -266,7 +259,7 @@ neo_brutalism_css = """
 st.markdown(neo_brutalism_css, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 3. Header & ASCII Art Section
+# 3. Header
 # -----------------------------------------------------------------------------
 st.markdown(
     """
@@ -304,7 +297,7 @@ apply_elicited_overrides(st.session_state.get("elicited_params"))
 
 st.warning(
     "**Framework v3.1 (occupancy-based, audited and partly calibrated database).** Reference anchors, severity weights, risk liabilities and vulnerability curves are "
-    "partly calibrated: see the Calibration, Audit & Improvement Center. This prototype is not validated for clinical use."
+    "partly calibrated: see the Calibration, Audit & Improvement section below. This prototype is not validated for clinical use."
 )
 
 # -----------------------------------------------------------------------------
@@ -344,7 +337,7 @@ with c_etiology:
 
 with c_bio1:
     morse_score = st.number_input("Morse Fall Scale (0-125)", 0, 125, 40)
-    sbp_drop = st.number_input("Standing SBP Drop (mmHg)", 0, 60, 12)
+    sbp_drop = st.number_input("Delta SBP", 0, 60, 12)
     sas_score = st.number_input("SAS Motor / EPS Score (0-40)", 0, 40, 4)
     
     frailty_str = st.selectbox("Frailty Index Tier", list(FRAILTY_MAPPING.keys()), index=1)
@@ -359,7 +352,7 @@ with c_bio2:
 with st.expander("Special Conditions Risk Inputs (Epilepsy, NCDs, Comorbidities)", expanded=False):
     col_sc1, col_sc2 = st.columns(2)
     with col_sc1:
-        seizure_freq_input = st.number_input("Seizure Frequency (events/year)", 0.0, 50.0, 0.0, step=0.5)
+        seizure_freq_input = st.number_input("Seizure Frequency (events/year)", 0.0, 50.0, 0.0, step=1.0)
         seizure_freq_val = int(np.round(seizure_freq_input))
         active_aeds_val = st.multiselect(
             "Active Anti-Epileptic Drugs (AEDs)", 
@@ -415,12 +408,11 @@ epilepsy_active = seizure_freq_val > 0 or bool(active_aeds_final)
 
 if epilepsy_active:
     st.warning(
-        f"**EPILEPSY PROTOCOL ACTIVE**: Baseline AED dosing is **strictly mandatory** (Current integer seizure frequency: **{seizure_freq_val} events/year**). "
+        f"**EPILEPSY PROTOCOL ACTIVATED**: Baseline AED dosing is **strictly mandatory** (Current integer seizure frequency: **{seizure_freq_val} events/year**). "
         "Do NOT reduce or discontinue AED dosages during psychotropic cross-titration or regimen optimization."
     )
 
 polypharmacy_branch = active_psychotropic_count >= 2
-
 if polypharmacy_branch:
     st.warning(
         f"**Branch B Stratification Triggered (Polypharmacy Burden = {active_psychotropic_count} Active Agents):** "
@@ -493,7 +485,7 @@ patient_profile = {
 }
 
 # -----------------------------------------------------------------------------
-# 5. Decision Engine Execution
+# 5. Decision Engine
 # -----------------------------------------------------------------------------
 symptoms_present = any(val > 0.0 for val in v.values())
 
@@ -579,12 +571,12 @@ else:
         ranked_mc = sorted(((nm, m["P_first"]) for nm, m in mc.items()), key=lambda t: t[1], reverse=True)
         if ranked_mc[0][1] - ranked_mc[1][1] < 0.10:
             st.warning(
-                f"⚖️ **Ranking indeterminate:** the top candidates are statistically indistinguishable under input uncertainty "
+                f"⚖️ **Ranking Indeterminate:** the top candidates are not shown statistically differences under input information "
                 f"({ranked_mc[0][0]}: {100 * ranked_mc[0][1]:.0f}% vs {ranked_mc[1][0]}: {100 * ranked_mc[1][1]:.0f}% probability of ranking first). "
                 f"Treat the leading options as a short-list, not a single answer."
             )
         elif ranked_mc[0][0] != top_drug["Drug"]:
-            st.info(f"ℹ️ The nominal top candidate differs from the most frequent Monte Carlo winner ({ranked_mc[0][0]}, "
+            st.info(f"The nominal top candidate differs from the most frequent Monte Carlo winner ({ranked_mc[0][0]}, "
                     f"{100 * ranked_mc[0][1]:.0f}%). Inspect the uncertainty panel below.")
 
     dose_scaling_msg = ""
@@ -604,14 +596,14 @@ else:
     if top_drug['Drug'] == "Gabapentin":
         st.info(f"**Organ Monitoring Alert (Renal)**: 100% Renal Elimination ($Fr_\\text{{renal}} = 1.00$). Current eGFR = {egfr_val} mL/min; exposure factor E = {top_drug['Exposure Factor (E)']}. Strict renal dose titration required.")
     elif top_drug['Drug'] == "Valproic Acid":
-        st.info(f"**Organ Monitoring Alert (Hepatic)**: High Hepatic Metabolism ($Fr_\\text{{hepatic}} = 0.95$); exposure factor E = {top_drug['Exposure Factor (E)']}. Baseline LFTs, CBC, and plasma level monitoring (target 50–80 µg/mL) required.")
+        st.info(f"**Organ Monitoring Alert (Hepatic)**: High Hepatic Metabolism ($Fr_\\text{{hepatic}} = 0.95$); exposure factor E = {top_drug['Exposure Factor (E)']}. Baseline LFTs, CBC, and serum level monitoring (target 50–80 µg/mL) required.")
     elif top_drug['Drug'] == "Memantine" and egfr_val < 30:
-        st.info(f"**Organ Monitoring Alert (Renal)**: High Renal Elimination ($Fr_\\text{{renal}} = 0.80$). Current eGFR = {egfr_val} mL/min (< 30 mL/min). Maximum dose cap: 10 mg daily.")
+        st.info(f"**Organ Monitoring Alert (Renal)**: High Renal Elimination ($Fr_\\text{{renal}} = 0.80$). Current eGFR = {egfr_val} mL/min (< 30 mL/min). Max dose =10 mg daily.")
 
     if top_drug["Occupancy"]["SERT"] >= 0.30:
         st.info(f"**Hyponatremia Monitoring Alert**: SERT occupancy ≈ {100 * top_drug['Occupancy']['SERT']:.0f}%. "
                 f"Baseline Na = {sodium_val:.0f} mmol/L{' with thiazide use' if thiazide_val else ''}; hyponatremia index = {top_drug['Hyponatremia risk']}. "
-                f"Recheck sodium at ~2 and ~4 weeks (and with any new confusion, falls or nausea).")
+                f"Recheck sodium at 2-4 weeks (and if clinical symptomatic hyponatremia was suspected).")
 
     if top_drug['Clinical Correlation Note']:
         st.info(f"**Clinical Correlation Note:** {top_drug['Clinical Correlation Note']}")
@@ -749,9 +741,9 @@ col_ph2.metric("Affective-Lability Cluster", f"{p_affective*100:.0f}%")
 col_ph3.metric("Apathy-Executive Cluster", f"{p_apathy_executive*100:.0f}%")
 
 # -----------------------------------------------------------------------------
-# 7. Calibration, Audit & Improvement Center
+# 7. Calibration, Audit & Improvement 
 # -----------------------------------------------------------------------------
-with st.expander("Calibration, Audit & Improvement Center", expanded=False):
+with st.expander("Calibration, Audit & Improvement Plans", expanded=False):
     reg_df = pd.DataFrame(build_placeholder_register(), columns=REGISTER_COLUMNS)
     st.markdown("### 1. Calibration status at a glance")
     st.dataframe(reg_df["Status"].value_counts().rename_axis("Status").reset_index(name="Parameter groups"), use_container_width=True)
@@ -809,7 +801,7 @@ with st.expander("Calibration, Audit & Improvement Center", expanded=False):
                         elicited.setdefault(section, {}).update(values)
                     st.session_state["elicited_params"] = elicited
                     st.rerun()
-            except Exception as exc:   # malformed file
+            except Exception as exc:  
                 st.error(f"Could not read the sheet: {exc}")
     if elicited:
         st.info(f"Elicited parameters are active ({', '.join(elicited)}). All results use them.")
@@ -887,7 +879,7 @@ with st.expander("Algorithmic Architecture & Clinical Rationale", expanded=False
     **Known limitations:** reference anchors, $\zeta$, $\beta$, and vulnerability curves are uncalibrated placeholders; SERT is modelled (literature Ki; PET occupancy anchors); the database was audited against the literature (see the Calibration Center), but other targets (e.g., sodium channels for lamotrigine/carbamazepine, 5-HT1A) are not, so those agents may show no therapeutic engagement; hERG data are not in the database, so QTc uses the per-drug risk index scaled by exposure.
     """)
 
-# --- References ---
+# References
 with st.expander("References & Citations"):
     st.markdown(
         """
