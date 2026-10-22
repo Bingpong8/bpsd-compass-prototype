@@ -22,18 +22,18 @@ st.set_page_config(
 # -----------------------------------------------------------------------------
 neo_brutalism_css = """
 <style>
-    /* Global Variables: Light & Dark Themes */
+    /* Global Variables: Monochrome Cyber Brutalism Theme */
     :root {
-        --bg-color: #FFFFFF;
-        --text-color: #000000;
-        --border-color: #000000;
-        --shadow-color: #000000;
-        --card-bg: #FFFFFF;
-        --accent-bg: #F0F0F0;
-        --halftone-dot: #000000;
-        --halftone-dot-opacity: 0.01;
-        --border-width: 3px;
-        --shadow-dist: 5px;
+        --bg-color: #080808;
+        --text-color: #EAEAEA;
+        --border-color: #EAEAEA;
+        --shadow-color: #EAEAEA;
+        --card-bg: #0D0D0D;
+        --accent-bg: #161616;
+        --halftone-dot: #EAEAEA;
+        --halftone-dot-opacity: 0.04;
+        --border-width: 2px;
+        --shadow-dist: 4px;
         --radius: 0px;
     }
     @media (prefers-color-scheme: dark) {
@@ -42,31 +42,33 @@ neo_brutalism_css = """
             --text-color: #FFFFFF;
             --border-color: #FFFFFF;
             --shadow-color: #FFFFFF;
-            --card-bg: #121212;
-            --accent-bg: #1A1A1A;
+            --card-bg: #050505;
+            --accent-bg: #111111;
             --halftone-dot: #FFFFFF;
-            --halftone-dot-opacity: 0.01;
+            --halftone-dot-opacity: 0.05;
         }
     }
 
-/* Main Container & Fine-Particle Dots Halftone Background */
+    /* Main Container & Cyber Grid Background */
     .stApp {
         background-color: var(--bg-color);
         color: var(--text-color);
-        background-image: radial-gradient(var(--halftone-dot) 0.01px, transparent 0.01px);
-        background-size: 13px 13px;
-        font-family: 'Courier New', Courier, 'Consolas', sans-serif;
+        background-image: 
+            linear-gradient(to right, var(--halftone-dot) 1px, transparent 1px),
+            linear-gradient(to bottom, var(--halftone-dot) 1px, transparent 1px);
+        background-size: 24px 24px;
+        font-family: 'Share Tech Mono', 'Courier New', Courier, 'Consolas', monospace;
     }
 
 	/* Typography Overrides */
 	h1, h2, h3, h4, h5, h6, p, label {
     	color: var(--text-color) !important;
-    	font-family: 'Consolas', 'Courier New', monospace, sans-serif !important;
+    	font-family: 'Share Tech Mono', 'Consolas', 'Courier New', monospace !important;
 	}
 	span:not([data-testid="stIconMaterial"], [.recommendation-badge]), 
 	div:not([data-testid="stIconMaterial"], [.recommendation-badge]) {
     	color: var(--text-color) !important;
-    	font-family: 'Consolas', 'Courier New', monospace, sans-serif !important;
+    	font-family: 'Share Tech Mono', 'Consolas', 'Courier New', monospace !important;
 	}
 	
     h1 {
@@ -79,9 +81,10 @@ neo_brutalism_css = """
     h2, h3 {
         font-weight: 800 !important;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    /* Neo-Brutalism Box Base */
+    /* Cyber Brutalism Box Base */
     .neo-box {
         background-color: var(--card-bg);
         border: var(--border-width) solid var(--border-color) !important;
@@ -89,12 +92,13 @@ neo_brutalism_css = """
         border-radius: var(--radius) !important;
         padding: 1.25rem;
         margin-bottom: 1.25rem;
-        transition: all 0.15s ease-in-out;
+        transition: all 0.1s ease-in-out;
     }
 
     .neo-box:hover {
         transform: translate(-2px, -2px);
         box-shadow: calc(var(--shadow-dist) + 2px) calc(var(--shadow-dist) + 2px) 0px var(--shadow-color) !important;
+        background-color: var(--accent-bg);
     }
 
     /* Custom Header / Hero Banner */
@@ -104,8 +108,11 @@ neo_brutalism_css = """
         box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color);
         padding: 20px;
         margin-bottom: 25px;
-        background-image: radial-gradient(var(--halftone-dot) 0.02px, transparent 0.01px);
-        background-size: 10px 10px;
+        background-image: 
+            linear-gradient(45deg, var(--halftone-dot) 25%, transparent 25%), 
+            linear-gradient(-45deg, var(--halftone-dot) 25%, transparent 25%);
+        background-size: 8px 8px;
+        background-blend-mode: overlay;
     }
 	
 	/* Streamlit Containers & Expanders Override */
@@ -137,6 +144,7 @@ neo_brutalism_css = """
     .stTextInput input:focus, .stNumberInput input:focus, .stSelectbox div[data-baseweb="select"]:focus-within {
         transform: translate(-1px, -1px);
         box-shadow: 5px 5px 0px var(--shadow-color) !important;
+        background-color: var(--accent-bg) !important;
     }
 
     /* Buttons Override */
@@ -148,14 +156,16 @@ neo_brutalism_css = """
         box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
         font-weight: 900 !important;
         text-transform: uppercase !important;
-        letter-spacing: 1px !important;
+        letter-spacing: 1.5px !important;
         padding: 0.6rem 1.2rem !important;
-        transition: all 0.1s ease-in-out !important;
+        transition: all 0.08s ease-in-out !important;
         width: 100%;
     }
     .stButton button:hover {
         transform: translate(-3px, -3px) !important;
         box-shadow: calc(var(--shadow-dist) + 3px) calc(var(--shadow-dist) + 3px) 0px var(--shadow-color) !important;
+        background-color: var(--text-color) !important;
+        color: var(--bg-color) !important;
     }
     .stButton button:active {
         transform: translate(2px, 2px) !important;
@@ -184,6 +194,7 @@ neo_brutalism_css = """
     div[data-testid="stMetricValue"] {
         font-size: 2rem !important;
         font-weight: 900 !important;
+        letter-spacing: -1px;
     }
 
     /* ASCII Code Box Override */
@@ -191,12 +202,13 @@ neo_brutalism_css = """
         border: var(--border-width) solid var(--border-color) !important;
         box-shadow: var(--shadow-dist) var(--shadow-dist) 0px var(--shadow-color) !important;
         border-radius: var(--radius) !important;
+        background-color: var(--card-bg) !important;
     }
 	
     /* Custom Recommendation Banner */
     .recommendation-card {
-        border: 4px solid var(--border-color);
-        box-shadow: 7px 7px 0px var(--shadow-color);
+        border: var(--border-width) solid var(--border-color);
+        box-shadow: 6px 6px 0px var(--shadow-color);
         background-color: var(--card-bg);
         padding: 24px;
         margin-bottom: 20px;
@@ -210,18 +222,18 @@ neo_brutalism_css = """
         font-weight: 900;
         padding: 4px 10px;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
-        font-size: 12px;
+        letter-spacing: 2px;
+        font-size: 11px;
         margin-bottom: 10px;
     }
 
     .warning-card {
-        border: 3px solid var(--border-color);
+        border: var(--border-width) solid var(--border-color);
         box-shadow: 5px 5px 0px var(--shadow-color);
         background-color: var(--card-bg);
         padding: 16px;
         margin-bottom: 15px;
-        border-left: 12px solid var(--border-color);
+        border-left: 10px solid var(--border-color);
     }
 
     /* Dataframe Table Custom Styling */
@@ -243,7 +255,7 @@ neo_brutalism_css = """
 
         .recommendation-card {
             padding: 14px;
-            border-width: 3px;
+            border-width: 2px;
             box-shadow: 4px 4px 0px var(--shadow-color);
         }
 		
@@ -257,7 +269,6 @@ neo_brutalism_css = """
 </style>
 """
 st.markdown(neo_brutalism_css, unsafe_allow_html=True)
-
 # -----------------------------------------------------------------------------
 # 3. Header
 # -----------------------------------------------------------------------------
